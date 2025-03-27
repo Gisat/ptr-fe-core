@@ -1,0 +1,16 @@
+
+import { OneOfInteractionFunc } from "./models.events"
+import { Datasource } from "../../(shared)/panther/models.nodes"
+import { Nullable, Unsure } from "../../(shared)/coding/code.types"
+
+/**
+ * General props for every rendered layer by DeckGL
+ */
+export interface LayerGeneralProps{
+    sourceNode: Datasource
+    style: Nullable<any>
+    isActive: boolean,
+
+    //TODO better typing and more types of inclick handlers for general purposes
+    onClickHandler: Unsure<OneOfInteractionFunc>
+  }

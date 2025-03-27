@@ -1,0 +1,12 @@
+.ptr-LoginForm {
+    display: flex;
+    align-items: center;
+}
+
+.ptr-LoginForm-title {
+    margin: 0;
+}
+
+.ptr-LoginForm-content {
+    margin-top: 1rem;
+}
