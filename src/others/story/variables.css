@@ -1,0 +1,79 @@
+/* 
+Global CSS Variables for Story Layout
+This file defines layout dimensions, typography, and responsive design variables for story components.
+*/
+
+/* Root Variables */
+:root {
+	/* Layout Dimensions */
+	--StoryNavPanelWidth: 2.5rem; /* Width of the navigation panel */
+	--StoryLayoutPanelWidth: 25rem; /* Default width of the layout panel */
+	--StorySidePanelWidth: calc(var(--StoryLayoutPanelWidth) + var(--StoryNavPanelWidth)); /* Total width of the side panel */
+	--StoryMainPanelWidth: calc(100% - var(--StorySidePanelWidth)); /* Remaining width for the main panel */
+
+	/* Typography */
+	--StoryHeadlineFontSize: var(--font-size-6xl); /* Font size for headlines */
+	--StorySubheadlineFontSize: var(--font-size-2xl); /* Font size for subheadlines */
+	--StorySectionTitleFontSize: var(--font-size-xl); /* Font size for section titles */
+	--StoryParagraphFontSize: var(--font-size-md); /* Font size for paragraphs */
+	--StoryTagFontSize: var(--font-size-sm); /* Font size for tags */
+}
+
+/* Responsive Design */
+
+
+/* Medium Screens (max-width: 1099.98px) */
+@media screen and (max-width: 1099.98px) {
+	:root {
+			--StoryLayoutPanelWidth: 20rem; /* Narrower layout panel width */
+	}
+}
+
+/* Small Screens (max-width: 767.98px) or (max-height: 767.98px) */
+@media screen and ((max-width: 767.98px) or (max-height: 767.98px)) {
+	:root {
+			--StoryHeadlineFontSize: var(--font-size-4xl); /* Reduced headline font size */
+			--StorySubheadlineFontSize: var(--font-size-xl); /* Reduced subheadline font size */
+			--StoryParagraphFontSize: var(--font-size-sm); /* Reduced paragraph font size */
+			--StorySectionTitleFontSize: var(--font-size-lg); /* Section title font size remains consistent */
+			--StoryTagFontSize: var(--font-size-xs); /* Smaller tag font size */
+	}
+}
+
+/* Ultra-Small Screens (max-width: 467.98px) or (max-height: 450.98px) */
+@media screen and ((max-width: 450.98px) or (max-height: 450.98px)) {
+	:root {
+			--StoryHeadlineFontSize: var(--font-size-3xl); /* Reduced headline font size */
+			--StorySubheadlineFontSize: var(--font-size-md); /* Reduced subheadline font size */
+			--StorySectionTitleFontSize: var(--font-size-md); /* Section title font size remains consistent */
+			--StoryTagFontSize: var(--font-size-xs); /* Smaller tag font size */
+	}
+
+	.ptr-StoryTags {
+		max-height: 4.5rem;
+		overflow: hidden;
+	}
+}
+
+/* Large Screens (min-width: 1599.98px) */
+@media screen and (min-width: 1599.98px) {
+	:root {
+			--StoryLayoutPanelWidth: 30rem; /* Wider layout panel width */
+	}
+}
+
+/* Extra Large Screens (min-width: 2299.98px) */
+@media screen and (min-width: 2299.98px) {
+	:root {
+			--StoryHeadlineFontSize: var(--font-size-8xl); /* Larger headline font size */
+			--StoryTagFontSize: var(--font-size-md); /* Larger tag font size */
+			--StoryParagraphFontSize: var(--font-size-lg); /* Larger paragraph font size */
+			--StoryLayoutPanelWidth: 40rem; /* Wider layout panel width */
+			--StoryNavPanelWidth: 3rem; /* Wider navigation panel */
+			--StorySubheadlineFontSize: var(--font-size-4xl); /* Larger subheadline font size */
+	}
+
+	.ptr-StoryNavPanelContainer {
+			scale: 1.3; /* Scale navigation panel for extra-large screens */
+	}
+}

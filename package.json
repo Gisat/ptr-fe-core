@@ -1,0 +1,89 @@
+{
+  "name": "ptr-fe-core-",
+  "version": "1.0.38",
+  "description": "",
+  "type": "module",
+
+  "main": "./dist/client/index.js",
+  "module": "./dist/client/index.esm.js",
+  "browser": "./dist/client/index.esm.js",
+  "styles": "./dist/client/styles.css",
+  "types": "./dist/server/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/server/index.cjs.js",
+      "import":  "./dist/server/index.esm.js",
+      "browser": "./dist/client/index.esm.js",
+      "types":   "./dist/server/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client/index.esm.js",
+      "types":  "./dist/client/index.d.ts"
+    },
+    "./client/styles": {
+      "import": "./dist/client/index.css"
+    },
+    "./server": {
+      "import": "./dist/server/index.esm.js",
+      "types":  "./dist/server/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build:barrels": "barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-server.scripts.json",
+    "build:styles": "node barrels.styles.mjs && node update-barrels.mjs",
+    "build:types": "tsc --project tsconfig.build.json",
+    "build:prebuild": "npm run build:barrels && npm run build:styles && npm run build:types",
+    "build": "npm run build:prebuild && rollup --config"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/lodash": "^4.17.14",
+    "@types/luxon": "^3.4.2",
+    "@types/react": "^19",
+    "autoprefixer": "^10.4.21",
+    "barrelsby": "^2.8.1",
+    "postcss": "^8.5.3",
+    "postcss-import": "^16.1.0",
+    "postcss-preset-mantine": "^1.17.0",
+    "rollup": "^4.37.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "ts-loader": "^9.5.2",
+    "tslib": "^2.8.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+
+  },
+  "peerDependencies": {
+    "@deck.gl/core": "^9.1.8",
+    "@deck.gl/extensions": "^9.1.8",
+    "@deck.gl/layers": "^9.1.8",
+    "@deck.gl/react": "^9.1.8",
+    "react-resize-detector": "^12.0.2",
+    "@gisatcz/deckgl-geolib": "^1.12.0-dev.0",
+    "@mantine/core": "^7.17.4",
+    "@mantine/hooks": "^7.17.4",
+    "@tabler/icons-react": "^3.31.0",
+    "@turf/area": "^7.2.0",
+    "@turf/helpers": "^7.2.0",
+    "classnames": "^2.5.1",
+    "lodash": "^4.17.21",
+    "luxon": "^3.6.0",
+    "node-cache": "^5.1.2",
+    "openid-client": "^5.7.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "swr": "^2.3.0"
+  }
+}
