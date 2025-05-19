@@ -1,6 +1,6 @@
-import { Datasource } from '../panther/models.nodes';
+import { Datasource } from '../../../globals/shared/panther/models.nodes';
 import { LayerTreeInteraction } from '../layers/models.layers';
-import { Nullable } from '../coding/code.types';
+import { Nullable } from '../../../globals/shared/coding/code.types';
 
 /**
  * Layer in rendering context, but still undepedent to specific rendering framework

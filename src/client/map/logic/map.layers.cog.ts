@@ -1,7 +1,7 @@
 import geolib from '@gisatcz/deckgl-geolib';
 import { LayerGeneralProps } from '../logic/map.layers.models';
 import { validateDatasource } from '../logic/validate.layers';
-import { UsedDatasourceLabels } from '../../shared/panther/enums.panther';
+import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
 
 const CogBitmapLayer = geolib.CogBitmapLayer;
 

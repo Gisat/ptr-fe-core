@@ -1,4 +1,4 @@
-import { Nullable } from '../../shared/coding/code.types';
+import { Nullable } from '../../../globals/shared/coding/code.types';
 
 /**
  * Function type that represents map feature interaction

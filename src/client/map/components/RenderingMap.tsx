@@ -10,7 +10,7 @@ import useSharedState from '../../shared/hooks/state.useSharedState';
 import { LayersList, MapViewState } from '@deck.gl/core';
 import DeckGL from '@deck.gl/react';
 import { LayerTreeInteraction } from '../../shared/layers/models.layers';
-import { Nullable } from '../../shared/coding/code.types';
+import { Nullable } from '../../../globals/shared/coding/code.types';
 import { TileLayer } from '@deck.gl/geo-layers';
 
 /**

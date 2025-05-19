@@ -1,7 +1,7 @@
 import { isArray } from 'lodash';
-import { UsedNodeLabels } from '../panther/enums.panther';
-import { ApplicationNode, Datasource, FullPantherEntity } from '../panther/models.nodes';
-import { Nullable } from '../coding/code.types';
+import { UsedNodeLabels } from '../../../globals/shared/panther/enums.panther';
+import { ApplicationNode, Datasource, FullPantherEntity } from '../../../globals/shared/panther/models.nodes';
+import { Nullable } from '../../../globals/shared/coding/code.types';
 
 /**
  * Parse and validate all types of backend nodes from panther response

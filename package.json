@@ -26,10 +26,14 @@
     "./server": {
       "import": "./dist/server/index.esm.js",
       "types":  "./dist/server/index.d.ts"
+    },
+    "./globals": {
+      "import": "./dist/globals/index.esm.js",
+      "types":  "./dist/globals/index.d.ts"
     }
   },
   "scripts": {
-    "build:barrels": "barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-server.scripts.json",
+    "build:barrels": "barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-server.scripts.json && barrelsby -c barrels-globals.scripts.json",
     "build:styles": "node barrels.styles.mjs && node update-barrels.mjs",
     "build:types": "tsc --project tsconfig.build.json",
     "build:prebuild": "npm run build:barrels && npm run build:styles && npm run build:types",

@@ -1,16 +1,16 @@
-import { ApplicationNode, Datasource } from '../panther/models.nodes';
+import { ApplicationNode, Datasource } from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
 import { MapSetSync } from '../models/models.mapSetSync';
 import { RenderingLayer } from '../models/models.layers';
-import { ActionType } from './enum.state.actionType'; // Import the ActionType enum
+import { StateActionType } from './enum.state.actionType'; // Import the ActionType enum
 
 /**
  * When we set up application node
  */
 export interface ActionSetApplicationNode {
-    type: ActionType.APP_NODE;
+    type: StateActionType.APP_NODE;
     payload: ApplicationNode;
 }
 
@@ -18,7 +18,7 @@ export interface ActionSetApplicationNode {
  * When we set up metadata datasources
  */
 export interface ActionChangeLayerSources {
-    type: ActionType.FETCH_SOURCES;
+    type: StateActionType.FETCH_SOURCES;
     payload: Datasource[];
 }
 
@@ -26,7 +26,7 @@ export interface ActionChangeLayerSources {
  * Activate or deactivate layer in render and status
  */
 export interface ActionLayerActiveChange {
-    type: ActionType.LAYER_ACTIVE_CHANGE;
+    type: StateActionType.LAYER_ACTIVE_CHANGE;
     payload: { key: string; newValue: boolean };
 }
 
@@ -34,7 +34,7 @@ export interface ActionLayerActiveChange {
  * Activate or deactivate layer in map
  */
 export interface ActionMapLayerActiveChange {
-    type: ActionType.MAP_LAYER_ACTIVE_CHANGE;
+    type: StateActionType.MAP_LAYER_ACTIVE_CHANGE;
     payload: { mapKey: string; layerKey: string; isActive: boolean };
 }
 
@@ -42,7 +42,7 @@ export interface ActionMapLayerActiveChange {
  * Change map layer opacity
  */
 export interface ActionMapLayerOpacityChange {
-    type: ActionType.MAP_LAYER_OPACITY_CHANGE;
+    type: StateActionType.MAP_LAYER_OPACITY_CHANGE;
     payload: { mapKey: string; layerKey: string; opacity: number };
 }
 
@@ -50,7 +50,7 @@ export interface ActionMapLayerOpacityChange {
  * Update state with data
  */
 export interface ActionGlobalStateUpdate {
-    type: ActionType.GLOBAL_STATE_UPDATE;
+    type: StateActionType.GLOBAL_STATE_UPDATE;
     payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
 }
 
@@ -59,7 +59,7 @@ export interface ActionGlobalStateUpdate {
  * TODO add payload params
  */
 export interface ActionApplyPersistentState {
-    type: ActionType.APPLY_PERSISTENT_STATE;
+    type: StateActionType.APPLY_PERSISTENT_STATE;
     payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
 }
 
@@ -67,7 +67,7 @@ export interface ActionApplyPersistentState {
  * Change map view
  */
 export interface ActionMapViewChange {
-    type: ActionType.MAP_VIEW_CHANGE;
+    type: StateActionType.MAP_VIEW_CHANGE;
     payload: { key: string; viewChange: Partial<MapView> };
 }
 
@@ -75,7 +75,7 @@ export interface ActionMapViewChange {
  * Change map set sync
  */
 export interface ActionMapSetSyncChange {
-    type: ActionType.MAP_SET_SYNC_CHANGE;
+    type: StateActionType.MAP_SET_SYNC_CHANGE;
     payload: { key: string; syncChange: Partial<MapSetSync> };
 }
 

@@ -2,7 +2,7 @@ import classnames from 'classnames';
 import { StorySidePanel } from './components/sidePanel/StorySidePanel';
 import React, { Children, cloneElement, useCallback, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
-import { storySmallScreenWidth, storySmallScreenHeight } from '@features/story/variables';
+//import { storySmallScreenWidth, storySmallScreenHeight } from '@features/story/variables';
 import './style.css';
 import './variables.css';
 
@@ -18,6 +18,8 @@ type StoryProps = {
 	className?: string;
 	/** Child components */
 	children: React.ReactNode;
+	storySmallScreenWidth: number;
+	storySmallScreenHeight: number;
 };
 
 /** Reference to the side panel */
@@ -32,7 +34,7 @@ type SidePanelRef = React.RefObject<HTMLDivElement | undefined>;
  * @param {StoryProps} props - The props for the component.
  * @returns {JSX.Element} The rendered Story component.
  */
-export const Story: React.FC<StoryProps> = ({ className, children, defaultStep = 0, onStepChange }) => {
+export const Story: React.FC<StoryProps> = ({ className, children, defaultStep = 0, onStepChange, storySmallScreenWidth, storySmallScreenHeight }) => {
 	const [activeStep, setActiveStep] = useState<number>(defaultStep); // Current active section
 	const [jumpSection, setJumpSection] = useState<number | null>(null); // Section to jump to
 	const [sidePanelRef, setSidePanelRef] = useState<SidePanelRef | undefined>(undefined); // Reference to the side panel

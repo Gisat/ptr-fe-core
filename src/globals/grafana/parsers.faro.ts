@@ -1,6 +1,6 @@
-import { ErrorBehavior } from '../../shared/errors/enums.errorBehavior';
-import { HttpStatusCode } from '../../shared/errors/enums.httpStatusCode';
-import { BaseHttpError } from '../../shared/errors/models.error';
+import { ErrorBehavior } from '../../globals/shared/errors/enums.errorBehavior';
+import { HttpStatusCode } from '../../globals/shared/errors/enums.httpStatusCode';
+import { BaseHttpError } from '../../globals/shared/errors/models.error';
 import { FaroConfigProps } from './models.faro';
 
 /**

@@ -1,8 +1,8 @@
 import { Issuer } from 'openid-client';
-import { Unsure } from '../../shared/coding/code.types';
-import { ErrorBehavior } from '../../shared/errors/enums.errorBehavior';
-import { HttpStatusCode } from '../../shared/errors/enums.httpStatusCode';
-import { BaseHttpError } from '../../shared/errors/models.error';
+import { Unsure } from '../../../globals/shared/coding/code.types';
+import { ErrorBehavior } from '../../../globals/shared/errors/enums.errorBehavior';
+import { HttpStatusCode } from '../../../globals/shared/errors/enums.httpStatusCode';
+import { BaseHttpError } from '../../../globals/shared/errors/models.error';
 
 /**
  * OpenID Connect functional context (as server side JS closure)

@@ -1,4 +1,4 @@
-import { Nullable } from '../coding/code.types';
+import { Nullable } from '../../../globals/shared/coding/code.types';
 
 /**
  * Type of interaction in layer tree

@@ -1,6 +1,6 @@
 import { OneOfInteractionFunc } from './models.events';
-import { Datasource } from '../../shared/panther/models.nodes';
-import { Nullable, Unsure } from '../../shared/coding/code.types';
+import { Datasource } from '../../../globals/shared/panther/models.nodes';
+import { Nullable, Unsure } from '../../../globals/shared/coding/code.types';
 
 /**
  * General props for every rendered layer by DeckGL

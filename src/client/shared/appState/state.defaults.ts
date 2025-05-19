@@ -1,4 +1,4 @@
-import { UsedNodeLabels } from '../panther/enums.panther';
+import { UsedNodeLabels } from '../../../globals/shared/panther/enums.panther';
 import { AppSharedState } from './state.models';
 
 /**

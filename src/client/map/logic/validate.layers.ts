@@ -1,5 +1,5 @@
-import { UsedDatasourceLabels } from '../../shared/panther/enums.panther';
-import { Datasource } from '../../shared/panther/models.nodes';
+import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
+import { Datasource } from '../../../globals/shared/panther/models.nodes';
 
 /**
  * Validates datasource node for required fields

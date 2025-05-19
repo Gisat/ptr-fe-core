@@ -1,7 +1,7 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { LayerGeneralProps } from './map.layers.models';
 import { validateDatasource } from './validate.layers';
-import { UsedDatasourceLabels } from '../../shared/panther/enums.panther';
+import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
 
 /**
  * Creates a GeoJsonLayer with the specified properties.

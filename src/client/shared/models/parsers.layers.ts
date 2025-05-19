@@ -1,6 +1,6 @@
 import { RenderingLayer } from './models.layers';
-import { Datasource, ApplicationNode, PantherEntity } from '../panther/models.nodes';
-import { HasLevels } from '../panther/models.nodes.properties';
+import { Datasource, ApplicationNode, PantherEntity } from '../../../globals/shared/panther/models.nodes';
+import { HasLevels } from '../../../globals/shared/panther/models.nodes.properties';
 
 /**
  * Parse backend datasource nodes into rendering layers usinf application configuration context (mainly layer tree)

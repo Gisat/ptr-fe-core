@@ -1,7 +1,7 @@
 /**
  * Enum representing action types for managing the shared application state.
  */
-export enum ActionType {
+export enum StateActionType {
   /** Action to fetch data sources. */
   FETCH_SOURCES = 'fetchSources',
 

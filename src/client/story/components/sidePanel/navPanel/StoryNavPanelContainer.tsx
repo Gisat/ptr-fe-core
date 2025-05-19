@@ -13,7 +13,7 @@ import { handleScrollDown } from './logic/handleScrollDown';
 import { handleHomeNavigation } from './logic/handleHomeNavigation';
 import { handleFooterNavigation } from './logic/handleFooterNavigation';
 import { handleCaseNavigation } from './logic/handleCaseNavigation';
-import { ActionType } from '../../../enum.story.actionType';
+import { StoryActionType } from '../../../enum.story.actionType';
 import './style.css';
 
 /**
@@ -88,20 +88,20 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	 * @param {React.MouseEvent} e - The mouse event.
 	 * @param {'section' | 'up' | 'down'} type - The type of navigation action.
 	 */
-	const scrollToSection = (e: React.MouseEvent, type: ActionType) => {
+	const scrollToSection = (e: React.MouseEvent, type: StoryActionType) => {
 		if (!sidePanelRef?.current || !navPanelCasesRef.current) return;
 
 		const sidePanelNodes = Array.from(sidePanelRef.current.childNodes) as HTMLElement[];
 		const navPanelCasesNodes = Array.from(navPanelCasesRef.current.childNodes) as HTMLElement[];
 
 		switch (type) {
-			case ActionType.SECTION:
+			case StoryActionType.SECTION:
 				handleSectionScroll(e, sidePanelNodes, navPanelCasesNodes, activeStep, sidePanelRef, setJumpSection);
 				break;
-			case ActionType.UP:
+			case StoryActionType.UP:
 				handleScrollUp(sidePanelNodes, activeStep, sidePanelRef);
 				break;
-			case ActionType.DOWN:
+			case StoryActionType.DOWN:
 				handleScrollDown(sidePanelNodes, activeStep, sidePanelRef);
 				break;
 			default:
@@ -124,7 +124,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 				return handleHomeNavigation(
 					index,
 					activeStep,
-					(e) => scrollToSection(e, ActionType.SECTION),
+					(e) => scrollToSection(e, StoryActionType.SECTION),
 					classes,
 					<IconHomeFilled />,
 					navigationIcons?.home
@@ -133,7 +133,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 				return handleFooterNavigation(
 					index,
 					activeStep,
-					(e) => scrollToSection(e, ActionType.SECTION),
+					(e) => scrollToSection(e, StoryActionType.SECTION),
 					classes,
 					<IconSquareFilled />,
 					navigationIcons?.footer
@@ -142,7 +142,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 				return handleCaseNavigation(
 					index,
 					activeStep,
-					(e) => scrollToSection(e, ActionType.SECTION),
+					(e) => scrollToSection(e, StoryActionType.SECTION),
 					classes,
 					<IconCircleFilled />,
 					navigationIcons?.case
@@ -158,7 +158,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 
 	return (
 		<div className={classes(['ptr-StoryNavPanelContainer'])} ref={navPanel}>
-			<IconChevronUp className={classes(['ptr-StoryNavPanelIcon'])} onClick={(e) => scrollToSection(e, ActionType.UP)} />
+			<IconChevronUp className={classes(['ptr-StoryNavPanelIcon'])} onClick={(e) => scrollToSection(e, StoryActionType.UP)} />
 			<div
 				className="ptr-StoryNavPanelCases"
 				ref={navPanelCasesRef}
@@ -166,7 +166,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 			>
 				{sectionNavigationIcons}
 			</div>
-			<IconChevronDown className={classes(['ptr-StoryNavPanelIcon'])} onClick={(e) => scrollToSection(e, ActionType.DOWN)} />
+			<IconChevronDown className={classes(['ptr-StoryNavPanelIcon'])} onClick={(e) => scrollToSection(e, StoryActionType.DOWN)} />
 		</div>
 	);
 };

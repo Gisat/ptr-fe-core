@@ -2,7 +2,7 @@ import React, { Dispatch } from 'react';
 import { AppSharedState } from '../appState/state.models';
 import { OneOfStateActions } from '../appState/state.models.actions';
 import { SharedStateContext, SharedStateDispatchContext } from '../appState/state.context';
-import { Nullable } from '../coding/code.types';
+import { Nullable } from '../../../globals/shared/coding/code.types';
 
 interface SharedStateWrapperProps {
 	children: any;

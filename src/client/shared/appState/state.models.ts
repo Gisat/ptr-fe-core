@@ -1,5 +1,5 @@
 import { RenderingLayer } from '../models/models.layers';
-import { ApplicationNode } from '../panther/models.nodes';
+import { ApplicationNode } from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapSetModel } from '../models/models.mapSet';
 

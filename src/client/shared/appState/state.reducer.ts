@@ -1,8 +1,8 @@
-import { ActionType } from './enum.state.actionType';
+import { StateActionType } from './enum.state.actionType';
 import { parseDatasourcesToRenderingLayers } from '../models/parsers.layers';
 import { OneOfStateActions } from './state.models.actions';
 import { AppSharedState } from './state.models';
-import { Nullable } from '../coding/code.types';
+import { Nullable } from '../../../globals/shared/coding/code.types';
 import { reduceHandlerMapSetMapViewChange } from '../appState/reducerHandlers/mapSetMapViewChange';
 import { reduceHandlerActiveLayerChange } from '../appState/reducerHandlers/activeLayerChange';
 import { reduceHandlerMapSetSyncChange } from '../appState/reducerHandlers/mapSetSyncChange';
@@ -23,7 +23,7 @@ export const reducerSharedAppState = (
     if (!action) return currentState;
 
     switch (action.type) {
-        case ActionType.FETCH_SOURCES:
+        case StateActionType.FETCH_SOURCES:
             return {
                 ...currentState,
                 renderingLayers: currentState.renderingLayers
@@ -34,28 +34,28 @@ export const reducerSharedAppState = (
                     : parseDatasourcesToRenderingLayers(action.payload, currentState.appNode),
             };
 
-        case ActionType.APP_NODE:
+        case StateActionType.APP_NODE:
             return { ...currentState, appNode: action.payload };
 
-        case ActionType.LAYER_ACTIVE_CHANGE:
+        case StateActionType.LAYER_ACTIVE_CHANGE:
             return reduceHandlerActiveLayerChange(currentState, action);
 
-        case ActionType.GLOBAL_STATE_UPDATE:
+        case StateActionType.GLOBAL_STATE_UPDATE:
             return reduceHandlerGlobalStateUpdate(currentState, action);
 
-        case ActionType.APPLY_PERSISTENT_STATE:
+        case StateActionType.APPLY_PERSISTENT_STATE:
             return { ...currentState, ...action.payload };
 
-        case ActionType.MAP_VIEW_CHANGE:
+        case StateActionType.MAP_VIEW_CHANGE:
             return reduceHandlerMapSetMapViewChange(currentState, action);
 
-        case ActionType.MAP_LAYER_ACTIVE_CHANGE:
+        case StateActionType.MAP_LAYER_ACTIVE_CHANGE:
             return reduceHandlerMapLayerActiveChange(currentState, action);
 
-        case ActionType.MAP_LAYER_OPACITY_CHANGE:
+        case StateActionType.MAP_LAYER_OPACITY_CHANGE:
             return reduceHandlerMapLayerOpacityChange(currentState, action);
 
-        case ActionType.MAP_SET_SYNC_CHANGE:
+        case StateActionType.MAP_SET_SYNC_CHANGE:
             return reduceHandlerMapSetSyncChange(currentState, action);
 
         default:

@@ -71,5 +71,22 @@ export default [
     ],
   },
 
+  {
+    input: 'src/globals/index.ts',
+    output: [
+      { file: 'dist/globals/index.cjs.js', format: 'cjs'  },
+      { file: 'dist/globals/index.esm.js', format: 'esm' },
+    ],
+    external: id => [
+      ...Object.keys(pkg.peerDependencies || []),
+      ...builtinModules,
+    ].some(name => id === name || id.startsWith(name + '/')),
+    plugins: [
+      resolve({ preferBuiltins: true, extensionsServer }), // Resolves file extensions
+      commonjs(),
+      typescript({ declaration: false }),
+    ],
+  },
+
 
 ];
