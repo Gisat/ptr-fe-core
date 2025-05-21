@@ -1,6 +1,6 @@
 {
-  "name": "ptr-fe-core--",
-  "version": "1.0.1",
+  "name": "ptr-fe-core-",
+  "version": "1.1.2",
   "description": "",
   "type": "module",
 
@@ -73,9 +73,9 @@
     "@deck.gl/layers": "^9.1.8",
     "@deck.gl/react": "^9.1.8",
     "react-resize-detector": "^12.0.2",
-    "@gisatcz/deckgl-geolib": "^1.12.0-dev.0",
-    "@mantine/core": "^7.17.4",
-    "@mantine/hooks": "^7.17.4",
+    "@gisatcz/deckgl-geolib": "^1.12.0-dev.4",
+    "@mantine/core": "^8.0.1",
+    "@mantine/hooks": "^8.0.1",
     "@tabler/icons-react": "^3.31.0",
     "@turf/area": "^7.2.0",
     "@turf/helpers": "^7.2.0",
