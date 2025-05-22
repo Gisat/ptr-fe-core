@@ -13,6 +13,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4 # Latest version to set up Node.js
+        with:
+          node-version: 'lts/*' # Use the latest LTS version of Node.js
+          registry-url: 'https://registry.npmjs.org/' # Important: Specify the npm registry
+
       - name: Install dependencies
         run: npm install
 
