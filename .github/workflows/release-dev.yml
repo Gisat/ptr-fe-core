@@ -31,4 +31,4 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # for public packages, include --access public
-          npm publish --access public
+          npm publish --access public --tag dev
