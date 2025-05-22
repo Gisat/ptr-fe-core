@@ -1,0 +1,63 @@
+@import '_colors.css';
+@import '_spacing.css';
+@import '_typography.css';
+@import '@mantine/core/styles.css';
+
+body {
+	font-family: var(--defaultFontFamily), sans-serif;
+	height: 100vh;
+}
+
+span, label {
+	font-family: var(--labelsFontFamily), sans-serif;
+	line-height: var(--line-height-md);
+}
+
+h1, h2, h3, h4, h5 {
+	color: var(--base950);
+	font-family: var(--headingsFontFamily), sans-serif;
+	font-weight: 800;
+	line-height: var(--line-height-sm);
+}
+
+h1 {
+	font-size: var(--font-size-3xl);
+	line-height: var(--line-height-xs);
+	max-width: 30ch;
+}
+
+h2 {
+	font-size: var(--font-size-2xl);
+	max-width: 38ch;
+}
+
+h3 {
+	font-size: var(--font-size-xl);
+	max-width: 45ch;
+}
+
+h4 {
+	font-size: var(--font-size-lg);
+	max-width: 55ch;
+}
+
+h5 {
+	font-size: var(--font-size-md);
+	max-width: 65ch;
+	line-height: var(--line-height-md);
+}
+
+p {
+	color: var(--base950);
+	font-size: var(--font-size-md);
+	line-height: var(--line-height-md);
+	max-width: var(--paragraph-width);
+}
+
+a {
+	color: var(--accent500);
+
+	&:visited {
+		color: var(--accent700);
+	}
+}

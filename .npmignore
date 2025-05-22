@@ -1,0 +1,32 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# 1) Ignore everything by default
+/*
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 2) But include our published bundle and essential metadata
+!/dist/
+!/dist/**
+!/package.json
+!/README.md
+!/LICENSE
+!/CHANGELOG.md
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 3) Exclude dev‐only folders and files
+/node_modules/
+/src/
+/barrels-client.scripts.json
+/barrels-server.scripts.json
+/barrels.styles.mjs
+/update-barrels*.mjs
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 4) Exclude build/config files not needed at runtime
+/rollup.config.js
+/postcss.config.mjs
+/tsconfig*.json
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 5) Exclude lockfiles and npm metadata
+package-lock.json
+.npmignore

@@ -1,0 +1,17 @@
+.ptr-TestComponent {
+	/*padding: var(--spacing-md);*/
+	padding: 1rem;
+	margin: 1rem;
+	background-color: antiquewhite;
+	border-radius: 20px;
+	z-index: 1000;
+	width: 30rem;
+}
+
+.ptr-TestComponent-paragraph {
+	font-style: italic;
+}
+
+.ptr-TestComponent-colors {
+	background-color: var(--accent500);
+}

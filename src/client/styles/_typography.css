@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+
+/*
+ * Root CSS variables for typography styles
+ * These variables define font families, font sizes, line heights, and other typography-related properties.
+ */
+:root {
+	/* --- Font families --- */
+	/* Default font family for general text */
+	--defaultFontFamily: 'Roboto', sans-serif;
+	/* Font family for headings */
+	--headingsFontFamily: 'Raleway', sans-serif;
+	--labelsFontFamily: 'Raleway', sans-serif;
+
+	/* --- Font sizes --- */
+	/* Base scale and ratio for font sizes */
+	--font-size-base: 1rem; /* Base font size */
+	--font-size-ratio: 1.2; /* Ratio for scaling font sizes */
+
+	/* Base font size */
+	--font-size-md: var(--font-size-base);
+
+	/* Down the scale (smaller font sizes) */
+	--font-size-sm: calc(var(--font-size-md) / var(--font-size-ratio)); /* Small font size */
+	--font-size-xs: calc(var(--font-size-sm) / var(--font-size-ratio)); /* Extra small font size */
+	--font-size-xxs: calc(var(--font-size-xs) / var(--font-size-ratio)); /* Extra extra small font size */
+
+	/* Up the scale (larger font sizes) */
+	--font-size-lg: calc(var(--font-size-base) * var(--font-size-ratio)); /* Large font size */
+	--font-size-xl: calc(var(--font-size-lg) * var(--font-size-ratio)); /* Extra large font size */
+	--font-size-2xl: calc(var(--font-size-xl) * var(--font-size-ratio)); /* 2x extra large font size */
+	--font-size-3xl: calc(var(--font-size-2xl) * var(--font-size-ratio)); /* 3x extra large font size */
+	--font-size-4xl: calc(var(--font-size-3xl) * var(--font-size-ratio)); /* 4x extra large font size */
+	--font-size-5xl: calc(var(--font-size-4xl) * var(--font-size-ratio)); /* 5x extra large font size */
+	--font-size-6xl: calc(var(--font-size-5xl) * var(--font-size-ratio)); /* 6x extra large font size */
+	--font-size-7xl: calc(var(--font-size-6xl) * var(--font-size-ratio)); /* 7x extra large font size */
+	--font-size-8xl: calc(var(--font-size-7xl) * var(--font-size-ratio)); /* 8x extra large font size */
+	--font-size-9xl: calc(var(--font-size-8xl) * var(--font-size-ratio)); /* 9x extra large font size */
+	--font-size-10xl: calc(var(--font-size-9xl) * var(--font-size-ratio)); /* 10x extra large font size */
+
+	/* --- Line heights --- */
+	--line-height-xs: 1.1;
+	--line-height-sm: 1.3;
+	--line-height-md: 1.5;
+	--line-height-lg: 1.625;
+	--line-height-xl: 2;
+
+	/* --- Readability --- */
+	/* Maximum paragraph width for optimal readability */
+	--paragraph-width: 70ch; /* 70 characters */
+}

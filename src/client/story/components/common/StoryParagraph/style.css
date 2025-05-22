@@ -1,0 +1,6 @@
+
+.ptr-StoryParagraph {
+	max-width: none;
+	margin-top: 1rem;
+	font-size: var(--StoryParagraphFontSize);
+}

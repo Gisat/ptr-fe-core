@@ -1,0 +1,15 @@
+
+.ptr-StoryTags {
+	display: flex;
+	justify-content: center;
+	grid-gap: 1rem;
+	flex-wrap: wrap;
+	max-width: 60rem;
+}
+
+.ptr-StoryTag {
+	background-color: var(--base200);
+	color: var(--base950);
+	font-weight: 500;
+	font-size: var(--StoryTagFontSize);
+}

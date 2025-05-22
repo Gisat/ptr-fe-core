@@ -1,0 +1,7 @@
+
+.ptr-StorySubheadline {
+	color: var(--base0);
+	font-size: var(--StorySubheadlineFontSize);
+	margin: 0 0 .5rem;
+	letter-spacing: 0.1rem;
+}

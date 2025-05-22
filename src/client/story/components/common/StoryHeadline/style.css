@@ -1,0 +1,7 @@
+
+.ptr-StoryHeadline {
+	color: var(--base0);
+	font-size: var(--StoryHeadlineFontSize);
+	margin: 0;
+	letter-spacing: 0.1rem;
+}
