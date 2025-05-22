@@ -3,7 +3,7 @@ name: Build & Publish npm Package
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-dev.[0-9]+'
 
 jobs:
   build-and-publish:
@@ -29,5 +29,5 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # for public packages, include --access public
-          npm publish --access public
+          # for public packages, include --tag dev --access public
+          npm publish --tag dev --access public
