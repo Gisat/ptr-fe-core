@@ -1,4 +1,5 @@
-name: Build & Publish npm Package
+name: Build & Publish NPM Package - DEV
+description: This workflow builds and publishes the NPM package when a version tag is pushed.
 
 on:
   push:
@@ -29,5 +30,5 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # for public packages, include --tag dev --access public
-          npm publish --tag dev --access public
+          # for public packages, include --access public
+          npm publish --access public

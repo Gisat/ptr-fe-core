@@ -1,4 +1,5 @@
-name: version-bump
+name: Automatic version bump
+description: Automatically bumps the version in package.json and creates a new tag.
 on:
   push:
     branches:
