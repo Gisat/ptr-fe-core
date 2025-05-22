@@ -13,6 +13,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4 # Latest version to set up Node.js
+        with:
+          node-version: 'lts/*' # Use the latest LTS version of Node.js
+          registry-url: 'https://registry.npmjs.org/' # Important: Specify the npm registry
+
       - name: Install dependencies
         run: npm install
 
@@ -21,7 +27,7 @@ jobs:
 
       - name: Publish to npm
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # for public packages, include --access public
           npm publish --access public
