@@ -1,4 +1,5 @@
-name: Build & Publish npm Package
+name: Build & Publish NPM Package
+description: This workflow builds and publishes the NPM package when a version tag is pushed.
 
 on:
   push:
