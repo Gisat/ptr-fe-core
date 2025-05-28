@@ -1,5 +1,5 @@
 import { Loader } from '@mantine/core';
-import React, { JSX } from 'react';
+import { JSX } from 'react';
 import './PageLoader.css';
 
 /**
