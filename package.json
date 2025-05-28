@@ -38,7 +38,9 @@
     "build:types": "tsc --project tsconfig.build.json",
     "build:prebuild": "npm run build:barrels && npm run build:styles && npm run build:types",
     "build:dev": "npm run build:prebuild && rollup --config && npm pack",
-    "build": "npm run build:prebuild && rollup --config"
+    "build": "npm run build:prebuild && rollup --config",
+    "lint": "eslint"
+
   },
   "keywords": [],
   "author": "",
@@ -63,6 +65,11 @@
     "ts-loader": "^9.5.2",
     "tslib": "^2.8.1",
     "tsx": "^4.19.3",
+    "typescript-eslint": "^8.32.1",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "eslint": "^9.27.0",
+    "eslint-plugin-node": "^11.1.0",
     "typescript": "^5.8.2"
   },
   "dependencies": {},
