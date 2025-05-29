@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import React from 'react';
 import { SingleMap } from '../MapSet/SingleMap';
 import useSharedState from '../../shared/hooks/state.useSharedState';
 import { getMapSetByKey } from '../../shared/appState/selectors/getMapSetByKey';
@@ -8,6 +9,7 @@ import './MapSet.css';
 export interface MapSetProps {
 	// map set identifier
 	sharedStateKey: string;
+	SingleMapTools?: React.ElementType;
 }
 /**
  * MapSet component
@@ -18,7 +20,7 @@ export interface MapSetProps {
  * @param {MapSetProps} props - The properties for the MapSet component.
  * @returns {JSX.Element | null} The rendered MapSet component or null if no map set is found.
  */
-export const MapSet = ({ sharedStateKey }: MapSetProps) => {
+export const MapSet = ({ sharedStateKey, SingleMapTools }: MapSetProps) => {
 	const [sharedState] = useSharedState();
 	const mapSet = getMapSetByKey(sharedState, sharedStateKey);
 	const numberOfMaps = mapSet?.maps?.length;
@@ -34,6 +36,7 @@ export const MapSet = ({ sharedStateKey }: MapSetProps) => {
 						return (
 							<div key={mapKey} className="ptr-MapSet-map">
 								<SingleMap mapKey={mapKey} syncedView={syncedView} />
+								{SingleMapTools && React.createElement(SingleMapTools, { mapKey, mapSetKey: sharedStateKey })}
 							</div>
 						);
 					})}

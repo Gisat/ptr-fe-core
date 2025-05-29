@@ -26,7 +26,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 		{ applicationsNode: null as Nullable<ApplicationNode>, datasourceNodes: [] as Datasource[] }
 	);
 
-	if (!applicationsNode) throw new Error('Panther Fetch: Missing application node');
+	// if (!applicationsNode) throw new Error('Panther Fetch: Missing application node');
 
 	return {
 		applicationsNode: applicationsNode as ApplicationNode,
