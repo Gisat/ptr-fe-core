@@ -78,6 +78,7 @@
     "@deck.gl/extensions": "^9.1.8",
     "@deck.gl/layers": "^9.1.8",
     "@deck.gl/react": "^9.1.8",
+    "@deck.gl/geo-layers": "^9.1.8",
     "@gisatcz/deckgl-geolib": "^1.12.0-dev.4",
     "@mantine/core": "^8.0.1",
     "@mantine/hooks": "^8.0.1",
