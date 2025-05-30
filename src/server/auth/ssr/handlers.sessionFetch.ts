@@ -8,7 +8,7 @@ interface FetchWithBrowserSessionProps {
 	method: 'GET' | 'POST';
 	url: string;
 	browserCookies: any;
-	body?: any;
+	body?: object;
 	headers?: any;
 	requireSessionId: boolean;
 }
@@ -49,7 +49,7 @@ export const fetchWithSessions = async (props: FetchWithBrowserSessionProps): Pr
 	// Make the fetch request to the backend
 	const response = await fetch(url, {
 		method,
-		body,
+		body: body ? JSON.stringify(body) : undefined,
 		headers: headersWithCookies,
 	});
 
