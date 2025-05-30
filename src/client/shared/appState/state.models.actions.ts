@@ -1,4 +1,8 @@
-import { ApplicationNode, Datasource } from '../../../globals/shared/panther/models.nodes';
+import {
+    ApplicationNode,
+    Datasource,
+    PantherEntity
+} from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
@@ -20,6 +24,14 @@ export interface ActionSetApplicationNode {
 export interface ActionChangeLayerSources {
     type: StateActionType.FETCH_SOURCES;
     payload: Datasource[];
+}
+
+/**
+ * When we set up layer metadata
+ */
+export interface ActionChangeLayers {
+    type: StateActionType.FETCH_LAYERS;
+    payload: PantherEntity[];
 }
 
 /**
@@ -84,6 +96,7 @@ export interface ActionMapSetSyncChange {
  */
 export type OneOfStateActions =
     | ActionChangeLayerSources
+    | ActionChangeLayers
     | ActionSetApplicationNode
     | ActionLayerActiveChange
     | ActionMapLayerActiveChange
