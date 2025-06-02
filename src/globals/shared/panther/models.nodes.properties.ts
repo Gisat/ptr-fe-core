@@ -20,7 +20,7 @@ export interface HasConfiguration {
  */
 export interface HasConfigurationAndNeighbours {
 	configuration: string | object; // JSON string
-	neighbours: string[]; // Array of keys of neighbour nodes
+	neighbours?: string[]; // Array of keys of neighbour nodes
 }
 
 /**
