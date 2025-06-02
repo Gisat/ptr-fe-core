@@ -18,6 +18,7 @@ export const defaultStateValue = () => {
 		},
 		renderingLayers: [],
 		layers: [],
+		places: [],
 		mapSets: [],
 		maps: [],
 	};

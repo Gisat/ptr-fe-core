@@ -38,6 +38,9 @@ export const reducerSharedAppState = (
             
         case StateActionType.FETCH_LAYERS:
             return { ...currentState, layers: action.payload };
+        
+        case StateActionType.FETCH_PLACES:
+            return { ...currentState, places: action.payload };
 
         case StateActionType.LAYER_ACTIVE_CHANGE:
             return reduceHandlerActiveLayerChange(currentState, action);

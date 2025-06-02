@@ -1,7 +1,7 @@
 import {
     ApplicationNode,
     Datasource,
-    PantherEntity
+    PantherEntity, Place
 } from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
@@ -33,6 +33,15 @@ export interface ActionChangeLayers {
     type: StateActionType.FETCH_LAYERS;
     payload: PantherEntity[];
 }
+
+/**
+ * When we set up layer metadata
+ */
+export interface ActionChangePlaces {
+    type: StateActionType.FETCH_PLACES;
+    payload: Place[];
+}
+
 
 /**
  * Activate or deactivate layer in render and status
@@ -97,6 +106,7 @@ export interface ActionMapSetSyncChange {
 export type OneOfStateActions =
     | ActionChangeLayerSources
     | ActionChangeLayers
+    | ActionChangePlaces
     | ActionSetApplicationNode
     | ActionLayerActiveChange
     | ActionMapLayerActiveChange
