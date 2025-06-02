@@ -16,6 +16,14 @@ export interface HasConfiguration {
 }
 
 /**
+ * Entity with custom configuration
+ */
+export interface HasConfigurationAndNeighbours {
+	configuration: string | object; // JSON string
+	neighbours: string[]; // Array of keys of neighbour nodes
+}
+
+/**
  * Place node - somewhere in the world
  */
 export interface HasGeometry {

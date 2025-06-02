@@ -41,22 +41,21 @@ export const parseDatasourcesToRenderingLayers = (
 		});
 		
 		return mapped;
-	} else {
-		return [];
 	}
-
-	// const sordedSources = webDatasources.sort(
-	//     (a: Datasource, b: Datasource) => a.configuration["level"] - b.configuration["level"])
-
-	// const parsed = sordedSources.map((source: Datasource) => {
-	//     const mapped: RenderingLayer = {
-	//         level: source.configuration["level"],
-	//         isActive: true,
-	//         datasource: source
-	//     }
-
-	//     return mapped
-	// })
-
-	// return parsed
+	
+	// If there is no configuration, we assume that all datasources are not active and have level 0
+	// TODO: better conversion of datasources to rendering layers. Maybe not here? We need a style as well.
+	else {
+		return datasourceNodes.map((datasource) => {
+			const renderingLayer: RenderingLayer = {
+				datasource,
+				key: datasource.key, // TODO: handle layer key
+				isActive: false,
+				level: 0, // TODO: Other default?
+				interaction: null, // TODO: Other default?
+			}
+			
+			return renderingLayer;
+		});
+	}
 };
