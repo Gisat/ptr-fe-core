@@ -1,6 +1,6 @@
 {
   "name": "@gisatcz/ptr-fe-core",
-  "version": "0.0.4",
+  "version": "0.0.5-dev.0",
   "description": "",
   "type": "module",
   "main": "./dist/client/index.js",
@@ -32,10 +32,12 @@
     }
   },
   "scripts": {
-    "build:barrels": "barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-server.scripts.json && barrelsby -c barrels-globals.scripts.json",
+    "build:remove": "rimraf dist && rimraf src/client/index.ts && rimraf src/client/styles.css && rimraf src/server/index.ts && rimraf src/globals/index.ts",
+    "build:barrels": "npm run build:remove && barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-server.scripts.json && barrelsby -c barrels-globals.scripts.json",
     "build:styles": "node barrels.styles.mjs && node update-barrels.mjs",
     "build:types": "tsc --project tsconfig.build.json",
     "build:prebuild": "npm run build:barrels && npm run build:styles && npm run build:types",
+    "build:dev": "npm run build:prebuild && rollup --config && npm pack",
     "build": "npm run build:prebuild && rollup --config"
   },
   "keywords": [],
