@@ -18,9 +18,14 @@ export interface HasConfiguration {
 /**
  * Entity with custom configuration
  */
-export interface HasConfigurationAndNeighbours extends HasConfiguration {
-	neighbours?: string[]; // Array of keys of neighbour nodes
+export interface HasNeighbours {
+	neighbours: string[]; // JSON string
 }
+
+/**
+ * Entity with custom configuration and neighbours.
+ */
+export interface HasConfigurationAndNeighbours extends HasConfiguration, HasNeighbours {}
 
 /**
  * Place node - somewhere in the world
