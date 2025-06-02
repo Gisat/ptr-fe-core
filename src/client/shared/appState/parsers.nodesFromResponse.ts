@@ -1,6 +1,13 @@
 import { isArray } from 'lodash';
 import { UsedNodeLabels } from '../../../globals/shared/panther/enums.panther';
-import { ApplicationNode, Datasource, Place, PantherEntity, FullPantherEntity } from '../../../globals/shared/panther/models.nodes';
+import {
+	ApplicationNode,
+	Datasource,
+	Place,
+	PantherEntity,
+	FullPantherEntity,
+	FullPantherEntityWithNeighbours
+} from '../../../globals/shared/panther/models.nodes';
 import { Nullable } from '../../../globals/shared/coding/code.types';
 
 /**
@@ -24,7 +31,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 	
 	// TODO: Add more node types here
 	// TODO: what if one of the main nodes is in neighbours as well?
-	const { applicationsNode, datasourceNodes, layerNodes, placeNodes } = (data as (FullPantherEntity[] | {node: FullPantherEntity, neighbours: FullPantherEntity[]}[])).reduce(
+	const { applicationsNode, datasourceNodes, layerNodes, placeNodes } = (data as (FullPantherEntity[] | FullPantherEntityWithNeighbours[])).reduce(
 		(acc, node) => {
 			let nodes: FullPantherEntity[] = [];
 			

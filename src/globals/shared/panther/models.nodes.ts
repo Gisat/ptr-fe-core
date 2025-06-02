@@ -52,3 +52,11 @@ export interface ApplicationNode extends PantherEntity, HasConfiguration {}
 export interface FullPantherEntity
 	extends PantherEntity,
 		Partial<HasGeometry & HasInterval & HasLevels & HasConfiguration> {}
+
+/**
+ * Represents a full panther entity with its neighbours.
+ */
+export interface FullPantherEntityWithNeighbours {
+	node: FullPantherEntity;
+	neighbours: FullPantherEntity[];
+}
