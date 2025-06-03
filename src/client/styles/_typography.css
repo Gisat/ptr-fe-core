@@ -5,7 +5,7 @@
  * Root CSS variables for typography styles
  * These variables define font families, font sizes, line heights, and other typography-related properties.
  */
-:root {
+html {
 	/* --- Font families --- */
 	/* Default font family for general text */
 	--defaultFontFamily: 'Roboto', sans-serif;

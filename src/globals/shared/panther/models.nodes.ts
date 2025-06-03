@@ -1,4 +1,4 @@
-import { HasGeometry, HasInterval, HasLevels, HasConfiguration } from './models.nodes.properties';
+import { HasGeometry, HasInterval, HasLevels, HasConfiguration, HasConfigurationAndNeighbours } from './models.nodes.properties';
 import { UsedNodeLabels, UsedDatasourceLabels } from './enums.panther';
 import { Nullable } from '../coding/code.types';
 
@@ -32,7 +32,7 @@ export interface AreaTreeLevel extends PantherEntity, HasLevels {}
 /**
  * Datasource with source configuration
  */
-export interface Datasource extends PantherEntity, HasConfiguration {}
+export interface Datasource extends PantherEntity, HasConfigurationAndNeighbours {}
 
 /**
  * Application node - main entity in metadata model
@@ -52,3 +52,11 @@ export interface ApplicationNode extends PantherEntity, HasConfiguration {}
 export interface FullPantherEntity
 	extends PantherEntity,
 		Partial<HasGeometry & HasInterval & HasLevels & HasConfiguration> {}
+
+/**
+ * Represents a full panther entity with its neighbours.
+ */
+export interface FullPantherEntityWithNeighbours {
+	node: FullPantherEntity;
+	neighbours: FullPantherEntity[];
+}

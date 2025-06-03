@@ -4,6 +4,12 @@
 export enum StateActionType {
   /** Action to fetch data sources. */
   FETCH_SOURCES = 'fetchSources',
+  
+  /** Action to fetch layers (TODO layerTemplates?). */
+  FETCH_LAYERS = 'fetchLayers',
+  
+  /** Action to fetch places */
+  FETCH_PLACES = 'fetchPlaces',
 
   /** Action to update the application node. */
   APP_NODE = 'appNode',
