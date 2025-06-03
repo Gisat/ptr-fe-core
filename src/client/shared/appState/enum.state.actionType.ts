@@ -31,6 +31,9 @@ export enum StateActionType {
 
   /** Action to change the opacity of a map layer. */
   MAP_LAYER_OPACITY_CHANGE = 'mapLayerOpacityChange',
+  
+  /** Action to add layer to the map. */
+  MAP_LAYER_ADD = 'mapLayerAdd',
 
   /** Action to toggle or change map set synchronization. */
   MAP_SET_SYNC_CHANGE = 'mapSetSyncChange',

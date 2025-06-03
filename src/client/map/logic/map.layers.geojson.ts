@@ -14,13 +14,13 @@ import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.pant
  * @returns {GeoJsonLayer} The created GeoJsonLayer instance.
  */
 export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity }: LayerGeneralProps) => {
-	const { configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, false);
+	const { url } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, false);
 
 	const layer = new GeoJsonLayer({
 		id: key,
 		opacity: opacity ?? 1,
 		visible: isActive,
-		data: configurationJs.url,
+		data: url,
 		filled: true,
 		stroked: true,
 		pointRadiusScale: 0.2,

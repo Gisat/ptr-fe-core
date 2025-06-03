@@ -17,16 +17,16 @@ const CogBitmapLayer = geolib.CogBitmapLayer;
  */
 export const createCogLayer = ({ sourceNode, isActive, key, opacity }: LayerGeneralProps) => {
 	// Validate the datasource and retrieve its configuration.
-	const { configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.COG, true);
+	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.COG, true);
 
 	// Create and return a new CogBitmapLayer with the specified properties.
 	const layer = new CogBitmapLayer({
 		id: key,
-		rasterData: configurationJs.url,
+		rasterData: url,
 		isTiled: true,
 		opacity: opacity ?? 1,
 		visible: isActive,
-		cogBitmapOptions: configurationJs.cogBitmapOptions,
+		cogBitmapOptions: configurationJs?.cogBitmapOptions,
 	});
 	return layer;
 };
