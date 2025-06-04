@@ -8,6 +8,7 @@ import { reduceHandlerActiveLayerChange } from '../appState/reducerHandlers/acti
 import { reduceHandlerMapSetSyncChange } from '../appState/reducerHandlers/mapSetSyncChange';
 import { reduceHandlerGlobalStateUpdate } from '../appState/reducerHandlers/globalStateUpdate';
 import { reduceHandlerMapLayerActiveChange } from '../appState/reducerHandlers/mapLayerActiveChange';
+import { reduceHandlerMapLayerAdd } from '../appState/reducerHandlers/mapLayerAdd';
 import { reduceHandlerMapLayerOpacityChange } from '../appState/reducerHandlers/mapLayerOpacityChange';
 
 /**
@@ -56,6 +57,9 @@ export const reducerSharedAppState = (
 
         case StateActionType.MAP_LAYER_ACTIVE_CHANGE:
             return reduceHandlerMapLayerActiveChange(currentState, action);
+            
+        case StateActionType.MAP_LAYER_ADD:
+            return reduceHandlerMapLayerAdd(currentState, action);
 
         case StateActionType.MAP_LAYER_OPACITY_CHANGE:
             return reduceHandlerMapLayerOpacityChange(currentState, action);

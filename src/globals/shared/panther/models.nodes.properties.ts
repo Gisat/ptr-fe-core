@@ -12,7 +12,14 @@ export interface HasInterval {
  * Entity with custom configuration
  */
 export interface HasConfiguration {
-	configuration: string | object; // JSON string
+	configuration?: string | object; // JSON string
+}
+
+/**
+ * Entity with url
+ */
+export interface HasUrl {
+	url: string; // JSON string
 }
 
 /**

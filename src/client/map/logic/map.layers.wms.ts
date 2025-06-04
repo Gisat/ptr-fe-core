@@ -15,15 +15,15 @@ import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.pant
  * @throws {Error} If the configuration does not contain sublayers.
  */
 export const createWMSLayer = ({ sourceNode, isActive, key, opacity }: LayerGeneralProps) => {
-	const { configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.WMS, true);
+	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.WMS, true);
 
-	if (!configurationJs.sublayers) throw new Error(`WMS Layer error: WMS requires sublayers in configuration`);
+	if (!configurationJs?.sublayers) throw new Error(`WMS Layer error: WMS requires sublayers in configuration`);
 
 	// build DeckGL layer
 	const layer = new WMSLayer({
 		id: key,
 		visible: isActive,
-		data: configurationJs.url,
+		data: url,
 		minZoom: 0,
 		maxZoom: 16,
 		opacity: opacity ?? 1,

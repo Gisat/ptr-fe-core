@@ -68,6 +68,14 @@ export interface ActionMapLayerOpacityChange {
 }
 
 /**
+ * Add layer to map
+ */
+export interface ActionMapLayerAdd {
+    type: StateActionType.MAP_LAYER_ADD;
+    payload: { mapKey: string; layer: {key: string, isActive: boolean }, index?: number };
+}
+
+/**
  * Update state with data
  */
 export interface ActionGlobalStateUpdate {
@@ -110,6 +118,7 @@ export type OneOfStateActions =
     | ActionSetApplicationNode
     | ActionLayerActiveChange
     | ActionMapLayerActiveChange
+    | ActionMapLayerAdd
     | ActionMapLayerOpacityChange
     | ActionMapViewChange
     | ActionMapSetSyncChange
