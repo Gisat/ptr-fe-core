@@ -15,8 +15,14 @@ export const reduceHandlerMapLayerAdd = (state: AppSharedState, action: ActionMa
 
 	const changedLayers = [...mapToChange.renderingLayers];
 	if (index && index >= 0) {
-		// Insert the new layer at the specified index
-		changedLayers.splice(index, 0, layer);
+		// Insert the new layer at the specified index (and replace if it exists)
+		if (index < changedLayers.length) {
+			// Replace existing layer at index if it exists
+			changedLayers[index] = layer;
+		} else {
+			// Add the new layer at the end if index is out of bounds
+			changedLayers.push(layer);
+		}
 	} else {
 		// Add the new layer to the end of the layers array
 		changedLayers.push(layer);
