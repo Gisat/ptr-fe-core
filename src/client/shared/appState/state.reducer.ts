@@ -61,7 +61,7 @@ export const reducerForSpecificApp = <
      * @returns The new application-specific state after applying the action.
      * @throws Error if the action type is not recognized by the reducer.
      */
-    const reducerSharedAppState = (
+    const reducerForReact = (
         currentState: ApplicationSpecificState,
         action: Nullable<ApplicationSpecificActions>,
     ): ApplicationSpecificState => {
@@ -72,24 +72,24 @@ export const reducerForSpecificApp = <
         // 1. we need to fill the reducer switch mao with ptr-fe-core actions and reducers
 
         // prepare a switch map to handle the actions
-        const reducerSwitch = new Map<string, ApplicationSpecificState>()
+        const reducerSwitch = new Map<string, () => ApplicationSpecificState>()
 
         // just push the action payload to the state
-        reducerSwitch.set(StateActionType.APP_NODE, { ...currentState, appNode: action.payload });
-        reducerSwitch.set(StateActionType.FETCH_LAYERS, { ...currentState, layers: action.payload });
-        reducerSwitch.set(StateActionType.FETCH_PLACES, { ...currentState, places: action.payload });
-        reducerSwitch.set(StateActionType.APPLY_PERSISTENT_STATE, { ...currentState, ...action.payload });
+        reducerSwitch.set(StateActionType.APP_NODE, () => ({ ...currentState, appNode: action.payload }));
+        reducerSwitch.set(StateActionType.FETCH_LAYERS, () => ({ ...currentState, layers: action.payload }));
+        reducerSwitch.set(StateActionType.FETCH_PLACES, () => ({ ...currentState, places: action.payload }));
+        reducerSwitch.set(StateActionType.APPLY_PERSISTENT_STATE, () => ({ ...currentState, ...action.payload }));
 
         // use the specific handlers for each action type
-        reducerSwitch.set(StateActionType.FETCH_SOURCES, reduceHandlerFetchSources(currentState, action as ActionChangeLayerSources));
-        reducerSwitch.set(StateActionType.LAYER_ACTIVE_CHANGE, reduceHandlerActiveLayerChange(currentState, action as ActionLayerActiveChange));
-        reducerSwitch.set(StateActionType.GLOBAL_STATE_UPDATE, reduceHandlerGlobalStateUpdate(currentState, action as ActionGlobalStateUpdate));
-        reducerSwitch.set(StateActionType.MAP_VIEW_CHANGE, reduceHandlerMapSetMapViewChange(currentState, action as ActionMapViewChange));
-        reducerSwitch.set(StateActionType.MAP_LAYER_ACTIVE_CHANGE, reduceHandlerMapLayerActiveChange(currentState, action as ActionMapLayerActiveChange));
+        reducerSwitch.set(StateActionType.FETCH_SOURCES, () => reduceHandlerFetchSources(currentState, action as ActionChangeLayerSources));
+        reducerSwitch.set(StateActionType.LAYER_ACTIVE_CHANGE, () => reduceHandlerActiveLayerChange(currentState, action as ActionLayerActiveChange));
+        reducerSwitch.set(StateActionType.GLOBAL_STATE_UPDATE, () => reduceHandlerGlobalStateUpdate(currentState, action as ActionGlobalStateUpdate));
+        reducerSwitch.set(StateActionType.MAP_VIEW_CHANGE, () => reduceHandlerMapSetMapViewChange(currentState, action as ActionMapViewChange));
+        reducerSwitch.set(StateActionType.MAP_LAYER_ACTIVE_CHANGE, () => reduceHandlerMapLayerActiveChange(currentState, action as ActionMapLayerActiveChange));
 
-        reducerSwitch.set(StateActionType.MAP_LAYER_ADD, reduceHandlerMapLayerAdd(currentState, action as ActionMapLayerAdd));
-        reducerSwitch.set(StateActionType.MAP_LAYER_OPACITY_CHANGE, reduceHandlerMapLayerOpacityChange(currentState, action as ActionMapLayerOpacityChange));
-        reducerSwitch.set(StateActionType.MAP_SET_SYNC_CHANGE, reduceHandlerMapSetSyncChange(currentState, action as ActionMapSetSyncChange));
+        reducerSwitch.set(StateActionType.MAP_LAYER_ADD, () => reduceHandlerMapLayerAdd(currentState, action as ActionMapLayerAdd));
+        reducerSwitch.set(StateActionType.MAP_LAYER_OPACITY_CHANGE, () => reduceHandlerMapLayerOpacityChange(currentState, action as ActionMapLayerOpacityChange));
+        reducerSwitch.set(StateActionType.MAP_SET_SYNC_CHANGE, () => reduceHandlerMapSetSyncChange(currentState, action as ActionMapSetSyncChange));
 
 
         // 2. now we need to add the application specific actions and reducers to the switch map
@@ -101,7 +101,7 @@ export const reducerForSpecificApp = <
             const actionTypeString = actionType.type;
             const specificReducer = appSpecificReducers[actionTypeString];
 
-            reducerSwitch.set(actionTypeString, specificReducer(currentState, actionType));
+            reducerSwitch.set(actionTypeString, () => specificReducer(currentState, actionType));
         }
 
         // 3. now we can use the switch map to handle the actions
@@ -114,8 +114,8 @@ export const reducerForSpecificApp = <
             throw new Error(`Shared State: Unknown action type "${(action as OneOfStateActions).type}"`);
         }
 
-        // return the new state
-        return newState;
+        // return the new state as called from the switch map result
+        return newState();
 
         // TODO: Delete the commented code below when the switch map is fully implemented
         // switch (action.type) {
@@ -172,5 +172,5 @@ export const reducerForSpecificApp = <
     
     // return the reducer function for the react hook
     // this function will be used in the useReducer hook
-    return reducerSharedAppState;
+    return reducerForReact;
 }
