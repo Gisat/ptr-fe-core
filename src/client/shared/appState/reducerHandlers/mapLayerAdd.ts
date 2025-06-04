@@ -14,7 +14,7 @@ export const reduceHandlerMapLayerAdd = (state: AppSharedState, action: ActionMa
 	if (!mapToChange) throw new Error(`Map with key ${mapKey} not found`);
 
 	const changedLayers = [...mapToChange.renderingLayers];
-	if (index && index >= 0) {
+	if (typeof index === "number" && index >= 0) {
 		// Insert the new layer at the specified index (and replace if it exists)
 		if (index < changedLayers.length) {
 			// Replace existing layer at index if it exists
