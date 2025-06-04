@@ -9,10 +9,10 @@ import { getMapByKey } from '../../appState/selectors/getMapByKey';
  * @param action ActionMapLayerActiveChange
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapLayerActiveChange = (
-	state: AppSharedState,
+export const reduceHandlerMapLayerActiveChange = <T extends AppSharedState>(
+	state: T,
 	action: ActionMapLayerActiveChange
-): AppSharedState => {
+): T => {
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for map layer visibility change action');

@@ -12,10 +12,10 @@ import { getMapByKey } from '../../appState/selectors/getMapByKey';
  * @param action ActionMapViewChange
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapSetMapViewChange = (
-	state: AppSharedState,
+export const reduceHandlerMapSetMapViewChange = <T extends AppSharedState>(
+	state: T,
 	action: ActionMapViewChange
-): AppSharedState => {
+): T => {
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for map view change action');

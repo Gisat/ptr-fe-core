@@ -9,10 +9,10 @@ import { getMapByKey } from '../selectors/getMapByKey';
  * @param action ActionMapLayerOpacityChange
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapLayerOpacityChange = (
-	state: AppSharedState,
+export const reduceHandlerMapLayerOpacityChange = <T extends AppSharedState>(
+	state: T,
 	action: ActionMapLayerOpacityChange
-): AppSharedState => {
+): T => {
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for map layer opacity change action');

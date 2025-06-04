@@ -7,10 +7,10 @@ import { ActionGlobalStateUpdate } from '../state.models.actions';
  * @param action ActionGlobalStateUpdate
  * @returns Updated AppSharedState
  */
-export const reduceHandlerGlobalStateUpdate = (
-	state: AppSharedState,
+export const reduceHandlerGlobalStateUpdate = <T extends AppSharedState>(
+	state: T,
 	action: ActionGlobalStateUpdate
-): AppSharedState => {
+): T => {
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided global state update');
