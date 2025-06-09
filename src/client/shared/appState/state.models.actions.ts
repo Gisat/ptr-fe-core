@@ -1,8 +1,4 @@
-import {
-    ApplicationNode,
-    Datasource,
-    PantherEntity, Place
-} from '../../../globals/shared/panther/models.nodes';
+import { ApplicationNode, Datasource, PantherEntity, Place } from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
@@ -14,73 +10,72 @@ import { StateActionType } from './enum.state.actionType'; // Import the ActionT
  * When we set up application node
  */
 export interface ActionSetApplicationNode {
-    type: StateActionType.APP_NODE;
-    payload: ApplicationNode;
+	type: StateActionType.APP_NODE;
+	payload: ApplicationNode;
 }
 
 /**
  * When we set up metadata datasources
  */
 export interface ActionChangeLayerSources {
-    type: StateActionType.FETCH_SOURCES;
-    payload: Datasource[];
+	type: StateActionType.FETCH_SOURCES;
+	payload: Datasource[];
 }
 
 /**
  * When we set up layer metadata
  */
 export interface ActionChangeLayers {
-    type: StateActionType.FETCH_LAYERS;
-    payload: PantherEntity[];
+	type: StateActionType.FETCH_LAYERS;
+	payload: PantherEntity[];
 }
 
 /**
  * When we set up layer metadata
  */
 export interface ActionChangePlaces {
-    type: StateActionType.FETCH_PLACES;
-    payload: Place[];
+	type: StateActionType.FETCH_PLACES;
+	payload: Place[];
 }
-
 
 /**
  * Activate or deactivate layer in render and status
  */
 export interface ActionLayerActiveChange {
-    type: StateActionType.LAYER_ACTIVE_CHANGE;
-    payload: { key: string; newValue: boolean };
+	type: StateActionType.LAYER_ACTIVE_CHANGE;
+	payload: { key: string; newValue: boolean };
 }
 
 /**
  * Activate or deactivate layer in map
  */
 export interface ActionMapLayerActiveChange {
-    type: StateActionType.MAP_LAYER_ACTIVE_CHANGE;
-    payload: { mapKey: string; layerKey: string; isActive: boolean };
+	type: StateActionType.MAP_LAYER_ACTIVE_CHANGE;
+	payload: { mapKey: string; layerKey: string; isActive: boolean };
 }
 
 /**
  * Change map layer opacity
  */
 export interface ActionMapLayerOpacityChange {
-    type: StateActionType.MAP_LAYER_OPACITY_CHANGE;
-    payload: { mapKey: string; layerKey: string; opacity: number };
+	type: StateActionType.MAP_LAYER_OPACITY_CHANGE;
+	payload: { mapKey: string; layerKey: string; opacity: number };
 }
 
 /**
  * Add layer to map
  */
 export interface ActionMapLayerAdd {
-    type: StateActionType.MAP_LAYER_ADD;
-    payload: { mapKey: string; layer: {key: string, isActive: boolean }, index?: number };
+	type: StateActionType.MAP_LAYER_ADD;
+	payload: { mapKey: string; layer: Partial<RenderingLayer>; index?: number };
 }
 
 /**
  * Update state with data
  */
 export interface ActionGlobalStateUpdate {
-    type: StateActionType.GLOBAL_STATE_UPDATE;
-    payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
+	type: StateActionType.GLOBAL_STATE_UPDATE;
+	payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
 }
 
 /**
@@ -88,39 +83,39 @@ export interface ActionGlobalStateUpdate {
  * TODO add payload params
  */
 export interface ActionApplyPersistentState {
-    type: StateActionType.APPLY_PERSISTENT_STATE;
-    payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
+	type: StateActionType.APPLY_PERSISTENT_STATE;
+	payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
 }
 
 /**
  * Change map view
  */
 export interface ActionMapViewChange {
-    type: StateActionType.MAP_VIEW_CHANGE;
-    payload: { key: string; viewChange: Partial<MapView> };
+	type: StateActionType.MAP_VIEW_CHANGE;
+	payload: { key: string; viewChange: Partial<MapView> };
 }
 
 /**
  * Change map set sync
  */
 export interface ActionMapSetSyncChange {
-    type: StateActionType.MAP_SET_SYNC_CHANGE;
-    payload: { key: string; syncChange: Partial<MapSetSync> };
+	type: StateActionType.MAP_SET_SYNC_CHANGE;
+	payload: { key: string; syncChange: Partial<MapSetSync> };
 }
 
 /**
  * One of any of possible actions
  */
 export type OneOfStateActions =
-    | ActionChangeLayerSources
-    | ActionChangeLayers
-    | ActionChangePlaces
-    | ActionSetApplicationNode
-    | ActionLayerActiveChange
-    | ActionMapLayerActiveChange
-    | ActionMapLayerAdd
-    | ActionMapLayerOpacityChange
-    | ActionMapViewChange
-    | ActionMapSetSyncChange
-    | ActionGlobalStateUpdate
-    | ActionApplyPersistentState;
+	| ActionChangeLayerSources
+	| ActionChangeLayers
+	| ActionChangePlaces
+	| ActionSetApplicationNode
+	| ActionLayerActiveChange
+	| ActionMapLayerActiveChange
+	| ActionMapLayerAdd
+	| ActionMapLayerOpacityChange
+	| ActionMapViewChange
+	| ActionMapSetSyncChange
+	| ActionGlobalStateUpdate
+	| ActionApplyPersistentState;
