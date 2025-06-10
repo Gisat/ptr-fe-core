@@ -62,7 +62,7 @@ export interface DatasourceConfiguration {
  * Entity that has bands, e.g. satellite imagery
  */
 export interface HasBands {
-	bands: number[];
-	bandNames: string[];
+	bands?: number[];
+	bandNames?: string[];
 	bandPeriods?: string[];
 }
