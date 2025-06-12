@@ -9,6 +9,13 @@ export interface HasInterval {
 }
 
 /**
+ * Entity that has a specific name.
+ */
+export interface HasSpecificName {
+	specificName: string;
+}
+
+/**
  * Entity with custom configuration
  */
 export interface HasConfiguration extends HasBands {

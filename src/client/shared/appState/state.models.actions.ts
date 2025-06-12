@@ -1,4 +1,4 @@
-import { ApplicationNode, Datasource, PantherEntity, Place } from '../../../globals/shared/panther/models.nodes';
+import { ApplicationNode, Datasource, PantherEntity, Place, Style } from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
@@ -31,11 +31,19 @@ export interface ActionChangeLayers {
 }
 
 /**
- * When we set up layer metadata
+ * When we set up place metadata
  */
 export interface ActionChangePlaces {
 	type: StateActionType.FETCH_PLACES;
 	payload: Place[];
+}
+
+/**
+ * When we set up style metadata
+ */
+export interface ActionChangeStyles {
+	type: StateActionType.FETCH_STYLES;
+	payload: Style[];
 }
 
 /**
@@ -134,6 +142,7 @@ export type OneOfStateActions =
 	| ActionChangeLayerSources
 	| ActionChangeLayers
 	| ActionChangePlaces
+	| ActionChangeStyles
 	| ActionSetApplicationNode
 	| ActionLayerActiveChange
 	| ActionMapAddToMapSet

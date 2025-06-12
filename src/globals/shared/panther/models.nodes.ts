@@ -3,8 +3,8 @@ import {
 	HasInterval,
 	HasLevels,
 	HasConfiguration,
-	HasConfigurationAndNeighbours,
 	HasUrl,
+	HasSpecificName,
 } from './models.nodes.properties';
 import { UsedNodeLabels, UsedDatasourceLabels } from './enums.panther';
 import { Nullable } from '../coding/code.types';
@@ -19,7 +19,13 @@ export interface PantherEntity {
 	nameInternal: string;
 	description: Nullable<string>;
 	lastUpdatedAt: number;
+	neighbours?: string[];
 }
+
+/**
+ * Style node - style for rendering
+ */
+export interface Style extends PantherEntity, HasSpecificName, HasConfiguration {}
 
 /**
  * Place node - somewhere in the world
@@ -39,7 +45,7 @@ export interface AreaTreeLevel extends PantherEntity, HasLevels {}
 /**
  * Datasource with source configuration
  */
-export interface Datasource extends PantherEntity, HasConfigurationAndNeighbours, HasUrl {}
+export interface Datasource extends PantherEntity, HasConfiguration, HasUrl {}
 
 /**
  * Application node - main entity in metadata model

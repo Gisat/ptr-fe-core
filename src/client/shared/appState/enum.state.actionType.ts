@@ -11,6 +11,9 @@ export enum StateActionType {
 	/** Action to fetch places */
 	FETCH_PLACES = 'fetchPlaces',
 
+	/** Action to fetch styles */
+	FETCH_STYLES = 'fetchStyles',
+
 	/** Action to update the application node. */
 	APP_NODE = 'appNode',
 

@@ -1,8 +1,5 @@
 import { RenderingLayer } from '../models/models.layers';
-import {
-	ApplicationNode,
-	PantherEntity, Place
-} from '../../../globals/shared/panther/models.nodes';
+import { ApplicationNode, PantherEntity, Place, Style } from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapSetModel } from '../models/models.mapSet';
 
@@ -16,4 +13,5 @@ export interface AppSharedState {
 	renderingLayers: RenderingLayer[]; // backend layers in rendering context
 	mapSets: MapSetModel[]; // map sets containing one or multiple synced or unsynced maps
 	maps: SingleMapModel[]; // individual maps with defined view and list of layers to be rendered
+	styles: Style[]; // metadata of styles
 }
