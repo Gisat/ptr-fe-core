@@ -6,8 +6,8 @@ import { getAllLayers } from './getAllLayers';
  * Retrieves a style for rendering layer.
  *
  * @param {AppSharedState} state - The application state containing places and rendering layers.
- * @param {string | null} layerKey - The key of the layer for which places are to be retrieved.
- * @returns {Style} - Style model
+ * @param {string | undefined} layerKey - The key of the layer for which places are to be retrieved.
+ * @returns {Style | undefined} - Style model
  */
 export const getStyleByRenderingLayerKey = (state: AppSharedState, layerKey: string | undefined): Style | undefined => {
 	// get rendering layer neighbour keys
