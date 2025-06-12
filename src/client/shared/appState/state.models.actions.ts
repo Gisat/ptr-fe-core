@@ -71,6 +71,22 @@ export interface ActionMapLayerAdd {
 }
 
 /**
+ * Add map to map set
+ */
+export interface ActionMapAddToMapSet {
+	type: StateActionType.MAP_ADD_TO_MAP_SET;
+	payload: { mapSetKey: string; map: SingleMapModel };
+}
+
+/**
+ * Remove map from map set
+ */
+export interface ActionMapRemoveFromMapSet {
+	type: StateActionType.MAP_REMOVE_FROM_MAP_SET;
+	payload: { mapSetKey: string; mapKey: string };
+}
+
+/**
  * Update state with data
  */
 export interface ActionGlobalStateUpdate {
@@ -112,6 +128,8 @@ export type OneOfStateActions =
 	| ActionChangePlaces
 	| ActionSetApplicationNode
 	| ActionLayerActiveChange
+	| ActionMapAddToMapSet
+	| ActionMapRemoveFromMapSet
 	| ActionMapLayerActiveChange
 	| ActionMapLayerAdd
 	| ActionMapLayerOpacityChange
