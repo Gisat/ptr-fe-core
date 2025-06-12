@@ -35,7 +35,7 @@ export enum StateActionType {
 	/** Action to add layer to the map. */
 	MAP_LAYER_ADD = 'mapLayerAdd',
 
-	/** Action to add layer to the map. */
+	/** Action to add map to map set */
 	MAP_ADD_TO_MAP_SET = 'addMapToMapSet',
 
 	/** Action to remove map from map set. */

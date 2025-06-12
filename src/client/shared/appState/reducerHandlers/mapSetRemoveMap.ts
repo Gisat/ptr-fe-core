@@ -5,7 +5,7 @@ import { MapSetModel } from '../../models/models.mapSet';
 
 // TODO add tests for this reducer handler
 /**
- * Handler for map set sync change action
+ * Handler for remove map from map set action
  * @param state AppSharedState
  * @param action ActionMapRemoveFromMapSet
  * @returns Updated AppSharedState
