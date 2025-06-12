@@ -41,6 +41,9 @@ export enum StateActionType {
 	/** Action to remove map from map set. */
 	MAP_REMOVE_FROM_MAP_SET = 'removeMapFromMapSet',
 
+	/** Action to remove maps from map set by keys. */
+	MAP_SET_REMOVE_MAPS_BY_KEYS = 'mapSetRemoveMapsByKeys',
+
 	/** Action to toggle or change map set synchronization. */
 	MAP_SET_SYNC_CHANGE = 'mapSetSyncChange',
 }

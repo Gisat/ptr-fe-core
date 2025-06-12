@@ -12,6 +12,7 @@ import { reduceHandlerMapLayerAdd } from '../appState/reducerHandlers/mapLayerAd
 import { reduceHandlerMapLayerOpacityChange } from '../appState/reducerHandlers/mapLayerOpacityChange';
 import { reduceHandlerMapSetAddMap } from '../appState/reducerHandlers/mapSetAddMap';
 import { reduceHandlerMapSetRemoveMap } from '../appState/reducerHandlers/mapSetRemoveMap';
+import { reduceHandlerRemoveMapSetMapsByKeys } from '../appState/reducerHandlers/mapSetRemoveMapsByKeys';
 
 /**
  * React reducer for shared application state. Use it in useReducer react hook
@@ -68,6 +69,9 @@ export const reducerSharedAppState = (
 
 		case StateActionType.MAP_REMOVE_FROM_MAP_SET:
 			return reduceHandlerMapSetRemoveMap(currentState, action);
+
+		case StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS:
+			return reduceHandlerRemoveMapSetMapsByKeys(currentState, action);
 
 		case StateActionType.MAP_LAYER_OPACITY_CHANGE:
 			return reduceHandlerMapLayerOpacityChange(currentState, action);

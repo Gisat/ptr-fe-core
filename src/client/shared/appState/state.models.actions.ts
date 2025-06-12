@@ -87,6 +87,14 @@ export interface ActionMapRemoveFromMapSet {
 }
 
 /**
+ * Remove maps from map set by keys
+ */
+export interface ActionMapSetRemoveMapsByKeys {
+	type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS;
+	payload: { mapSetKey: string; mapKeys: string[] };
+}
+
+/**
  * Update state with data
  */
 export interface ActionGlobalStateUpdate {
@@ -130,6 +138,7 @@ export type OneOfStateActions =
 	| ActionLayerActiveChange
 	| ActionMapAddToMapSet
 	| ActionMapRemoveFromMapSet
+	| ActionMapSetRemoveMapsByKeys
 	| ActionMapLayerActiveChange
 	| ActionMapLayerAdd
 	| ActionMapLayerOpacityChange
