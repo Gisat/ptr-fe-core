@@ -21,6 +21,7 @@ export const defaultStateValue = () => {
 		places: [],
 		mapSets: [],
 		maps: [],
+		styles: [],
 	};
 
 	return defaultState;
