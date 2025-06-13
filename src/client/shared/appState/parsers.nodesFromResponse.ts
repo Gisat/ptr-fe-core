@@ -8,6 +8,7 @@ import {
 	FullPantherEntity,
 	FullPantherEntityWithNeighbours,
 	Style,
+	Period,
 } from '../../../globals/shared/panther/models.nodes';
 import { Nullable } from '../../../globals/shared/coding/code.types';
 
@@ -30,7 +31,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 
 	// TODO: Add more node types here
 	// TODO: what if one of the main nodes is in neighbours as well?
-	const { applicationsNode, datasourceNodes, layerNodes, placeNodes, styleNodes } = (
+	const { applicationsNode, datasourceNodes, layerNodes, placeNodes, styleNodes, periodNodes } = (
 		data as FullPantherEntity[] | FullPantherEntityWithNeighbours[]
 	).reduce(
 		(acc, node) => {
@@ -62,6 +63,8 @@ export const parseNodesFromPanther = (data: unknown) => {
 					acc.placeNodes.push(n as Place);
 				} else if (n.labels.includes(UsedNodeLabels.Style)) {
 					acc.styleNodes.push(n as Style);
+				} else if (n.labels.includes(UsedNodeLabels.Period)) {
+					acc.periodNodes.push(n as Period);
 				}
 			});
 
@@ -73,6 +76,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 			layerNodes: [] as PantherEntity[],
 			placeNodes: [] as Place[],
 			styleNodes: [] as Style[],
+			periodNodes: [] as Period[],
 		}
 	);
 
@@ -83,5 +87,6 @@ export const parseNodesFromPanther = (data: unknown) => {
 		layerNodes: uniqueItemsByKey(layerNodes) as PantherEntity[],
 		placeNodes: uniqueItemsByKey(placeNodes) as Place[],
 		styleNodes: uniqueItemsByKey(styleNodes) as Style[],
+		periodNodes: uniqueItemsByKey(periodNodes) as Period[],
 	};
 };

@@ -46,6 +46,9 @@ export const reducerSharedAppState = (
 		case StateActionType.FETCH_PLACES:
 			return { ...currentState, places: action.payload };
 
+		case StateActionType.FETCH_PERIODS:
+			return { ...currentState, periods: action.payload };
+
 		case StateActionType.FETCH_STYLES:
 			return { ...currentState, styles: action.payload };
 
