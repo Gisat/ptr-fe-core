@@ -22,6 +22,7 @@ export const defaultStateValue = () => {
 		mapSets: [],
 		maps: [],
 		styles: [],
+		periods: [],
 	};
 
 	return defaultState;

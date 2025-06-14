@@ -11,6 +11,9 @@ export enum StateActionType {
 	/** Action to fetch places */
 	FETCH_PLACES = 'fetchPlaces',
 
+	/** Action to fetch periods */
+	FETCH_PERIODS = 'fetchPeriods',
+
 	/** Action to fetch styles */
 	FETCH_STYLES = 'fetchStyles',
 

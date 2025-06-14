@@ -1,4 +1,11 @@
-import { ApplicationNode, Datasource, PantherEntity, Place, Style } from '../../../globals/shared/panther/models.nodes';
+import {
+	ApplicationNode,
+	Datasource,
+	PantherEntity,
+	Period,
+	Place,
+	Style,
+} from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
@@ -36,6 +43,14 @@ export interface ActionChangeLayers {
 export interface ActionChangePlaces {
 	type: StateActionType.FETCH_PLACES;
 	payload: Place[];
+}
+
+/**
+ * When we set up period metadata
+ */
+export interface ActionChangePeriods {
+	type: StateActionType.FETCH_PERIODS;
+	payload: Period[];
 }
 
 /**
@@ -143,6 +158,7 @@ export type OneOfStateActions =
 	| ActionChangeLayers
 	| ActionChangePlaces
 	| ActionChangeStyles
+	| ActionChangePeriods
 	| ActionSetApplicationNode
 	| ActionLayerActiveChange
 	| ActionMapAddToMapSet
