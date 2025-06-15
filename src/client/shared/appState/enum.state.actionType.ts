@@ -52,4 +52,7 @@ export enum StateActionType {
 
 	/** Action to toggle or change map set synchronization. */
 	MAP_SET_SYNC_CHANGE = 'mapSetSyncChange',
+
+	/** Action to change the mode of a map set (e.g., slider, grid). */
+	MAP_SET_MODE_CHANGE = 'mapSetModeChange',
 }

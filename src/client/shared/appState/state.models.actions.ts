@@ -151,6 +151,14 @@ export interface ActionMapSetSyncChange {
 }
 
 /**
+ * Change map set mode
+ */
+export interface ActionMapSetModeChange {
+	type: StateActionType.MAP_SET_MODE_CHANGE;
+	payload: { key: string; mode: 'slider' | 'grid' };
+}
+
+/**
  * One of any of possible actions
  */
 export type OneOfStateActions =
@@ -169,5 +177,6 @@ export type OneOfStateActions =
 	| ActionMapLayerOpacityChange
 	| ActionMapViewChange
 	| ActionMapSetSyncChange
+	| ActionMapSetModeChange
 	| ActionGlobalStateUpdate
 	| ActionApplyPersistentState;

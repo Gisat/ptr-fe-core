@@ -13,6 +13,7 @@ import { reduceHandlerMapLayerOpacityChange } from '../appState/reducerHandlers/
 import { reduceHandlerMapSetAddMap } from '../appState/reducerHandlers/mapSetAddMap';
 import { reduceHandlerMapSetRemoveMap } from '../appState/reducerHandlers/mapSetRemoveMap';
 import { reduceHandlerRemoveMapSetMapsByKeys } from '../appState/reducerHandlers/mapSetRemoveMapsByKeys';
+import { reduceHandlerMapSetModeChange } from '../appState/reducerHandlers/mapSetModeChange';
 
 /**
  * React reducer for shared application state. Use it in useReducer react hook
@@ -84,6 +85,9 @@ export const reducerSharedAppState = (
 
 		case StateActionType.MAP_SET_SYNC_CHANGE:
 			return reduceHandlerMapSetSyncChange(currentState, action);
+
+		case StateActionType.MAP_SET_MODE_CHANGE:
+			return reduceHandlerMapSetModeChange(currentState, action);
 
 		default:
 			throw new Error(`Shared State: Unknown action type "${(action as OneOfStateActions).type}"`);
