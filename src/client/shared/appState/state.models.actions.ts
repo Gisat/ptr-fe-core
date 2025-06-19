@@ -159,6 +159,22 @@ export interface ActionMapSetModeChange {
 }
 
 /**
+ * Change map set mode
+ */
+export interface ActionMapSetAdd {
+	type: StateActionType.MAP_SET_ADD;
+	payload: MapSetModel;
+}
+
+/**
+ * Change map set modes
+ */
+export interface ActionMapSetRemove {
+	type: StateActionType.MAP_SET_REMOVE;
+	payload: { mapSetKey: string };
+}
+
+/**
  * One of any of possible actions
  */
 export type OneOfStateActions =
@@ -179,4 +195,6 @@ export type OneOfStateActions =
 	| ActionMapSetSyncChange
 	| ActionMapSetModeChange
 	| ActionGlobalStateUpdate
-	| ActionApplyPersistentState;
+	| ActionApplyPersistentState
+	| ActionMapSetAdd
+	| ActionMapSetRemove;

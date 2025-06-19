@@ -55,4 +55,10 @@ export enum StateActionType {
 
 	/** Action to change the mode of a map set (e.g., slider, grid). */
 	MAP_SET_MODE_CHANGE = 'mapSetModeChange',
+
+	/** Action to add a new map set. */
+	MAP_SET_ADD = 'mapSetAdd',
+
+	/** Action to remove a map set. */
+	MAP_SET_REMOVE = 'mapSetRemove',
 }

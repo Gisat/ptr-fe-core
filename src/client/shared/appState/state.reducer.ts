@@ -14,6 +14,8 @@ import { reduceHandlerMapSetAddMap } from '../appState/reducerHandlers/mapSetAdd
 import { reduceHandlerMapSetRemoveMap } from '../appState/reducerHandlers/mapSetRemoveMap';
 import { reduceHandlerRemoveMapSetMapsByKeys } from '../appState/reducerHandlers/mapSetRemoveMapsByKeys';
 import { reduceHandlerMapSetModeChange } from '../appState/reducerHandlers/mapSetModeChange';
+import { reduceHandlerMapSetAddMapSet } from './reducerHandlers/mapSetAdd';
+import { reduceHandlerMapSetRemove } from './reducerHandlers/mapSetRemove';
 
 /**
  * React reducer for shared application state. Use it in useReducer react hook
@@ -88,6 +90,12 @@ export const reducerSharedAppState = (
 
 		case StateActionType.MAP_SET_MODE_CHANGE:
 			return reduceHandlerMapSetModeChange(currentState, action);
+
+		case StateActionType.MAP_SET_ADD:
+			return reduceHandlerMapSetAddMapSet(currentState, action);
+
+		case StateActionType.MAP_SET_REMOVE:
+				return reduceHandlerMapSetRemove(currentState, action);
 
 		default:
 			throw new Error(`Shared State: Unknown action type "${(action as OneOfStateActions).type}"`);
