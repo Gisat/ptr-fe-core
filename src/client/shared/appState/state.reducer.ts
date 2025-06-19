@@ -95,7 +95,7 @@ export const reducerSharedAppState = (
 			return reduceHandlerMapSetAddMapSet(currentState, action);
 
 		case StateActionType.MAP_SET_REMOVE:
-				return reduceHandlerMapSetRemove(currentState, action);
+			return reduceHandlerMapSetRemove(currentState, action);
 
 		default:
 			throw new Error(`Shared State: Unknown action type "${(action as OneOfStateActions).type}"`);

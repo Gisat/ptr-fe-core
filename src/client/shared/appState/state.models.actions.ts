@@ -159,7 +159,7 @@ export interface ActionMapSetModeChange {
 }
 
 /**
- * Change map set mode
+ * Add map set to state
  */
 export interface ActionMapSetAdd {
 	type: StateActionType.MAP_SET_ADD;
@@ -167,7 +167,7 @@ export interface ActionMapSetAdd {
 }
 
 /**
- * Change map set modes
+ * Delete map set from state
  */
 export interface ActionMapSetRemove {
 	type: StateActionType.MAP_SET_REMOVE;
