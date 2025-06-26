@@ -22,6 +22,7 @@ export const createCogLayer = ({ sourceNode, isActive, key, opacity }: LayerGene
 	// TODO handle this better with new library for COGs
 	const cogBitmapOptions = configurationJs?.cogBitmapOptions;
 	if (!cogBitmapOptions) {
+		console.warn(`No COG bitmap options found for layer ${key}. Ensure the datasource is configured correctly.`);
 		return null;
 	}
 
