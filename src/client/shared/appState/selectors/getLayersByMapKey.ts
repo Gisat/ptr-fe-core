@@ -1,6 +1,6 @@
-import { AppSharedState } from '../../appState/state.models';
+import { AppSharedState } from '../state.models';
 import { RenderingLayer } from '../../models/models.layers';
-import { getStyleByRenderingLayerKey } from '../selectors/getStyleByRenderingLayerKey';
+import { getRenderingLayerByKey } from './getRenderingLayerByKey';
 
 /**
  * Extract layers for a specific map from the shared state by combining map state, rendering layers and style.
@@ -16,36 +16,8 @@ export const getLayersByMapKey = (state: AppSharedState, key: string): Rendering
 
 	return mapLayers
 		.map((layer) => {
-			const renderingLayer = renderingLayers.find((rLayer) => rLayer.key === layer.key);
-			if (!renderingLayer) return null;
-
-			// Merge rendering layer with the layer from map definition
-			let layerForMap = { ...renderingLayer, ...layer };
-
-			// Find the style for the rendering layer
-			const style = getStyleByRenderingLayerKey(state, layer.key);
-
-			// If the rendering layer has a datasource, add configuration from the style
-			if (style && typeof style.configuration === 'object') {
-				let configuration = style.configuration;
-				if (renderingLayer.datasource?.configuration && typeof renderingLayer.datasource.configuration === 'object') {
-					// Merge existing datasource configuration with style configuration
-					configuration = {
-						...renderingLayer.datasource.configuration,
-						...style.configuration,
-					};
-				}
-
-				layerForMap = {
-					...layerForMap,
-					datasource: {
-						...renderingLayer.datasource,
-						configuration,
-					},
-				};
-			}
-
-			return layerForMap;
+			const renderingLayer = getRenderingLayerByKey(state, layer?.key) || {};
+			return { ...renderingLayer, ...layer };
 		})
 		.filter(Boolean) as RenderingLayer[];
 };

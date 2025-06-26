@@ -19,6 +19,13 @@ export const createCogLayer = ({ sourceNode, isActive, key, opacity }: LayerGene
 	// Validate the datasource and retrieve its configuration.
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.COG, true);
 
+	// TODO handle this better with new library for COGs
+	const cogBitmapOptions = configurationJs?.cogBitmapOptions;
+	if (!cogBitmapOptions) {
+		console.warn(`No COG bitmap options found for layer ${key}. Ensure the datasource is configured correctly.`);
+		return null;
+	}
+
 	// Create and return a new CogBitmapLayer with the specified properties.
 	const layer = new CogBitmapLayer({
 		id: key,
@@ -26,7 +33,7 @@ export const createCogLayer = ({ sourceNode, isActive, key, opacity }: LayerGene
 		isTiled: true,
 		opacity: opacity ?? 1,
 		visible: isActive,
-		cogBitmapOptions: configurationJs?.cogBitmapOptions,
+		cogBitmapOptions,
 	});
 	return layer;
 };
