@@ -1,17 +1,16 @@
-
-import '../map.css';
-import { defaultMapViewState, defaultMapView } from '../logic/map.defaults';
 import React, { useState } from 'react';
+import { TileLayer } from '@deck.gl/geo-layers';
+import { LayersList, MapViewState } from '@deck.gl/core';
+import DeckGL from '@deck.gl/react';
+import { defaultMapViewState, defaultMapView } from '../logic/map.defaults';
 import { parseLayersFromSharedState } from '../logic/parsing.layers';
-
 import FeatureDetailModal, { FeatureModalState } from './FeatureDetailModal';
 import { FeatureInteractionFunc } from '../logic/models.events';
 import useSharedState from '../../shared/hooks/state.useSharedState';
-import { LayersList, MapViewState } from '@deck.gl/core';
-import DeckGL from '@deck.gl/react';
 import { LayerTreeInteraction } from '../../shared/layers/models.layers';
-import { Nullable } from '../../../globals/shared/coding/code.types';
-import { TileLayer } from '@deck.gl/geo-layers';
+import { Nullable } from '../../../globals';
+import { getRenderingLayersByKeys } from '../../shared/appState/selectors/getRenderingLayersByKeys';
+import '../map.css';
 
 /**
  * Interface for the RenderMapProps.
@@ -27,6 +26,8 @@ export interface RenderMapProps {
 	height?: string;
 	/** List of layers to be rendered. */
 	layer?: LayersList;
+	/** List of the layer keys to be retrieved from state and rendered */
+	layerKeys?: string[];
 	/** Callback function for click events. */
 	onClick?: (info: object) => void;
 	/** Function to get the cursor style. */
@@ -78,9 +79,10 @@ export const RenderingMap: React.FC<RenderMapProps> = (props: RenderMapProps) =>
 	const initMapView = defaultMapView();
 
 	// layers setup
-	const mapLayers: LayersList = parseLayersFromSharedState([...sharedState.renderingLayers], interactionMap);
+	const layersFromState = props?.layerKeys ? getRenderingLayersByKeys(sharedState, props.layerKeys) : [];
+	const parsedLayersFromState: LayersList = parseLayersFromSharedState([...layersFromState], interactionMap);
 
-	const layers = [...mapLayers, props.layer];
+	const layers = [...parsedLayersFromState, ...(props.layer || [])];
 
 	return (
 		<section className="ptr-mapRender">
