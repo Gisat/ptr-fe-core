@@ -9,9 +9,16 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-    - name: Use my Notion Sync Action
+    - name: Generate GitHub App Token
+      id: get_token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ secrets.NOTION_SYNC_APP_ID }}
+        private-key: ${{ secrets.NOTION_SYNC_APP_KEY }}
+
+    - name: Notion Sync Action
       uses: Gisat/ptr-github-issues-for-notion@wip
       with:
         notion-token: ${{ secrets.NOTION_TOKEN }}
         notion-db: ${{ secrets.NOTION_DATABASE }}
-        github-token: ${{ secrets.GH_TOKEN }}
+        github-token: ${{ steps.get_token.outputs.token }}
