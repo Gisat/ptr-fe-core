@@ -9,10 +9,17 @@ export interface HasInterval {
 }
 
 /**
+ * Entity that has a specific name.
+ */
+export interface HasSpecificName {
+	specificName: string;
+}
+
+/**
  * Entity with custom configuration
  */
-export interface HasConfiguration {
-	configuration?: string | object; // JSON string
+export interface HasConfiguration extends HasBands {
+	configuration?: string | Partial<DatasourceConfiguration>; // JSON string
 }
 
 /**
@@ -47,4 +54,22 @@ export interface HasGeometry {
  */
 export interface HasLevels {
 	level: number;
+}
+
+/**
+ * This interface defines the structure for datasource configurations,
+ */
+export interface DatasourceConfiguration {
+	cogBitmapOptions: {
+		useChannel: number; // TODO Band name to use for rendering against deprecated `cogBitmapOptions.useChannel`
+	};
+}
+
+/**
+ * Entity that has bands, e.g. satellite imagery
+ */
+export interface HasBands {
+	bands?: number[];
+	bandNames?: string[];
+	bandPeriods?: string[];
 }

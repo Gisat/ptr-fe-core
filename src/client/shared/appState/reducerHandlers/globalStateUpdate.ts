@@ -1,5 +1,6 @@
 import { AppSharedState } from '../state.models';
 import { ActionGlobalStateUpdate } from '../state.models.actions';
+import { deduplicateByKey } from '../../../../globals/shared/coding/deduplicateByKey';
 
 /**
  * Temporarily used to update the global state of the application.
@@ -19,8 +20,10 @@ export const reduceHandlerGlobalStateUpdate = <T extends AppSharedState>(
 	// Return the updated state
 	return {
 		...state,
-		mapSets: mapSets ? [...state.mapSets, ...mapSets] : state.mapSets,
-		maps: maps ? [...state.maps, ...maps] : state.maps,
-		renderingLayers: renderingLayers ? [...state.renderingLayers, ...renderingLayers] : state.renderingLayers,
+		mapSets: mapSets ? deduplicateByKey([...state.mapSets, ...mapSets]) : state.mapSets,
+		maps: maps ? deduplicateByKey([...state.maps, ...maps]) : state.maps,
+		renderingLayers: renderingLayers
+			? deduplicateByKey([...state.renderingLayers, ...renderingLayers])
+			: state.renderingLayers,
 	};
 };

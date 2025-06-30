@@ -6,7 +6,9 @@ import {
 	Place,
 	PantherEntity,
 	FullPantherEntity,
-	FullPantherEntityWithNeighbours
+	FullPantherEntityWithNeighbours,
+	Style,
+	Period,
 } from '../../../globals/shared/panther/models.nodes';
 import { Nullable } from '../../../globals/shared/coding/code.types';
 
@@ -15,9 +17,7 @@ import { Nullable } from '../../../globals/shared/coding/code.types';
  * @param items Array of objects with a key property
  * @returns Array of unique objects based on the key property
  */
-const uniqueItemsByKey = (items: {key: string}[]) => [
-	...new Map(items.map(p => [p.key, p])).values()
-];
+const uniqueItemsByKey = (items: { key: string }[]) => [...new Map(items.map((p) => [p.key, p])).values()];
 
 /**
  * Parse and validate all types of backend nodes from panther response
@@ -28,27 +28,29 @@ export const parseNodesFromPanther = (data: unknown) => {
 	if (!data) throw new Error('Panther Fetch: No data recived');
 
 	if (!isArray(data)) throw new Error('Panther Fetch: Data must be an array of nodes');
-	
+
 	// TODO: Add more node types here
 	// TODO: what if one of the main nodes is in neighbours as well?
-	const { applicationsNode, datasourceNodes, layerNodes, placeNodes } = (data as (FullPantherEntity[] | FullPantherEntityWithNeighbours[])).reduce(
+	const { applicationsNode, datasourceNodes, layerNodes, placeNodes, styleNodes, periodNodes } = (
+		data as FullPantherEntity[] | FullPantherEntityWithNeighbours[]
+	).reduce(
 		(acc, node) => {
 			let nodes: FullPantherEntity[] = [];
-			
+
 			// If the node is an object with a node and neighbours, we need to handle it differently
 			if ('node' in node && isArray(node.neighbours)) {
-			 const nodeWithLinks = {
-			  ...node.node,
-			  neighbours: node.neighbours.map(n => n.key)
-			 };
-			 nodes = [nodeWithLinks, ...node.neighbours];
+				const nodeWithLinks = {
+					...node.node,
+					neighbours: node.neighbours.map((n) => n.key),
+				};
+				nodes = [nodeWithLinks, ...node.neighbours];
 			}
-			
+
 			// If the node is a single FullPantherEntity, we can use it directly
 			else {
 				nodes = [node as FullPantherEntity];
 			}
-			
+
 			// Iterate through each node and categorize it based on its labels
 			nodes.forEach((n) => {
 				if (n.labels.includes(UsedNodeLabels.Application)) {
@@ -59,12 +61,23 @@ export const parseNodesFromPanther = (data: unknown) => {
 					acc.layerNodes.push(n as PantherEntity);
 				} else if (n.labels.includes(UsedNodeLabels.Place)) {
 					acc.placeNodes.push(n as Place);
+				} else if (n.labels.includes(UsedNodeLabels.Style)) {
+					acc.styleNodes.push(n as Style);
+				} else if (n.labels.includes(UsedNodeLabels.Period)) {
+					acc.periodNodes.push(n as Period);
 				}
 			});
-			
+
 			return acc;
 		},
-		{ applicationsNode: null as Nullable<ApplicationNode>, datasourceNodes: [] as Datasource[], layerNodes: [] as PantherEntity[], placeNodes: [] as Place[] }
+		{
+			applicationsNode: null as Nullable<ApplicationNode>,
+			datasourceNodes: [] as Datasource[],
+			layerNodes: [] as PantherEntity[],
+			placeNodes: [] as Place[],
+			styleNodes: [] as Style[],
+			periodNodes: [] as Period[],
+		}
 	);
 
 	// Get unique items by key for each type of node
@@ -73,5 +86,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 		datasourceNodes: uniqueItemsByKey(datasourceNodes) as Datasource[],
 		layerNodes: uniqueItemsByKey(layerNodes) as PantherEntity[],
 		placeNodes: uniqueItemsByKey(placeNodes) as Place[],
+		styleNodes: uniqueItemsByKey(styleNodes) as Style[],
+		periodNodes: uniqueItemsByKey(periodNodes) as Period[],
 	};
 };

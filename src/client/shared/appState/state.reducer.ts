@@ -40,8 +40,8 @@ import { reduceHandlerFetchSources } from './reducerHandlers/fetchSourcesUpdate'
  * ```
  */
 export const reducerForSpecificApp = <
-    ApplicationSpecificState extends AppSharedState,
-    ApplicationSpecificActions extends OneOfStateActions
+	ApplicationSpecificState extends AppSharedState,
+	ApplicationSpecificActions extends OneOfStateActions
 >(
     appSpecificActions: ApplicationSpecificActions[],
     appSpecificReducers: Record<string, (state: ApplicationSpecificState, action: ApplicationSpecificActions) => ApplicationSpecificState>
@@ -87,7 +87,7 @@ export const reducerForSpecificApp = <
         reducerSwitch.set(StateActionType.MAP_VIEW_CHANGE, () => reduceHandlerMapSetMapViewChange(currentState, action as ActionMapViewChange));
         reducerSwitch.set(StateActionType.MAP_LAYER_ACTIVE_CHANGE, () => reduceHandlerMapLayerActiveChange(currentState, action as ActionMapLayerActiveChange));
 
-        reducerSwitch.set(StateActionType.MAP_LAYER_ADD, () => reduceHandlerMapLayerAdd(currentState, action as ActionMapLayerAdd));
+		reducerSwitch.set(StateActionType.MAP_LAYER_ADD, () => reduceHandlerMapLayerAdd(currentState, action as ActionMapLayerAdd));
         reducerSwitch.set(StateActionType.MAP_LAYER_OPACITY_CHANGE, () => reduceHandlerMapLayerOpacityChange(currentState, action as ActionMapLayerOpacityChange));
         reducerSwitch.set(StateActionType.MAP_SET_SYNC_CHANGE, () => reduceHandlerMapSetSyncChange(currentState, action as ActionMapSetSyncChange));
 

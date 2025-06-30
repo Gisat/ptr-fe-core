@@ -8,7 +8,7 @@
 	container-type: size;
 }
 
-/* Map set grid used for displaying maps in a grid layout */
+/* --- Map set grid used for displaying maps in a grid layout --- */
 .ptr-MapSet-grid {
 	width: 100%;
 	height: 100%;
@@ -50,6 +50,26 @@
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 	}
+}
+
+/* --- Map set slider used for comparing of two maps --- */
+.ptr-MapSetSliderComparator {
+	width: 100%;
+	height: 100%;
+}
+
+.ptr-MapSetSliderComparator .ptr-MapSet-map {
+	width: 100%;
+	height: 100%;
+}
+
+
+button[data-rcs='handle-container'] {
+	z-index: 29;
+}
+
+div[data-rcs='clip-item'] {
+	z-index: 28;
 }
 
 /* Map set map used for displaying individual maps */
