@@ -33,66 +33,44 @@ import { reduceHandlerMapSetAddMapSet } from './reducerHandlers/mapSetAdd';
 import { reduceHandlerMapSetRemove } from './reducerHandlers/mapSetRemove';
 
 /**
- * Creates a reducer function for managing application-specific state in a shared app context.
- *
- * This higher-order reducer combines core shared state actions and reducers with application-specific
- * actions and reducers. It returns a reducer function suitable for use with React's `useReducer` hook.
- *
- * @template ApplicationSpecificState - The type of the application-specific state, extending the shared app state.
- * @template ApplicationSpecificActions - The union type of all application-specific actions.
- *
- * @param appSpecificActionTypes - An array of application-specific action instances to be handled by the reducer.
- * @param appSpecificReducers - A mapping from action type strings to reducer functions for handling application-specific actions.
- *
- * @returns A reducer function that takes the current state and an action, and returns the new state.
- *
- * @throws {Error} If an unknown action type is encountered.
- *
- * @example
- * ```typescript
- * const reducer = reducerForSpecificApp<MyAppState, MyAppActions>(
- *   [myAction1, myAction2],
- *   {
- *     [MyActionTypes.MY_ACTION_1]: myAction1Reducer,
- *     [MyActionTypes.MY_ACTION_2]: myAction2Reducer,
- *   }
- * );
- * const [state, dispatch] = useReducer(reducer, initialState);
- * ```
+ * General application specific action type.
+ * This is used to define actions that are specific to a particular application.
+ * The action type is a string and the payload can be any type.
  */
-export const reducerForSpecificApp = <
-	ApplicationSpecificState extends AppSharedState
->(
-	appSpecificActionTypes: string[],
-	appSpecificReducers: Map<
-		string,
-		(state: ApplicationSpecificState, action: {type: string, payload: any}) => ApplicationSpecificState
-	>
+export type AppSpecificAction = {
+	type: string | any;
+	payload: any;
+};
+
+/**
+ * General application specific reducer function type.
+ * This function takes the current state and an action, and returns the new state.
+ * The action can be a general application specific action or one of the state actions.
+ */
+export type AppSpecficReducerFunc<ApplicationSpecificState extends AppSharedState> = (
+	currentState: ApplicationSpecificState,
+	action: AppSpecificAction
+) => ApplicationSpecificState;
+
+export type AppSpecificReducerMap<ApplicationSpecificState extends AppSharedState> =
+	Map<string, AppSpecficReducerFunc<ApplicationSpecificState>>
+
+export const reducerForSpecificApp = <ApplicationSpecificState extends AppSharedState>(
+	appSpecificReducerMap: AppSpecificReducerMap<ApplicationSpecificState>
 ) => {
-	/**
-	 * Reducer function for managing the shared application state.
-	 *
-	 * This reducer handles both core and application-specific actions by mapping action types
-	 * to their corresponding state transformation logic using a switch map. It first processes
-	 * core actions with predefined handlers, then dynamically adds application-specific reducers.
-	 * If an unknown action type is encountered, an error is thrown.
-	 *
-	 * @param currentState - The current application-specific state.
-	 * @param action - The dispatched action, which may be null.
-	 * @returns The new application-specific state after applying the action.
-	 * @throws Error if the action type is not recognized by the reducer.
-	 */
+
 	const reducerForReact = (
 		currentState: ApplicationSpecificState,
-		action: {type: string; payload: any} | OneOfStateActions
+		action: AppSpecificAction
 	): ApplicationSpecificState => {
-		// if there is no action, return the current state
+
+		// 0. if there is no action, return the current state
 		if (!action) return currentState;
 
-		// 1. we need to fill the reducer switch mao with ptr-fe-core actions and reducers
+		// 1. we need to fill the reducer switch Map with ptr-fe-core actions and reducers
 
 		// prepare a switch map to handle the actions
-		const reducerSwitch = new Map<string, () => ApplicationSpecificState>();
+		let reducerSwitch = new Map<string, () => ApplicationSpecificState>();
 
 		// just push the action payload to the state
 		reducerSwitch.set(StateActionType.APP_NODE, () => ({ ...currentState, appNode: action.payload }));
@@ -148,26 +126,15 @@ export const reducerForSpecificApp = <
 
 		// 2. now we need to add the application specific actions and reducers to the switch map
 
-		// now add the application specific actions and reducers to the switch map
-		// iterate over the application specific action types
-		// and add the corresponding reducer to the switch map
-		// if the action type is not found in the switch map, throw an error
-		for (const actionType of appSpecificActionTypes) {
-			
-			// for the each action add reducer to the switch map
-			const appSpecificReducer = appSpecificReducers.get(actionType);
-
-			if (!appSpecificReducer) {
-				throw new Error(`Shared State Reducer: No reducer found for action type "${actionType}"`);
-			}
-
-			reducerSwitch.set(actionType, () => appSpecificReducer(currentState, action));
+		// the map is conbination of action type key and reducer function with payload
+		for (const [actionType, reducerFunc] of appSpecificReducerMap.entries()) {
+			reducerSwitch.set(actionType, () => reducerFunc(currentState, action as AppSpecificAction));
 		}
 
 		// 3. now we can use the switch map to handle the actions
 
 		// read the new state from the switch map
-		const newState = reducerSwitch.get(action.type);
+		const newState = reducerSwitch.get(action.type as string);
 
 		// if the action type is not found in the switch map, throw an error
 		if (!newState) {
