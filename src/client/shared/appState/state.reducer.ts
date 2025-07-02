@@ -17,7 +17,6 @@ import {
 	OneOfStateActions,
 } from './state.models.actions';
 import { AppSharedState } from './state.models';
-import { Nullable } from '../../../globals/shared/coding/code.types';
 import { reduceHandlerMapSetMapViewChange } from './reducerHandlers/mapSetMapViewChange';
 import { reduceHandlerActiveLayerChange } from './reducerHandlers/activeLayerChange';
 import { reduceHandlerMapSetSyncChange } from './reducerHandlers/mapSetSyncChange';
@@ -42,7 +41,7 @@ import { reduceHandlerMapSetRemove } from './reducerHandlers/mapSetRemove';
  * @template ApplicationSpecificState - The type of the application-specific state, extending the shared app state.
  * @template ApplicationSpecificActions - The union type of all application-specific actions.
  *
- * @param appSpecificActions - An array of application-specific action instances to be handled by the reducer.
+ * @param appSpecificActionTypes - An array of application-specific action instances to be handled by the reducer.
  * @param appSpecificReducers - A mapping from action type strings to reducer functions for handling application-specific actions.
  *
  * @returns A reducer function that takes the current state and an action, and returns the new state.
@@ -62,13 +61,12 @@ import { reduceHandlerMapSetRemove } from './reducerHandlers/mapSetRemove';
  * ```
  */
 export const reducerForSpecificApp = <
-	ApplicationSpecificState extends AppSharedState,
-	ApplicationSpecificActions extends OneOfStateActions,
+	ApplicationSpecificState extends AppSharedState
 >(
-	appSpecificActions: ApplicationSpecificActions[],
-	appSpecificReducers: Record<
+	appSpecificActionTypes: string[],
+	appSpecificReducers: Map<
 		string,
-		(state: ApplicationSpecificState, action: ApplicationSpecificActions) => ApplicationSpecificState
+		(state: ApplicationSpecificState, action: {type: string, payload: any}) => ApplicationSpecificState
 	>
 ) => {
 	/**
@@ -86,7 +84,7 @@ export const reducerForSpecificApp = <
 	 */
 	const reducerForReact = (
 		currentState: ApplicationSpecificState,
-		action: Nullable<ApplicationSpecificActions>
+		action: {type: string; payload: any} | OneOfStateActions
 	): ApplicationSpecificState => {
 		// if there is no action, return the current state
 		if (!action) return currentState;
@@ -151,12 +149,19 @@ export const reducerForSpecificApp = <
 		// 2. now we need to add the application specific actions and reducers to the switch map
 
 		// now add the application specific actions and reducers to the switch map
-		for (const actionType of appSpecificActions) {
+		// iterate over the application specific action types
+		// and add the corresponding reducer to the switch map
+		// if the action type is not found in the switch map, throw an error
+		for (const actionType of appSpecificActionTypes) {
+			
 			// for the each action add reducer to the switch map
-			const actionTypeString = actionType.type;
-			const specificReducer = appSpecificReducers[actionTypeString];
+			const appSpecificReducer = appSpecificReducers.get(actionType);
 
-			reducerSwitch.set(actionTypeString, () => specificReducer(currentState, actionType));
+			if (!appSpecificReducer) {
+				throw new Error(`Shared State Reducer: No reducer found for action type "${actionType}"`);
+			}
+
+			reducerSwitch.set(actionType, () => appSpecificReducer(currentState, action));
 		}
 
 		// 3. now we can use the switch map to handle the actions
@@ -171,57 +176,6 @@ export const reducerForSpecificApp = <
 
 		// return the new state as called from the switch map result
 		return newState();
-
-		// TODO: Delete the commented code below when the switch map is fully implemented
-		// switch (action.type) {
-		//     case StateActionType.FETCH_SOURCES:
-		//         return {
-		//             ...currentState,
-		//             renderingLayers: currentState.renderingLayers
-		//                 ? [
-		//                     ...currentState.renderingLayers,
-		//                     ...parseDatasourcesToRenderingLayers(action.payload, currentState.appNode),
-		//                 ]
-		//                 : parseDatasourcesToRenderingLayers(action.payload, currentState.appNode),
-		//         };
-		//     case StateActionType.APP_NODE:
-		//         return { ...currentState, appNode: action.payload };
-
-		//     case StateActionType.FETCH_LAYERS:
-		//         return { ...currentState, layers: action.payload };
-
-		//     case StateActionType.FETCH_PLACES:
-		//         return { ...currentState, places: action.payload };
-
-		//     case StateActionType.LAYER_ACTIVE_CHANGE:
-		//         return reduceHandlerActiveLayerChange(currentState, action);
-
-		//     case StateActionType.GLOBAL_STATE_UPDATE:
-		//         return reduceHandlerGlobalStateUpdate(currentState, action);
-
-		//     case StateActionType.APPLY_PERSISTENT_STATE:
-		//         return { ...currentState, ...action.payload };
-
-		//     case StateActionType.MAP_VIEW_CHANGE:
-		//         return reduceHandlerMapSetMapViewChange(currentState, action);
-
-		//     case StateActionType.MAP_LAYER_ACTIVE_CHANGE:
-		//         return reduceHandlerMapLayerActiveChange(currentState, action);
-
-		//     case StateActionType.MAP_LAYER_ADD:
-		//         return reduceHandlerMapLayerAdd(currentState, action);
-
-		//     case StateActionType.MAP_LAYER_OPACITY_CHANGE:
-		//         return reduceHandlerMapLayerOpacityChange(currentState, action);
-
-		//     case StateActionType.MAP_SET_SYNC_CHANGE:
-		//         return reduceHandlerMapSetSyncChange(currentState, action);
-
-		//     default:
-		//         throw new Error(
-		//             `Shared State: Unknown action type "${(action as OneOfStateActions).type}"`
-		//         );
-		// }
 	};
 
 	// return the reducer function for the react hook
