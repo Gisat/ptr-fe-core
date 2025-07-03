@@ -12,11 +12,12 @@ import { MapSetModel } from '../models/models.mapSet';
 import { MapSetSync } from '../models/models.mapSetSync';
 import { RenderingLayer } from '../models/models.layers';
 import { StateActionType } from './enum.state.actionType'; // Import the ActionType enum
+import { AppSpecificAction } from './state.models.reducer';
 
 /**
  * When we set up application node
  */
-export interface ActionSetApplicationNode {
+export interface ActionSetApplicationNode extends AppSpecificAction {
 	type: StateActionType.APP_NODE;
 	payload: ApplicationNode;
 }
@@ -24,7 +25,7 @@ export interface ActionSetApplicationNode {
 /**
  * When we set up metadata datasources
  */
-export interface ActionChangeLayerSources {
+export interface ActionChangeLayerSources extends AppSpecificAction{
 	type: StateActionType.FETCH_SOURCES;
 	payload: Datasource[];
 }
@@ -32,7 +33,7 @@ export interface ActionChangeLayerSources {
 /**
  * When we set up layer metadata
  */
-export interface ActionChangeLayers {
+export interface ActionChangeLayers extends AppSpecificAction{
 	type: StateActionType.FETCH_LAYERS;
 	payload: PantherEntity[];
 }
@@ -40,7 +41,7 @@ export interface ActionChangeLayers {
 /**
  * When we set up place metadata
  */
-export interface ActionChangePlaces {
+export interface ActionChangePlaces extends AppSpecificAction{
 	type: StateActionType.FETCH_PLACES;
 	payload: Place[];
 }
@@ -48,7 +49,7 @@ export interface ActionChangePlaces {
 /**
  * When we set up period metadata
  */
-export interface ActionChangePeriods {
+export interface ActionChangePeriods extends AppSpecificAction{
 	type: StateActionType.FETCH_PERIODS;
 	payload: Period[];
 }
@@ -56,7 +57,7 @@ export interface ActionChangePeriods {
 /**
  * When we set up style metadata
  */
-export interface ActionChangeStyles {
+export interface ActionChangeStyles extends AppSpecificAction{
 	type: StateActionType.FETCH_STYLES;
 	payload: Style[];
 }
@@ -64,7 +65,7 @@ export interface ActionChangeStyles {
 /**
  * Activate or deactivate layer in render and status
  */
-export interface ActionLayerActiveChange {
+export interface ActionLayerActiveChange extends AppSpecificAction{
 	type: StateActionType.LAYER_ACTIVE_CHANGE;
 	payload: { key: string; newValue: boolean };
 }
@@ -72,7 +73,7 @@ export interface ActionLayerActiveChange {
 /**
  * Activate or deactivate layer in map
  */
-export interface ActionMapLayerActiveChange {
+export interface ActionMapLayerActiveChange extends AppSpecificAction{
 	type: StateActionType.MAP_LAYER_ACTIVE_CHANGE;
 	payload: { mapKey: string; layerKey: string; isActive: boolean };
 }
@@ -80,7 +81,7 @@ export interface ActionMapLayerActiveChange {
 /**
  * Change map layer opacity
  */
-export interface ActionMapLayerOpacityChange {
+export interface ActionMapLayerOpacityChange extends AppSpecificAction{
 	type: StateActionType.MAP_LAYER_OPACITY_CHANGE;
 	payload: { mapKey: string; layerKey: string; opacity: number };
 }
@@ -88,7 +89,7 @@ export interface ActionMapLayerOpacityChange {
 /**
  * Add layer to map
  */
-export interface ActionMapLayerAdd {
+export interface ActionMapLayerAdd extends AppSpecificAction{
 	type: StateActionType.MAP_LAYER_ADD;
 	payload: { mapKey: string; layer: Partial<RenderingLayer>; index?: number };
 }
@@ -96,7 +97,7 @@ export interface ActionMapLayerAdd {
 /**
  * Add map to map set
  */
-export interface ActionMapAddToMapSet {
+export interface ActionMapAddToMapSet extends AppSpecificAction{
 	type: StateActionType.MAP_ADD_TO_MAP_SET;
 	payload: { mapSetKey: string; map: SingleMapModel };
 }
@@ -104,7 +105,7 @@ export interface ActionMapAddToMapSet {
 /**
  * Remove map from map set
  */
-export interface ActionMapRemoveFromMapSet {
+export interface ActionMapRemoveFromMapSet extends AppSpecificAction{
 	type: StateActionType.MAP_REMOVE_FROM_MAP_SET;
 	payload: { mapSetKey: string; mapKey: string };
 }
@@ -112,7 +113,7 @@ export interface ActionMapRemoveFromMapSet {
 /**
  * Remove maps from map set by keys
  */
-export interface ActionMapSetRemoveMapsByKeys {
+export interface ActionMapSetRemoveMapsByKeys extends AppSpecificAction{
 	type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS;
 	payload: { mapSetKey: string; mapKeys: string[] };
 }
@@ -120,7 +121,7 @@ export interface ActionMapSetRemoveMapsByKeys {
 /**
  * Update state with data
  */
-export interface ActionGlobalStateUpdate {
+export interface ActionGlobalStateUpdate extends AppSpecificAction{
 	type: StateActionType.GLOBAL_STATE_UPDATE;
 	payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
 }
@@ -129,7 +130,7 @@ export interface ActionGlobalStateUpdate {
  * Apply persistent state
  * TODO add payload params
  */
-export interface ActionApplyPersistentState {
+export interface ActionApplyPersistentState extends AppSpecificAction{
 	type: StateActionType.APPLY_PERSISTENT_STATE;
 	payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
 }
@@ -137,7 +138,7 @@ export interface ActionApplyPersistentState {
 /**
  * Change map view
  */
-export interface ActionMapViewChange {
+export interface ActionMapViewChange extends AppSpecificAction{
 	type: StateActionType.MAP_VIEW_CHANGE;
 	payload: { key: string; viewChange: Partial<MapView> };
 }
@@ -145,7 +146,7 @@ export interface ActionMapViewChange {
 /**
  * Change map set sync
  */
-export interface ActionMapSetSyncChange {
+export interface ActionMapSetSyncChange extends AppSpecificAction{
 	type: StateActionType.MAP_SET_SYNC_CHANGE;
 	payload: { key: string; syncChange: Partial<MapSetSync> };
 }
@@ -153,7 +154,7 @@ export interface ActionMapSetSyncChange {
 /**
  * Change map set mode
  */
-export interface ActionMapSetModeChange {
+export interface ActionMapSetModeChange extends AppSpecificAction {
 	type: StateActionType.MAP_SET_MODE_CHANGE;
 	payload: { key: string; mode: 'slider' | 'grid' };
 }
@@ -161,7 +162,7 @@ export interface ActionMapSetModeChange {
 /**
  * Add map set to state
  */
-export interface ActionMapSetAdd {
+export interface ActionMapSetAdd extends AppSpecificAction {
 	type: StateActionType.MAP_SET_ADD;
 	payload: MapSetModel;
 }
@@ -169,7 +170,7 @@ export interface ActionMapSetAdd {
 /**
  * Delete map set from state
  */
-export interface ActionMapSetRemove {
+export interface ActionMapSetRemove extends AppSpecificAction {
 	type: StateActionType.MAP_SET_REMOVE;
 	payload: { mapSetKey: string };
 }
@@ -177,8 +178,8 @@ export interface ActionMapSetRemove {
 /**
  * One of any of possible actions
  */
-export type OneOfStateActions =
-	| ActionChangeLayerSources
+export type OneOfStateActions = AppSpecificAction &
+	(ActionChangeLayerSources
 	| ActionChangeLayers
 	| ActionChangePlaces
 	| ActionChangeStyles
@@ -197,4 +198,4 @@ export type OneOfStateActions =
 	| ActionGlobalStateUpdate
 	| ActionApplyPersistentState
 	| ActionMapSetAdd
-	| ActionMapSetRemove;
+	| ActionMapSetRemove)

@@ -7,7 +7,7 @@ import { OneOfStateActions } from "./state.models.actions";
  * It is used to extend the shared state with application specific actions.
  */
 export type AppSpecificAction = {
-    type: string | any;
+    type: any;
     payload: any;
 };
 
