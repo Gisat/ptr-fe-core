@@ -27,18 +27,11 @@ export const useSharedState = <
 	AppSpecificActions = OneOfStateActions
 	>():[AppSpecificState, Dispatch<AppSpecificActions>] => {
 
-	// // read application specific state context
-	// // this will create a pair of contexts for shared state and its dispatch function
-	// const {
-	// 	sharedStateContext,
-	// 	sharedStateDispatchContext,
-	// } = useApplicationSpecificStateContext<AppSpecificState, AppSpecificActions>();
-
 	// load actual state context using native React useContext hook
 	const sharedState = useContext(SharedStateContext);
 
-	console.log('### State in context');
-	console.dir(sharedState);
+	// log shared state in context for debugging
+	console.log('### State in context', sharedState);
 
 	// load shared state dispatch funtion using native React useContext hook
 	const sharedStateDispatch = useContext(SharedStateDispatchContext);
