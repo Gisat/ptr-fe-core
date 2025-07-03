@@ -53,12 +53,6 @@ export interface RenderMapProps {
 /** Rendered map with DeckGL tool used as a geospatial renderer */
 export const RenderingMap: React.FC<RenderMapProps> = (props: RenderMapProps) => {
 
-	// log props for debuggin
-	console.log('RenderingMap props:');
-	console.dir(props)
-	console.log(props)
-
-
 	// shared application state in context
 	const [sharedState] = useSharedState();
 
