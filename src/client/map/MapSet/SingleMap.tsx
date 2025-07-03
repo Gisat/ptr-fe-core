@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { DeckGL } from '@deck.gl/react';
 import { LayersList, ViewStateChangeParameters } from '@deck.gl/core';
-import useSharedState from '../../shared/hooks/state.useSharedState';
+import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
 import { mergeViews } from '../../map/logic/mapView/mergeViews';

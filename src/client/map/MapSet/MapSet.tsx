@@ -2,7 +2,7 @@ import classnames from 'classnames';
 import React from 'react';
 import { ReactCompareSlider, ReactCompareSliderHandle } from 'react-compare-slider';
 import { SingleMap } from '../MapSet/SingleMap';
-import useSharedState from '../../shared/hooks/state.useSharedState';
+import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapSetByKey } from '../../shared/appState/selectors/getMapSetByKey';
 import { getSyncedView } from '../../shared/appState/selectors/getSyncedView';
 import './MapSet.css';

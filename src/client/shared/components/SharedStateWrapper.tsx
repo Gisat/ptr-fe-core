@@ -52,7 +52,7 @@ export function SharedStateWrapper<
 	children,
 	sharedState,
 	sharedStateDispatchFunction,
-}: SharedStateWrapperProps<AppSpecificState, AppSpecificActions>) {
+}: SharedStateWrapperProps<AppSpecificState , AppSpecificActions>) {
 	
 	// read application specific state context
 	// this will create a pair of contexts for shared state and its dispatch function

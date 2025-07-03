@@ -35,10 +35,10 @@ export const useSharedState = <
 	} = useApplicationSpecificStateContext<AppSpecificState, AppSpecificActions>();
 
 	// load actual state context using native React useContext hook
-	const sharedState = useContext(sharedStateContext);
+	const sharedState = useContext<AppSpecificState>(sharedStateContext);
 
 	// load shared state dispatch funtion using native React useContext hook
-	const sharedStateDispatch = useContext(sharedStateDispatchContext);
+	const sharedStateDispatch = useContext<Dispatch<AppSpecificActions>>(sharedStateDispatchContext);
 
 	// validate all
 	if (sharedState === undefined || sharedStateDispatch === undefined) {
@@ -48,5 +48,3 @@ export const useSharedState = <
 	// return as a tuple
 	return [sharedState, sharedStateDispatch];
 };
-
-export default useSharedState;
