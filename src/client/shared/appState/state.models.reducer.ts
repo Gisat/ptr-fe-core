@@ -1,4 +1,5 @@
 import { AppSharedState } from "./state.models";
+import { OneOfStateActions } from "./state.models.actions";
 
 /**
  * Application specific action type.
@@ -16,7 +17,10 @@ export type AppSpecificAction = {
  * and returns the new state.
  * It is used to extend the shared state with application specific reducers.
  */
-export type AppSpecficReducerFunc<ApplicationSpecificState extends AppSharedState = AppSharedState> = (
+export type AppSpecficReducerFunc<
+    ApplicationSpecificState extends AppSharedState = AppSharedState,
+    AppSpecificAction = OneOfStateActions
+> = (
     currentState: ApplicationSpecificState,
     action: AppSpecificAction
 ) => ApplicationSpecificState;
@@ -29,5 +33,7 @@ export type AppSpecficReducerFunc<ApplicationSpecificState extends AppSharedStat
  * It is used to create a reducer function that will handle the application specific actions.
  * The key is the action type and the value is the reducer function.
  */
-export type AppSpecificReducerMap<ApplicationSpecificState extends AppSharedState = AppSharedState> =
-    Map<string, AppSpecficReducerFunc<ApplicationSpecificState>>
+export type AppSpecificReducerMap<
+    ApplicationSpecificState extends AppSharedState = AppSharedState,
+    AppSpecificAction = OneOfStateActions
+> = Map<string, AppSpecficReducerFunc<ApplicationSpecificState, AppSpecificAction>>
