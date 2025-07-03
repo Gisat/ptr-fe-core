@@ -33,7 +33,8 @@ export const getLayerMetadataByRenderingLayerKey = (
 
 	// Get all layers from the state
 	const layers = getAllLayers(state);
+	if (!layers || layers.length === 0) return undefined;
 
 	// Find the layer by neighbor keys
-	return layers?.length ? layers.find((layer) => renderingLayerNeighbourKeys.includes(layer.key)) : undefined;
+	return layers.find((layer) => renderingLayerNeighbourKeys.includes(layer.key));
 };
