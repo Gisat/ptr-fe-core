@@ -7,8 +7,8 @@ import { OneOfStateActions } from "./state.models.actions";
  * It is used to extend the shared state with application specific actions.
  */
 export type AppSpecificAction = {
-    type: any;
-    payload: any;
+    type: any; // TODO: Find better solution as there is an issue with type inference between enums
+    payload: any; //... also have no better option now
 };
 
 /**
