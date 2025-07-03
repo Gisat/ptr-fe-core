@@ -1,7 +1,7 @@
 import { Dispatch, ReactNode } from 'react';
 import { AppSharedState } from '../appState/state.models';
 import { OneOfStateActions } from '../appState/state.models.actions';
-import { useApplicationSpecificStateContext } from '../appState/state.context';
+import { SharedStateContext, SharedStateDispatchContext } from '../appState/state.context';
 
 /**
  * Props for SharedStateWrapper component.
@@ -54,23 +54,23 @@ export function SharedStateWrapper<
 	sharedStateDispatchFunction,
 }: SharedStateWrapperProps<AppSpecificState , AppSpecificActions>) {
 	
-	// read application specific state context
-	// this will create a pair of contexts for shared state and its dispatch function
-	// we need to use these context providers to wrap the children components
-	const {
-		sharedStateContext: { Provider: SharedStateProvider },
-		sharedStateDispatchContext: { Provider: SharedStateDispatchProvider },
-	} = useApplicationSpecificStateContext<AppSpecificState, AppSpecificActions>();
+	// // read application specific state context
+	// // this will create a pair of contexts for shared state and its dispatch function
+	// // we need to use these context providers to wrap the children components
+	// const {
+	// 	sharedStateContext: { Provider: SharedStateProvider },
+	// 	sharedStateDispatchContext: { Provider: SharedStateDispatchProvider },
+	// } = useApplicationSpecificStateContext<AppSpecificState, AppSpecificActions>();
 
 	// prepare react component wrapper for shared state
 	// this will provide the shared state and its dispatch function to all children components
 	// using the SharedStateProvider and SharedStateDispatchProvider contexts
 	return (
-		<SharedStateProvider value={sharedState}>
-			<SharedStateDispatchProvider value={sharedStateDispatchFunction}>
+		<SharedStateContext value={sharedState}>
+			<SharedStateDispatchContext value={sharedStateDispatchFunction}>
 				{children}
-			</SharedStateDispatchProvider>
-		</SharedStateProvider>
+			</SharedStateDispatchContext>
+		</SharedStateContext>
 	);
 }
 

@@ -1,7 +1,5 @@
 import { createContext, Dispatch } from 'react';
 import { defaultStateValue } from './state.defaults';
-import { AppSharedState } from './state.models';
-import { OneOfStateActions } from './state.models.actions';
 
 
 /**
@@ -19,18 +17,21 @@ import { OneOfStateActions } from './state.models.actions';
  * const { sharedStateContext, sharedStateDispatchContext } = createContextForSharedState<MyAppState>();
  * ```
  */
-export const useApplicationSpecificStateContext = <
-    AppSpecificState extends AppSharedState,
-    AppSpecificActions = OneOfStateActions
->() => {
-    // create context for shared state
-    const sharedStateContext = createContext<AppSpecificState>(defaultStateValue() as AppSpecificState);
+// export const useApplicationSpecificStateContext = <
+//     AppSpecificState extends AppSharedState,
+//     AppSpecificActions = OneOfStateActions
+// >() => {
+//     // create context for shared state
+//     const sharedStateContext = createContext<AppSpecificState>(defaultStateValue() as AppSpecificState);
 
-    // create context for shared state dispatch
-    const sharedStateDispatchContext = createContext<Dispatch<AppSpecificActions>>(() => console.log('none'));
+//     // create context for shared state dispatch
+//     const sharedStateDispatchContext = createContext<Dispatch<AppSpecificActions>>(() => console.log('none'));
 
-    return {
-        sharedStateContext,
-        sharedStateDispatchContext,
-    };
-}
+//     return {
+//         sharedStateContext,
+//         sharedStateDispatchContext,
+//     };
+// }
+
+    export const SharedStateContext = createContext(defaultStateValue());
+    export const SharedStateDispatchContext = createContext(null as unknown as Dispatch<any>);

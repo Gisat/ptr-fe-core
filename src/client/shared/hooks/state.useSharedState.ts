@@ -1,7 +1,7 @@
 import { Dispatch, useContext } from 'react';
 import { AppSharedState } from '../appState/state.models';
 import { OneOfStateActions } from '../appState/state.models.actions';
-import { useApplicationSpecificStateContext } from '../appState/state.context';
+import { SharedStateContext, SharedStateDispatchContext } from '../appState/state.context';
 
 
 /**
@@ -27,18 +27,21 @@ export const useSharedState = <
 	AppSpecificActions = OneOfStateActions
 	>():[AppSpecificState, Dispatch<AppSpecificActions>] => {
 
-	// read application specific state context
-	// this will create a pair of contexts for shared state and its dispatch function
-	const {
-		sharedStateContext,
-		sharedStateDispatchContext,
-	} = useApplicationSpecificStateContext<AppSpecificState, AppSpecificActions>();
+	// // read application specific state context
+	// // this will create a pair of contexts for shared state and its dispatch function
+	// const {
+	// 	sharedStateContext,
+	// 	sharedStateDispatchContext,
+	// } = useApplicationSpecificStateContext<AppSpecificState, AppSpecificActions>();
 
 	// load actual state context using native React useContext hook
-	const sharedState = useContext<AppSpecificState>(sharedStateContext);
+	const sharedState = useContext(SharedStateContext);
+
+	console.log('### State in context');
+	console.dir(sharedState);
 
 	// load shared state dispatch funtion using native React useContext hook
-	const sharedStateDispatch = useContext<Dispatch<AppSpecificActions>>(sharedStateDispatchContext);
+	const sharedStateDispatch = useContext(SharedStateDispatchContext);
 
 	// validate all
 	if (sharedState === undefined || sharedStateDispatch === undefined) {
@@ -46,5 +49,5 @@ export const useSharedState = <
 	}
 
 	// return as a tuple
-	return [sharedState, sharedStateDispatch];
+	return [sharedState as AppSpecificState, sharedStateDispatch as Dispatch<AppSpecificActions>];
 };
