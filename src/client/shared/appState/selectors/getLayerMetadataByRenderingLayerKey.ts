@@ -1,5 +1,5 @@
 import { AppSharedState } from '../state.models';
-import { PantherEntity } from '../../../../globals';
+import { PantherEntity } from '../../../../globals/shared/panther/models.nodes';
 import { getAllLayers } from './getAllLayers';
 
 /**
