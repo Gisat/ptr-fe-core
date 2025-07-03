@@ -10,7 +10,7 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @param action ActionMapRemoveFromMapSet
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapSetRemoveMap = <T extends AppSharedState>(
+export const reduceHandlerMapSetRemoveMap = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionMapRemoveFromMapSet
 ): T => {

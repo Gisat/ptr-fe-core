@@ -9,7 +9,7 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @param action ActionMapSetSyncChange
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapSetSyncChange = <T extends AppSharedState>(
+export const reduceHandlerMapSetSyncChange = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionMapSetSyncChange
 ): T => {

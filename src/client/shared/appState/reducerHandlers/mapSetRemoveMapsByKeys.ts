@@ -10,7 +10,7 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @param action ActionMapSetRemoveMapsByKeys
  * @returns Updated AppSharedState
  */
-export const reduceHandlerRemoveMapSetMapsByKeys = <T extends AppSharedState>(
+export const reduceHandlerRemoveMapSetMapsByKeys = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionMapSetRemoveMapsByKeys
 ): T => {

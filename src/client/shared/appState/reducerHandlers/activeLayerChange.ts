@@ -7,7 +7,7 @@ import { ActionLayerActiveChange } from '../state.models.actions';
  * @param action
  * @returns
  */
-export const reduceHandlerActiveLayerChange = <T extends AppSharedState>(
+export const reduceHandlerActiveLayerChange = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionLayerActiveChange
 ): T => {

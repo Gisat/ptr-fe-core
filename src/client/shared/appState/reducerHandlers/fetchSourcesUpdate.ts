@@ -16,7 +16,7 @@ import { ActionChangeLayerSources } from '../state.models.actions';
  * @param action - The action containing the new data sources to be added, of type ActionChangeLayerSources.
  * @returns The updated application state with the new rendering layers included.
  */
-export const reduceHandlerFetchSources = <T extends AppSharedState>(
+export const reduceHandlerFetchSources = <T extends AppSharedState = AppSharedState>(
     state: T,
     action: ActionChangeLayerSources
 ): T => {

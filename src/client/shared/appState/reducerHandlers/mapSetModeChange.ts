@@ -12,7 +12,7 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @returns {AppSharedState} The updated application state with the modified map set mode.
  * @throws {Error} If the payload is missing or the map set with the specified key is not found.
  */
-export const reduceHandlerMapSetModeChange = <T extends AppSharedState>(
+export const reduceHandlerMapSetModeChange = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionMapSetModeChange
 ): T => {

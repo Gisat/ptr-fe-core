@@ -9,7 +9,7 @@ import { getMapByKey } from '../selectors/getMapByKey';
  * @param action ActionMapLayerOpacityChange
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapLayerOpacityChange = <T extends AppSharedState>(
+export const reduceHandlerMapLayerOpacityChange = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionMapLayerOpacityChange
 ): T => {

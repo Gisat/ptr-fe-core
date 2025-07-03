@@ -8,7 +8,7 @@ import { deduplicateByKey } from '../../../../globals/shared/coding/deduplicateB
  * @param action ActionGlobalStateUpdate
  * @returns Updated AppSharedState
  */
-export const reduceHandlerGlobalStateUpdate = <T extends AppSharedState>(
+export const reduceHandlerGlobalStateUpdate = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionGlobalStateUpdate
 ): T => {

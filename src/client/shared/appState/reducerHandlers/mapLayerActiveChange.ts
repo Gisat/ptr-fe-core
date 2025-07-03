@@ -9,7 +9,7 @@ import { getMapByKey } from '../../appState/selectors/getMapByKey';
  * @param action ActionMapLayerActiveChange
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapLayerActiveChange = <T extends AppSharedState>(
+export const reduceHandlerMapLayerActiveChange = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionMapLayerActiveChange
 ): T => {

@@ -10,7 +10,7 @@ import { StateActionType } from '../enum.state.actionType';
  * @returns {AppSharedState} The new state with the specified mapSet removed.
  * @throws {Error} If payload or mapSetKey is not provided.
  */
-export const reduceHandlerMapSetRemove = <T extends AppSharedState>(state: T, action: OneOfStateActions): T => {
+export const reduceHandlerMapSetRemove = <T extends AppSharedState = AppSharedState>(state: T, action: OneOfStateActions): T => {
 	if (action.type === StateActionType.MAP_SET_REMOVE) {
 		if (!action.payload || !action.payload.mapSetKey) {
 			throw new Error('No payload or mapSetKey provided for map set remove action');

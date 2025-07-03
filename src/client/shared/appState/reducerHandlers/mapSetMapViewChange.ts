@@ -12,7 +12,7 @@ import { getMapByKey } from '../../appState/selectors/getMapByKey';
  * @param action ActionMapViewChange
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapSetMapViewChange = <T extends AppSharedState>(
+export const reduceHandlerMapSetMapViewChange = <T extends AppSharedState = AppSharedState>(
 	state: T,
 	action: ActionMapViewChange
 ): T => {

@@ -12,7 +12,7 @@ import { getMapByKey } from '../../appState/selectors/getMapByKey';
  *
  * @throws {Error} If the payload is missing or the map with the specified key is not found.
  */
-export const reduceHandlerMapLayerAdd = <T extends AppSharedState>(state: T, action: ActionMapLayerAdd): T => {
+export const reduceHandlerMapLayerAdd = <T extends AppSharedState = AppSharedState>(state: T, action: ActionMapLayerAdd): T => {
 	const { payload } = action;
 
 	// Ensure the payload is provided
