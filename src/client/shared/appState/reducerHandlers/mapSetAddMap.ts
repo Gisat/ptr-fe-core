@@ -10,7 +10,7 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @param action ActionMapAddToMapSet
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapSetAddMap = (state: AppSharedState, action: ActionMapAddToMapSet): AppSharedState => {
+export const reduceHandlerMapSetAddMap = <T extends AppSharedState = AppSharedState>(state: T, action: ActionMapAddToMapSet): T => {
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for map add to map set action');

@@ -11,7 +11,7 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @returns {AppSharedState} The new state with the added mapSet.
  * @throws {Error} If payload is not provided.
  */
-export function reduceHandlerMapSetAddMapSet(state: AppSharedState, action: OneOfStateActions): AppSharedState {
+export const reduceHandlerMapSetAddMapSet = <T extends AppSharedState = AppSharedState>(state: T, action: OneOfStateActions): T => {
 	if (action.type === StateActionType.MAP_SET_ADD) {
 		if (!action.payload) {
 			throw new Error('No payload provided for map set add action');
@@ -27,4 +27,4 @@ export function reduceHandlerMapSetAddMapSet(state: AppSharedState, action: OneO
 		};
 	}
 	return state;
-}
+};

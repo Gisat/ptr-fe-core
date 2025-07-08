@@ -1,103 +1,175 @@
 import { StateActionType } from './enum.state.actionType';
-import { parseDatasourcesToRenderingLayers } from '../models/parsers.layers';
-import { OneOfStateActions } from './state.models.actions';
+import {
+	ActionChangeLayerSources,
+	ActionGlobalStateUpdate,
+	ActionLayerActiveChange,
+	ActionMapAddToMapSet,
+	ActionMapLayerActiveChange,
+	ActionMapLayerAdd,
+	ActionMapLayerOpacityChange,
+	ActionMapRemoveFromMapSet,
+	ActionMapSetAdd,
+	ActionMapSetModeChange,
+	ActionMapSetRemove,
+	ActionMapSetRemoveMapsByKeys,
+	ActionMapSetSyncChange,
+	ActionMapViewChange,
+} from './state.models.actions';
 import { AppSharedState } from './state.models';
-import { Nullable } from '../../../globals/shared/coding/code.types';
-import { reduceHandlerMapSetMapViewChange } from '../appState/reducerHandlers/mapSetMapViewChange';
-import { reduceHandlerActiveLayerChange } from '../appState/reducerHandlers/activeLayerChange';
-import { reduceHandlerMapSetSyncChange } from '../appState/reducerHandlers/mapSetSyncChange';
-import { reduceHandlerGlobalStateUpdate } from '../appState/reducerHandlers/globalStateUpdate';
-import { reduceHandlerMapLayerActiveChange } from '../appState/reducerHandlers/mapLayerActiveChange';
-import { reduceHandlerMapLayerAdd } from '../appState/reducerHandlers/mapLayerAdd';
-import { reduceHandlerMapLayerOpacityChange } from '../appState/reducerHandlers/mapLayerOpacityChange';
-import { reduceHandlerMapSetAddMap } from '../appState/reducerHandlers/mapSetAddMap';
-import { reduceHandlerMapSetRemoveMap } from '../appState/reducerHandlers/mapSetRemoveMap';
-import { reduceHandlerRemoveMapSetMapsByKeys } from '../appState/reducerHandlers/mapSetRemoveMapsByKeys';
-import { reduceHandlerMapSetModeChange } from '../appState/reducerHandlers/mapSetModeChange';
+import { reduceHandlerMapSetMapViewChange } from './reducerHandlers/mapSetMapViewChange';
+import { reduceHandlerActiveLayerChange } from './reducerHandlers/activeLayerChange';
+import { reduceHandlerMapSetSyncChange } from './reducerHandlers/mapSetSyncChange';
+import { reduceHandlerGlobalStateUpdate } from './reducerHandlers/globalStateUpdate';
+import { reduceHandlerMapLayerActiveChange } from './reducerHandlers/mapLayerActiveChange';
+import { reduceHandlerMapLayerAdd } from './reducerHandlers/mapLayerAdd';
+import { reduceHandlerMapLayerOpacityChange } from './reducerHandlers/mapLayerOpacityChange';
+import { reduceHandlerFetchSources } from './reducerHandlers/fetchSourcesUpdate';
+import { reduceHandlerMapSetAddMap } from './reducerHandlers/mapSetAddMap';
+import { reduceHandlerRemoveMapSetMapsByKeys } from './reducerHandlers/mapSetRemoveMapsByKeys';
+import { reduceHandlerMapSetRemoveMap } from './reducerHandlers/mapSetRemoveMap';
+import { reduceHandlerMapSetModeChange } from './reducerHandlers/mapSetModeChange';
 import { reduceHandlerMapSetAddMapSet } from './reducerHandlers/mapSetAdd';
 import { reduceHandlerMapSetRemove } from './reducerHandlers/mapSetRemove';
+import { AppSpecificAction, AppSpecificReducerMap } from './state.models.reducer';
 
 /**
- * React reducer for shared application state. Use it in useReducer react hook
- * @param currentState Current state instance
- * @param action One of possible actions for the application shared state
- * @returns New version of application shared state
+ * Creates a reducer function for a specific application state that combines core and application-specific reducers.
+ * 
+ * @template ApplicationSpecificState - The type of the application-specific state, must extend AppSharedState
+ * @param appSpecificReducerMap - A Map containing application-specific action types and their corresponding reducer functions
+ * @returns A reducer function compatible with React's useReducer hook that handles both core and application-specific state updates
+ *
+ * @example
+ * ```typescript
+ * const appReducers = new Map([
+ *   ['CUSTOM_ACTION', (state, action) => ({ ...state, custom: action.payload })]
+ * ]);
+ * const reducer = reducerForSpecificApp(appReducers);
+ * ```
+ *
+ * @remarks
+ * The returned reducer handles:
+ * - Core state actions (layers, places, periods, styles, etc.)
+ * - Map-related actions (view changes, layer management, etc.)
+ * - MapSet-related actions (sync, mode changes, etc.)
+ * - Application-specific actions defined in the appSpecificReducerMap
+ *
+ * @throws {Error} When an unknown action type is dispatched
  */
-export const reducerSharedAppState = (
-	currentState: AppSharedState,
-	action: Nullable<OneOfStateActions>
-): AppSharedState => {
-	if (!action) return currentState;
+export const reducerForSpecificApp = <ApplicationSpecificState extends AppSharedState = AppSharedState>(
+	appSpecificReducerMap: AppSpecificReducerMap<ApplicationSpecificState>
+) => {
 
-	switch (action.type) {
-		case StateActionType.FETCH_SOURCES:
-			return {
-				...currentState,
-				renderingLayers: currentState.renderingLayers
-					? [
-							...currentState.renderingLayers,
-							...parseDatasourcesToRenderingLayers(action.payload, currentState.appNode),
-						]
-					: parseDatasourcesToRenderingLayers(action.payload, currentState.appNode),
-			};
-		case StateActionType.APP_NODE:
-			return { ...currentState, appNode: action.payload };
+	/**
+	 * A reducer function for managing application state in React components.
+	 * 
+	 * This reducer handles both core and application-specific state updates through a Map-based
+	 * switch pattern. It processes various action types including map operations, layer management,
+	 * and global state updates.
+	 * 
+	 * @param currentState - The current application state before the reduction
+	 * @param action - The action object containing the type and payload for state modification
+	 * @throws {Error} When an unknown action type is provided
+	 * @returns {ApplicationSpecificState} The new application state after applying the reduction
+	 * 
+	 * The reducer follows a three-step process:
+	 * 1. Initializes core action handlers
+	 * 2. Incorporates application-specific reducers
+	 * 3. Executes the appropriate reducer based on the action type
+	 * 
+	 * @example
+	 * const newState = reducerForReact(currentState, {
+	 *   type: StateActionType.MAP_LAYER_ADD,
+	 *   payload: layerData
+	 * });
+	 */
+	const reducerForReact = (
+		currentState: ApplicationSpecificState,
+		action: AppSpecificAction
+	): ApplicationSpecificState => {
 
-		case StateActionType.FETCH_LAYERS:
-			return { ...currentState, layers: action.payload };
+		// 0. if there is no action, return the current state
+		if (!action) return currentState;
 
-		case StateActionType.FETCH_PLACES:
-			return { ...currentState, places: action.payload };
+		// 1. we need to fill the reducer switch Map with ptr-fe-core actions and reducers
 
-		case StateActionType.FETCH_PERIODS:
-			return { ...currentState, periods: action.payload };
+		// prepare a switch map to handle the actions
+		let reducerSwitch = new Map<string, () => ApplicationSpecificState>();
 
-		case StateActionType.FETCH_STYLES:
-			return { ...currentState, styles: action.payload };
+		// just push the action payload to the state
+		reducerSwitch.set(StateActionType.APP_NODE, () => ({ ...currentState, appNode: action.payload }));
+		reducerSwitch.set(StateActionType.FETCH_LAYERS, () => ({ ...currentState, layers: action.payload }));
+		reducerSwitch.set(StateActionType.FETCH_PLACES, () => ({ ...currentState, places: action.payload }));
+		reducerSwitch.set(StateActionType.FETCH_PERIODS, () => ({ ...currentState, periods: action.payload }));
+		reducerSwitch.set(StateActionType.FETCH_STYLES, () => ({ ...currentState, styles: action.payload }));
+		reducerSwitch.set(StateActionType.APPLY_PERSISTENT_STATE, () => ({ ...currentState, ...action.payload }));
 
-		case StateActionType.LAYER_ACTIVE_CHANGE:
-			return reduceHandlerActiveLayerChange(currentState, action);
+		// use the specific handlers for each action type
+		reducerSwitch.set(StateActionType.FETCH_SOURCES, () =>
+			reduceHandlerFetchSources(currentState, action as ActionChangeLayerSources)
+		);
+		reducerSwitch.set(StateActionType.LAYER_ACTIVE_CHANGE, () =>
+			reduceHandlerActiveLayerChange(currentState, action as ActionLayerActiveChange)
+		);
+		reducerSwitch.set(StateActionType.GLOBAL_STATE_UPDATE, () =>
+			reduceHandlerGlobalStateUpdate(currentState, action as ActionGlobalStateUpdate)
+		);
+		reducerSwitch.set(StateActionType.MAP_VIEW_CHANGE, () =>
+			reduceHandlerMapSetMapViewChange(currentState, action as ActionMapViewChange)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_ACTIVE_CHANGE, () =>
+			reduceHandlerMapLayerActiveChange(currentState, action as ActionMapLayerActiveChange)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_ADD, () =>
+			reduceHandlerMapLayerAdd(currentState, action as ActionMapLayerAdd)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_OPACITY_CHANGE, () =>
+			reduceHandlerMapLayerOpacityChange(currentState, action as ActionMapLayerOpacityChange)
+		);
+		reducerSwitch.set(StateActionType.MAP_ADD_TO_MAP_SET, () =>
+			reduceHandlerMapSetAddMap(currentState, action as ActionMapAddToMapSet)
+		);
+		reducerSwitch.set(StateActionType.MAP_REMOVE_FROM_MAP_SET, () =>
+			reduceHandlerMapSetRemoveMap(currentState, action as ActionMapRemoveFromMapSet)
+		);
+		reducerSwitch.set(StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS, () =>
+			reduceHandlerRemoveMapSetMapsByKeys(currentState, action as ActionMapSetRemoveMapsByKeys)
+		);
+		reducerSwitch.set(StateActionType.MAP_SET_SYNC_CHANGE, () =>
+			reduceHandlerMapSetSyncChange(currentState, action as ActionMapSetSyncChange)
+		);
+		reducerSwitch.set(StateActionType.MAP_SET_MODE_CHANGE, () =>
+			reduceHandlerMapSetModeChange(currentState, action as ActionMapSetModeChange)
+		);
+		reducerSwitch.set(StateActionType.MAP_SET_ADD, () =>
+			reduceHandlerMapSetAddMapSet(currentState, action as ActionMapSetAdd)
+		);
+		reducerSwitch.set(StateActionType.MAP_SET_REMOVE, () =>
+			reduceHandlerMapSetRemove(currentState, action as ActionMapSetRemove)
+		);
 
-		case StateActionType.GLOBAL_STATE_UPDATE:
-			return reduceHandlerGlobalStateUpdate(currentState, action);
+		// 2. now we need to add the application specific actions and reducers to the switch map
 
-		case StateActionType.APPLY_PERSISTENT_STATE:
-			return { ...currentState, ...action.payload };
+		// the map is conbination of action type key and reducer function with payload
+		for (const [actionType, reducerFunc] of appSpecificReducerMap.entries()) {
+			reducerSwitch.set(actionType, () => reducerFunc(currentState, action as AppSpecificAction));
+		}
 
-		case StateActionType.MAP_VIEW_CHANGE:
-			return reduceHandlerMapSetMapViewChange(currentState, action);
+		// 3. now we use the switch map to handle actions inside the final application
 
-		case StateActionType.MAP_LAYER_ACTIVE_CHANGE:
-			return reduceHandlerMapLayerActiveChange(currentState, action);
+		// read the new state from the switch map
+		const newState = reducerSwitch.get(action.type as string);
 
-		case StateActionType.MAP_LAYER_ADD:
-			return reduceHandlerMapLayerAdd(currentState, action);
+		// if the action type is not found in the switch map, throw an error
+		if (!newState) {
+			throw new Error(`Shared State: Unknown action type "${(action as any).type}"`);
+		}
 
-		case StateActionType.MAP_ADD_TO_MAP_SET:
-			return reduceHandlerMapSetAddMap(currentState, action);
+		// return the new state as called from the switch map result
+		return newState();
+	};
 
-		case StateActionType.MAP_REMOVE_FROM_MAP_SET:
-			return reduceHandlerMapSetRemoveMap(currentState, action);
-
-		case StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS:
-			return reduceHandlerRemoveMapSetMapsByKeys(currentState, action);
-
-		case StateActionType.MAP_LAYER_OPACITY_CHANGE:
-			return reduceHandlerMapLayerOpacityChange(currentState, action);
-
-		case StateActionType.MAP_SET_SYNC_CHANGE:
-			return reduceHandlerMapSetSyncChange(currentState, action);
-
-		case StateActionType.MAP_SET_MODE_CHANGE:
-			return reduceHandlerMapSetModeChange(currentState, action);
-
-		case StateActionType.MAP_SET_ADD:
-			return reduceHandlerMapSetAddMapSet(currentState, action);
-
-		case StateActionType.MAP_SET_REMOVE:
-			return reduceHandlerMapSetRemove(currentState, action);
-
-		default:
-			throw new Error(`Shared State: Unknown action type "${(action as OneOfStateActions).type}"`);
-	}
+	// return the reducer function for the react hook
+	// this function will be used in the useReducer hook
+	return reducerForReact;
 };

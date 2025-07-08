@@ -10,10 +10,10 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @param action ActionMapSetRemoveMapsByKeys
  * @returns Updated AppSharedState
  */
-export const reduceHandlerRemoveMapSetMapsByKeys = (
-	state: AppSharedState,
+export const reduceHandlerRemoveMapSetMapsByKeys = <T extends AppSharedState = AppSharedState>(
+	state: T,
 	action: ActionMapSetRemoveMapsByKeys
-): AppSharedState => {
+): T => {
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for remove maps from map set by keys action');

@@ -6,7 +6,7 @@ import { defaultMapViewState, defaultMapView } from '../logic/map.defaults';
 import { parseLayersFromSharedState } from '../logic/parsing.layers';
 import FeatureDetailModal, { FeatureModalState } from './FeatureDetailModal';
 import { FeatureInteractionFunc } from '../logic/models.events';
-import useSharedState from '../../shared/hooks/state.useSharedState';
+import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { LayerTreeInteraction } from '../../shared/layers/models.layers';
 import { Nullable } from '../../../globals';
 import { getRenderingLayersByKeys } from '../../shared/appState/selectors/getRenderingLayersByKeys';
@@ -52,6 +52,7 @@ export interface RenderMapProps {
 
 /** Rendered map with DeckGL tool used as a geospatial renderer */
 export const RenderingMap: React.FC<RenderMapProps> = (props: RenderMapProps) => {
+
 	// shared application state in context
 	const [sharedState] = useSharedState();
 
@@ -80,7 +81,13 @@ export const RenderingMap: React.FC<RenderMapProps> = (props: RenderMapProps) =>
 
 	// layers setup
 	const layersFromState = props?.layerKeys ? getRenderingLayersByKeys(sharedState, props.layerKeys) : [];
+
+	console.log('Layers from state:', layersFromState);
+
 	const parsedLayersFromState: LayersList = parseLayersFromSharedState([...layersFromState], interactionMap);
+
+	console.log('Parsed layers from state:', parsedLayersFromState);
+
 
 	const layers = [...parsedLayersFromState, ...(props.layer || [])];
 
