@@ -7,6 +7,7 @@ import {
 	ActionMapLayerActiveChange,
 	ActionMapLayerAdd,
 	ActionMapLayerOpacityChange,
+	ActionMapLayerRemove,
 	ActionMapRemoveFromMapSet,
 	ActionMapSetAdd,
 	ActionMapSetModeChange,
@@ -22,6 +23,7 @@ import { reduceHandlerMapSetSyncChange } from './reducerHandlers/mapSetSyncChang
 import { reduceHandlerGlobalStateUpdate } from './reducerHandlers/globalStateUpdate';
 import { reduceHandlerMapLayerActiveChange } from './reducerHandlers/mapLayerActiveChange';
 import { reduceHandlerMapLayerAdd } from './reducerHandlers/mapLayerAdd';
+import { reduceHandlerMapLayerRemove } from './reducerHandlers/mapLayerRemove';
 import { reduceHandlerMapLayerOpacityChange } from './reducerHandlers/mapLayerOpacityChange';
 import { reduceHandlerFetchSources } from './reducerHandlers/fetchSourcesUpdate';
 import { reduceHandlerMapSetAddMap } from './reducerHandlers/mapSetAddMap';
@@ -34,7 +36,7 @@ import { AppSpecificAction, AppSpecificReducerMap } from './state.models.reducer
 
 /**
  * Creates a reducer function for a specific application state that combines core and application-specific reducers.
- * 
+ *
  * @template ApplicationSpecificState - The type of the application-specific state, must extend AppSharedState
  * @param appSpecificReducerMap - A Map containing application-specific action types and their corresponding reducer functions
  * @returns A reducer function compatible with React's useReducer hook that handles both core and application-specific state updates
@@ -59,24 +61,23 @@ import { AppSpecificAction, AppSpecificReducerMap } from './state.models.reducer
 export const reducerForSpecificApp = <ApplicationSpecificState extends AppSharedState = AppSharedState>(
 	appSpecificReducerMap: AppSpecificReducerMap<ApplicationSpecificState>
 ) => {
-
 	/**
 	 * A reducer function for managing application state in React components.
-	 * 
+	 *
 	 * This reducer handles both core and application-specific state updates through a Map-based
 	 * switch pattern. It processes various action types including map operations, layer management,
 	 * and global state updates.
-	 * 
+	 *
 	 * @param currentState - The current application state before the reduction
 	 * @param action - The action object containing the type and payload for state modification
 	 * @throws {Error} When an unknown action type is provided
 	 * @returns {ApplicationSpecificState} The new application state after applying the reduction
-	 * 
+	 *
 	 * The reducer follows a three-step process:
 	 * 1. Initializes core action handlers
 	 * 2. Incorporates application-specific reducers
 	 * 3. Executes the appropriate reducer based on the action type
-	 * 
+	 *
 	 * @example
 	 * const newState = reducerForReact(currentState, {
 	 *   type: StateActionType.MAP_LAYER_ADD,
@@ -87,7 +88,6 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 		currentState: ApplicationSpecificState,
 		action: AppSpecificAction
 	): ApplicationSpecificState => {
-
 		// 0. if there is no action, return the current state
 		if (!action) return currentState;
 
@@ -122,6 +122,9 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 		);
 		reducerSwitch.set(StateActionType.MAP_LAYER_ADD, () =>
 			reduceHandlerMapLayerAdd(currentState, action as ActionMapLayerAdd)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_REMOVE, () =>
+			reduceHandlerMapLayerRemove(currentState, action as ActionMapLayerRemove)
 		);
 		reducerSwitch.set(StateActionType.MAP_LAYER_OPACITY_CHANGE, () =>
 			reduceHandlerMapLayerOpacityChange(currentState, action as ActionMapLayerOpacityChange)
