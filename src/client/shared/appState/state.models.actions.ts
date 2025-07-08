@@ -95,6 +95,14 @@ export interface ActionMapLayerAdd extends AppSpecificAction{
 }
 
 /**
+ * Remove layer from map
+ */
+export interface ActionMapLayerRemove {
+	type: StateActionType.MAP_LAYER_REMOVE;
+	payload: { mapKey: string; layerKey: string };
+}
+
+/**
  * Add map to map set
  */
 export interface ActionMapAddToMapSet extends AppSpecificAction{
@@ -191,6 +199,7 @@ export type OneOfStateActions = AppSpecificAction &
 	| ActionMapSetRemoveMapsByKeys
 	| ActionMapLayerActiveChange
 	| ActionMapLayerAdd
+	| ActionMapLayerRemove
 	| ActionMapLayerOpacityChange
 	| ActionMapViewChange
 	| ActionMapSetSyncChange
