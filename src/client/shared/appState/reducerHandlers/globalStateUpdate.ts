@@ -20,11 +20,11 @@ export const reduceHandlerGlobalStateUpdate = <T extends AppSharedState = AppSha
 	// Return the updated state
 	return {
 		...state,
-		...otherState,
 		mapSets: mapSets ? deduplicateByKey([...state.mapSets, ...mapSets]) : state.mapSets,
 		maps: maps ? deduplicateByKey([...state.maps, ...maps]) : state.maps,
 		renderingLayers: renderingLayers
 			? deduplicateByKey([...state.renderingLayers, ...renderingLayers])
 			: state.renderingLayers,
+		...otherState,
 	};
 };
