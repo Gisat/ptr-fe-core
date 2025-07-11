@@ -15,11 +15,12 @@ export const reduceHandlerGlobalStateUpdate = <T extends AppSharedState = AppSha
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided global state update');
-	const { maps, mapSets, renderingLayers } = payload;
+	const { maps, mapSets, renderingLayers, ...otherState } = payload;
 
 	// Return the updated state
 	return {
 		...state,
+		...otherState,
 		mapSets: mapSets ? deduplicateByKey([...state.mapSets, ...mapSets]) : state.mapSets,
 		maps: maps ? deduplicateByKey([...state.maps, ...maps]) : state.maps,
 		renderingLayers: renderingLayers

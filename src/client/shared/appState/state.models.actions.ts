@@ -131,7 +131,7 @@ export interface ActionMapSetRemoveMapsByKeys extends AppSpecificAction {
  */
 export interface ActionGlobalStateUpdate extends AppSpecificAction {
 	type: StateActionType.GLOBAL_STATE_UPDATE;
-	payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
+	payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[]; [key: string]: any };
 }
 
 /**
