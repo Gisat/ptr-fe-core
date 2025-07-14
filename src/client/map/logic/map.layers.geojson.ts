@@ -3,6 +3,15 @@ import { LayerGeneralProps } from './map.layers.models';
 import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
 
+const defaultOptions = {
+	filled: true,
+	stroked: true,
+	pointRadiusScale: 0.2,
+	getPointRadius: 50,
+	getFillColor: [255, 100, 100],
+	getLineColor: [255, 100, 100],
+};
+
 /**
  * Creates a GeoJsonLayer with the specified properties.
  *
@@ -15,15 +24,6 @@ import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.pant
  */
 export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity }: LayerGeneralProps) => {
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, true);
-
-	const defaultOptions = {
-		filled: true,
-		stroked: true,
-		pointRadiusScale: 0.2,
-		getPointRadius: 50,
-		getFillColor: [255, 100, 100],
-		getLineColor: [255, 100, 100],
-	};
 
 	const geojsonOptions = configurationJs?.geojsonOptions ?? defaultOptions;
 
