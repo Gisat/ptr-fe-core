@@ -1,48 +1,65 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import {useEffect, useState, useCallback} from 'react';
+import axios, {AxiosRequestConfig} from 'axios';
 
 /**
  * Props for the useAxios hook.
- * @property fetchUrl - The URL to fetch data from.
+ * @property axiosConfig - Additional Axios request configuration
  */
-export interface UseAxiosProps {
-    fetchUrl: string;
-
+export interface UseAxiosOptions {
+    axiosConfig?: AxiosRequestConfig;
 }
 
 /**
- * Custom React hook for fetching data using Axios.
- *
- * @template T - The expected response data type.
- * @param props - The properties for the hook.
- * @returns An object containing the fetched data and any error encountered.
- *
- * @example
- * const { data, error } = useAxios<{ name: string }>({ fetchUrl: '/api/user' });
+ * Return type for the useAxios hook.
+ * @template T - Expected data type for the response.
+ * @property data - The fetched data or null if not yet set.
+ * @property error - Error object or null if no error.
+ * @property isLoading - True while performing the initial fetch.
+ * @property isValidating - True while any fetch (initial or manual) is in progress.
+ * @property revalidate - Function to manually re-fetch data.
  */
-export const useAxios = <T = unknown>({
-                                           fetchUrl
-                                       }: UseAxiosProps) :{data: T | null, error: any | null} => {
+export interface UseAxiosReturn<T> {
+    data: T | null;
+    error: any | null;
+    isLoading: boolean;
+    isValidating: boolean;
+    revalidate: () => Promise<void>;
+}
 
+/**
+ * Custom React hook for fetching data using Axios once on component mount.
+ * @template T - Expected data type for the response.
+ * @param url - The URL to fetch data from.
+ * @param options - Optional settings including Axios config.
+ * @returns Object containing data, error state, and loading indicators.
+ */
+export function useAxios<T = unknown>(
+    url: { fetchUrl: string },
+    options: UseAxiosOptions = {}
+): UseAxiosReturn<T> {
     const [data, setData] = useState<T | null>(null);
     const [error, setError] = useState<any | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isValidating, setIsValidating] = useState(false);
 
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await axios.get(fetchUrl);
-                const responseData = response.data as T;
-                setData(responseData);
-
-            } catch (err) {
-                setError(err);
-                console.error("Error fetching data:", err);
-            }
-
+    const fetchData = useCallback(async () => {
+        setIsValidating(true);
+        try {
+            const response = await axios.get<T>(url.fetchUrl, options.axiosConfig);
+            setData(response.data);
+            setError(null);
+        } catch (err) {
+            setError(err);
+        } finally {
+            setIsValidating(false);
+            setIsLoading(false);
         }
-         fetchData()
-        }, []);
+    }, [url, options.axiosConfig]);    // Re-create fetchData if URL or config change
 
-    return { data, error };
-};
+    // Automatically fetch data once when the component mounts
+    useEffect(() => {
+        fetchData();                     // Trigger fetch on mount
+        // Empty dependency array ensures this runs only once
+    }, []);
+    return {data, error, isLoading, isValidating, revalidate: fetchData};
+}
