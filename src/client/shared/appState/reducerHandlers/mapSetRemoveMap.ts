@@ -10,10 +10,10 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @param action ActionMapRemoveFromMapSet
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapSetRemoveMap = (
-	state: AppSharedState,
+export const reduceHandlerMapSetRemoveMap = <T extends AppSharedState = AppSharedState>(
+	state: T,
 	action: ActionMapRemoveFromMapSet
-): AppSharedState => {
+): T => {
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for map remove from map set action');

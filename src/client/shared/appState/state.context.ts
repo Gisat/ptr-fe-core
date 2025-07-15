@@ -1,14 +1,13 @@
 import { createContext, Dispatch } from 'react';
-import { defaultStateValue } from './state.defaults';
-import { AppSharedState } from './state.models';
-import { OneOfStateActions } from './state.models.actions';
+// import { defaultStateValue } from './state.defaults';
 
 /**
- * Creates react context for shared application state
+ * Context for shared state in the application.
  */
-export const SharedStateContext = createContext<AppSharedState>(defaultStateValue());
+export const SharedStateContext = createContext(null as unknown as any);
 
 /**
- * Creates react context for shared state dispatch method
+ * Context for dispatching actions to update the shared state.
+ * This is used to provide a dispatch function to components that need to update the state.
  */
-export const SharedStateDispatchContext = createContext<Dispatch<OneOfStateActions>>(() => console.log('none'));
+export const SharedStateDispatchContext = createContext(null as unknown as Dispatch<any>);
