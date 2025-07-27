@@ -11,6 +11,7 @@ export interface LayerGeneralProps {
 	isActive: boolean;
 	key: string;
 	opacity?: number;
+	activeFeatureKey?: string; // Key of the feature that is currently active
 
 	//TODO better typing and more types of inclick handlers for general purposes
 	onClickHandler: Unsure<OneOfInteractionFunc>;

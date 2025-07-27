@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DeckGL } from '@deck.gl/react';
 import { LayersList, ViewStateChangeParameters } from '@deck.gl/core';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
 import { mergeViews } from '../../map/logic/mapView/mergeViews';
-import { ActionMapViewChange } from '../../shared/appState/state.models.actions';
+import { ActionMapLayerSetActiveFeatureKey, ActionMapViewChange } from '../../shared/appState/state.models.actions';
 import { getViewChange } from '../../map/logic/mapView/getViewChange';
 import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMapKey';
 import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
@@ -25,6 +25,8 @@ export interface BasicMapProps {
  */
 export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
+	const [layerIsHovered, setLayerIsHovered] = useState(false);
+
 	const mapState = getMapByKey(sharedState, mapKey);
 	const mapViewState = mergeViews(syncedView, mapState?.view ?? {});
 	const mapLayers = getLayersByMapKey(sharedState, mapKey);
@@ -36,6 +38,19 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 			payload: { key: mapKey, viewChange: syncedView },
 		} as ActionMapViewChange);
 	}, []);
+
+	const onClick = (event: any) => {
+		if (event) {
+			sharedStateDispatch({
+				type: 'mapLayerSetActiveFeatureKey',
+				payload: {
+					mapKey,
+					layerKey: event.layer.id,
+					activeFeatureKey: event.object?.properties?.Name || '',
+				},
+			} as ActionMapLayerSetActiveFeatureKey);
+		}
+	};
 
 	const onViewStateChange = ({ viewState, oldViewState }: ViewStateChangeParameters) => {
 		// Get changed view params
@@ -59,6 +74,9 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 			width="100%"
 			height="100%"
 			onViewStateChange={onViewStateChange}
+			onClick={onClick}
+			onHover={({ object }) => setLayerIsHovered(Boolean(object))}
+			getCursor={({ isDragging }) => (isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab')}
 		/>
 	);
 };

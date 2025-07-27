@@ -21,6 +21,7 @@ export const parseLayersFromSharedState = (
 			opacity: layer.opacity,
 			isActive: layer.isActive ?? true,
 			onClickHandler: layer.interaction && interactionRenderingMap?.get(layer.interaction),
+			activeFeatureKey: layer.activeFeatureKey, // Pass activeFeatureKey to the layer
 		};
 
 		// TODO: add other layer types and datasources

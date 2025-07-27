@@ -10,6 +10,7 @@ const defaultOptions = {
 	getPointRadius: 50,
 	getFillColor: [255, 100, 100],
 	getLineColor: [255, 100, 100],
+	getLineWidth: 1,
 };
 
 /**
@@ -22,7 +23,7 @@ const defaultOptions = {
  * @param {number} param0.opacity - Layer opacity
  * @returns {GeoJsonLayer} The created GeoJsonLayer instance.
  */
-export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity }: LayerGeneralProps) => {
+export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, activeFeatureKey }: LayerGeneralProps) => {
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, true);
 
 	const geojsonOptions = configurationJs?.geojsonOptions ?? defaultOptions;
@@ -32,7 +33,25 @@ export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity }: Layer
 		opacity: opacity ?? 1,
 		visible: isActive,
 		data: url,
+		updateTriggers: {
+			getLineColor: [activeFeatureKey],
+			getFillColor: [activeFeatureKey],
+		},
 		...geojsonOptions,
+		getLineColor: (feature: any) => {
+			if (feature?.properties?.Name && activeFeatureKey && feature?.properties?.Name === activeFeatureKey) {
+				return [0, 255, 255, 255]; // blue
+			} else {
+				return geojsonOptions.getLineColor;
+			}
+		},
+		getLineWidth: (feature: any) => {
+			if (feature?.properties?.Name === activeFeatureKey) {
+				return 20; // thicker line for highlighted feature
+			} else {
+				return geojsonOptions.getLineWidth;
+			}
+		},
 	});
 
 	return layer;
