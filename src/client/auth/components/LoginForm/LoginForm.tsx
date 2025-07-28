@@ -1,6 +1,6 @@
 import { Button, Card } from '@mantine/core';
 import './LoginForm.css';
-import React, { JSX } from 'react';
+import { JSX } from 'react';
 
 /**
  * LoginForm component

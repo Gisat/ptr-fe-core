@@ -35,6 +35,8 @@ ptr-fe-core--1.0.35.tgz
 /.next/
 /out/
 
+*.nogit.*
+
 # production
 /build
 

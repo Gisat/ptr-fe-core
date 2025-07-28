@@ -9,11 +9,10 @@
     "strict": true,
     "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "esModuleInterop": true,
     "baseUrl": "./",
-    "paths": {
-      "@ptr-fe-core-sandbox/*": ["src/*"]
-    }
   },
   "exclude": ["node_modules", "dist", "src/others"]
 }

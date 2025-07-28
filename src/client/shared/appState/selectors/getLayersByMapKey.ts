@@ -1,8 +1,9 @@
-import { AppSharedState } from '../../appState/state.models';
+import { AppSharedState } from '../state.models';
 import { RenderingLayer } from '../../models/models.layers';
+import { getRenderingLayerByKey } from './getRenderingLayerByKey';
 
 /**
- * Extract layers for a specific map from the shared state by combining map state and rendering layers.
+ * Extract layers for a specific map from the shared state by combining map state, rendering layers and style.
  * @param state - The shared application state.
  * @param key - The key of the map to extract layers for.
  * @returns {RenderingLayer[] | undefined} The combined layers or undefined if no layers are found.
@@ -15,8 +16,8 @@ export const getLayersByMapKey = (state: AppSharedState, key: string): Rendering
 
 	return mapLayers
 		.map((layer) => {
-			const renderingLayer = renderingLayers.find((rLayer) => rLayer.key === layer.key);
-			return renderingLayer ? { ...renderingLayer, ...layer } : null;
+			const renderingLayer = getRenderingLayerByKey(state, layer?.key) || {};
+			return { ...renderingLayer, ...layer };
 		})
 		.filter(Boolean) as RenderingLayer[];
 };

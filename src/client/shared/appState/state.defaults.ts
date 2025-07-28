@@ -17,8 +17,12 @@ export const defaultStateValue = () => {
 			labels: [UsedNodeLabels.Application],
 		},
 		renderingLayers: [],
+		layers: [],
+		places: [],
 		mapSets: [],
 		maps: [],
+		styles: [],
+		periods: [],
 	};
 
 	return defaultState;

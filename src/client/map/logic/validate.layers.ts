@@ -12,20 +12,18 @@ export const validateDatasource = (
 	requiredDatasourceType: UsedDatasourceLabels,
 	requireUrl: boolean
 ) => {
-	const { key, configuration, labels } = source;
+	const { key, labels, url, configuration } = source;
 
 	// datasource node validation
 	if (!labels.includes(requiredDatasourceType))
 		throw new Error(`Datasource error: Label of ${requiredDatasourceType} is required`);
 
-	if (!configuration) throw new Error(`Datasource error: ${requiredDatasourceType} requires congfiguration`);
-
-	const configurationJs = typeof configuration === 'string' ? JSON.parse(configuration) : configuration;
-
 	if (!key) throw new Error(`Datasource error: ${requiredDatasourceType} requires key`);
 
-	if (requireUrl && !configurationJs.url)
-		throw new Error(`Datasource error: ${requiredDatasourceType} requires URL in configuration`);
+	if (requireUrl && !url) throw new Error(`Datasource error: ${requiredDatasourceType} requires URL`);
 
-	return { configurationJs, source };
+	const configurationJs =
+		configuration && typeof configuration === 'string' ? JSON.parse(configuration) : configuration;
+
+	return { url, source, configurationJs };
 };
