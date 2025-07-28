@@ -40,7 +40,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	}, []);
 
 	const onClick = (event: any) => {
-		if (event) {
+		if (event?.object?.properties?.id) {
 			sharedStateDispatch({
 				type: 'mapLayerSetActiveFeatureKey',
 				payload: {

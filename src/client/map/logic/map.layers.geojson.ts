@@ -13,6 +13,17 @@ const defaultOptions = {
 	getLineWidth: 1,
 };
 
+export interface Feature {
+	type: 'Feature';
+	geometry: {
+		type: string;
+		coordinates: any;
+	};
+	properties: {
+		id: string;
+	};
+}
+
 /**
  * Creates a GeoJsonLayer with the specified properties.
  *
@@ -38,14 +49,14 @@ export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, activeF
 			getFillColor: [activeFeatureKey],
 		},
 		...geojsonOptions,
-		getLineColor: (feature: any) => {
+		getLineColor: (feature: Feature) => {
 			if (feature?.properties?.id && activeFeatureKey && feature?.properties?.id === activeFeatureKey) {
 				return [0, 255, 255, 255]; // blue
 			} else {
 				return geojsonOptions.getLineColor;
 			}
 		},
-		getLineWidth: (feature: any) => {
+		getLineWidth: (feature: Feature) => {
 			if (feature?.properties?.id === activeFeatureKey) {
 				return 20; // thicker line for highlighted feature
 			} else {
