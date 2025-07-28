@@ -39,14 +39,14 @@ export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, activeF
 		},
 		...geojsonOptions,
 		getLineColor: (feature: any) => {
-			if (feature?.properties?.Name && activeFeatureKey && feature?.properties?.Name === activeFeatureKey) {
+			if (feature?.properties?.id && activeFeatureKey && feature?.properties?.id === activeFeatureKey) {
 				return [0, 255, 255, 255]; // blue
 			} else {
 				return geojsonOptions.getLineColor;
 			}
 		},
 		getLineWidth: (feature: any) => {
-			if (feature?.properties?.Name === activeFeatureKey) {
+			if (feature?.properties?.id === activeFeatureKey) {
 				return 20; // thicker line for highlighted feature
 			} else {
 				return geojsonOptions.getLineWidth;

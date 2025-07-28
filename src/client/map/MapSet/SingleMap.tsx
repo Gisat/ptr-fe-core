@@ -46,7 +46,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 				payload: {
 					mapKey,
 					layerKey: event.layer.id,
-					activeFeatureKey: event.object?.properties?.Name || '',
+					activeFeatureKey: event.object?.properties?.id,
 				},
 			} as ActionMapLayerSetActiveFeatureKey);
 		}
