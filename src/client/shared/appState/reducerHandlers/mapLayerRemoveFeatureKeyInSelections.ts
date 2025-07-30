@@ -23,8 +23,9 @@ export const reduceHandlerRemoveFeatureKeyInSelections = <T extends AppSharedSta
 	const mapToChange = getMapByKey(state, mapKey);
 	if (!mapToChange) throw new Error(`Map with key ${mapKey} not found`);
 
-	// Find the selectionKey for the layer
 	let selectionKey: string | undefined = undefined;
+
+	// Find selectionKey for the layer
 	for (const layer of mapToChange.renderingLayers) {
 		if (layer.key === layerKey) {
 			selectionKey = layer.selectionKey;
@@ -32,26 +33,25 @@ export const reduceHandlerRemoveFeatureKeyInSelections = <T extends AppSharedSta
 		}
 	}
 
-	if (!selectionKey) {
-		// No selectionKey found, nothing to remove
-		return state;
+	// Prepare updated selections (shared pattern)
+	const selections = Array.isArray(state.selections) ? [...state.selections] : [];
+	let found = false;
+
+	if (selectionKey) {
+		for (let i = 0; i < selections.length; i++) {
+			if (selections[i] && selections[i].key === selectionKey) {
+				found = true;
+				const newFeatureKeys = selections[i].featureKeys.filter((key: string) => key !== featureKey);
+				const { [featureKey]: _, ...newColourIndexPairs } = selections[i].featureKeyColourIndexPairs || {};
+				selections[i] = {
+					...selections[i],
+					featureKeys: newFeatureKeys,
+					featureKeyColourIndexPairs: newColourIndexPairs,
+				};
+				break;
+			}
+		}
 	}
 
-	// Remove the featureKey from the selection's featureKeys and featureKeyColourIndexPairs
-	const updatedSelections = Array.isArray(state.selections)
-		? state.selections.map((selection) => {
-				if (selection && selection.key === selectionKey && Array.isArray(selection.featureKeys)) {
-					const newFeatureKeys = selection.featureKeys.filter((key) => key !== featureKey);
-					const { [featureKey]: _, ...newColourIndexPairs } = selection.featureKeyColourIndexPairs || {};
-					return {
-						...selection,
-						featureKeys: newFeatureKeys,
-						featureKeyColourIndexPairs: newColourIndexPairs,
-					};
-				}
-				return selection;
-			})
-		: state.selections;
-
-	return { ...state, selections: updatedSelections };
+	return { ...state, selections };
 };

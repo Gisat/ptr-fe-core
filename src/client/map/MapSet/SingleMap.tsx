@@ -54,7 +54,6 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	});
 
 	const onClick = (event: any) => {
-		console.log('Map clicked:', event);
 		handleMapClick({
 			event,
 			sharedState,

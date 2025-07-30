@@ -30,59 +30,60 @@ export const reduceHandlerAddFeatureKeyToSelections = <T extends AppSharedState 
 
 	let selectionKey: string | undefined = undefined;
 
-	const changedLayers = mapToChange.renderingLayers.map((layer) => {
-		const layerSelectionKey = layer.selectionKey;
-		if (layer.key === layerKey && !layerSelectionKey) {
-			selectionKey = uuidv4();
-			return { ...layer, selectionKey };
-		} else if (layer.key === layerKey) {
-			selectionKey = layerSelectionKey;
-			return { ...layer };
+	// Update rendering layers and determine selectionKey
+	const changedLayers: typeof mapToChange.renderingLayers = [];
+	for (const layer of mapToChange.renderingLayers) {
+		if (layer.key === layerKey) {
+			if (!layer.selectionKey) {
+				selectionKey = uuidv4();
+				changedLayers.push({ ...layer, selectionKey });
+			} else {
+				selectionKey = layer.selectionKey;
+				changedLayers.push({ ...layer });
+			}
+		} else {
+			changedLayers.push(layer);
 		}
-		return layer;
-	});
+	}
 
-	const updatedMaps: SingleMapModel[] = state.maps.map((map) => {
-		if (map.key === mapKey) {
-			return { ...map, renderingLayers: changedLayers };
-		}
-		return map;
-	});
+	// Update maps with changed layers
+	const updatedMaps: SingleMapModel[] = state.maps.map((map) =>
+		map.key === mapKey ? { ...map, renderingLayers: changedLayers } : map
+	);
 
-	const selections = state.selections;
-	let updatedSelections = [...selections];
+	// Prepare updated selections (shared pattern)
+	const selections = Array.isArray(state.selections) ? [...state.selections] : [];
+	let found = false;
 
 	if (selectionKey) {
-		const selection = selections.find((sel) => sel && sel.key === selectionKey);
-		if (!selection) {
-			// Create new selection object if not found
-			updatedSelections.push({
+		for (let i = 0; i < selections.length; i++) {
+			if (selections[i] && selections[i].key === selectionKey) {
+				found = true;
+				const usedColorIndexes = Object.values(selections[i].featureKeyColourIndexPairs ?? {});
+				let nextColorIndex = 0;
+				while (usedColorIndexes.includes(nextColorIndex)) {
+					nextColorIndex++;
+				}
+				selections[i] = {
+					...selections[i],
+					featureKeys: [...selections[i].featureKeys, featureKey],
+					featureKeyColourIndexPairs: {
+						...selections[i].featureKeyColourIndexPairs,
+						[featureKey]: nextColorIndex,
+					},
+				};
+				break;
+			}
+		}
+		if (!found) {
+			selections.push({
 				key: selectionKey,
 				distinctColours: SELECTION_DEFAULT_DISTINCT_COLOURS,
 				featureKeys: [featureKey],
 				featureKeyColourIndexPairs: { [featureKey]: 0 },
 			});
-		} else {
-			// Add featureKey with the lowest unused color index
-			updatedSelections = selections.map((selection) => {
-				const layerSelectionKey = selection.key;
-				if (layerSelectionKey === selectionKey) {
-					const usedColorIndexes = Object.values(selection.featureKeyColourIndexPairs);
-					let nextColorIndex = 0;
-					while (usedColorIndexes.includes(nextColorIndex)) {
-						nextColorIndex++;
-					}
-					return {
-						...selection,
-						featureKeys: [...selection.featureKeys, featureKey],
-						featureKeyColourIndexPairs: { ...selection.featureKeyColourIndexPairs, [featureKey]: nextColorIndex },
-					};
-				} else {
-					return { ...selection };
-				}
-			});
 		}
 	}
 
-	return { ...state, maps: updatedMaps, selections: updatedSelections };
+	return { ...state, maps: updatedMaps, selections };
 };
