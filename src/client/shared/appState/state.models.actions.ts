@@ -103,11 +103,23 @@ export interface ActionMapLayerRemove extends AppSpecificAction {
 }
 
 /**
- * Set active feature key for vector layer in map's rendering layers
+ * Set feature key for vector layer in map's rendering layers
  */
-export interface ActionMapLayerSetActiveFeatureKey extends AppSpecificAction {
-	type: StateActionType.MAP_LAYER_SET_ACTIVE_FEATURE_KEY;
-	payload: { mapKey: string; layerKey: string; activeFeatureKey: string };
+export interface ActionMapLayerSetFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_SET_FEATURE_KEY;
+	payload: { mapKey: string; layerKey: string; featureKey: string };
+}
+
+/** Add feature key to map layer selections */
+export interface ActionMapLayerAddFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY;
+	payload: { mapKey: string; layerKey: string; featureKey: string };
+}
+
+/** Remove feature key from map layer selections */
+export interface ActionMapLayerRemoveFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY;
+	payload: { mapKey: string; layerKey: string; featureKey: string };
 }
 
 /**
@@ -209,7 +221,9 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionMapLayerActiveChange
 		| ActionMapLayerAdd
 		| ActionMapLayerRemove
-		| ActionMapLayerSetActiveFeatureKey
+		| ActionMapLayerSetFeatureKey
+		| ActionMapLayerAddFeatureKey
+		| ActionMapLayerRemoveFeatureKey
 		| ActionMapLayerOpacityChange
 		| ActionMapViewChange
 		| ActionMapSetSyncChange

@@ -44,8 +44,14 @@ export enum StateActionType {
 	/** Action to remove layer from the map. */
 	MAP_LAYER_REMOVE = 'mapLayerRemove',
 
-	/** Action to set the active feature key for a map layer. */
-	MAP_LAYER_SET_ACTIVE_FEATURE_KEY = 'mapLayerSetActiveFeatureKey',
+	/** Action to set the feature key for a map layer. */
+	MAP_LAYER_SET_FEATURE_KEY = 'mapLayerSetFeatureKey',
+
+	/** Action to add a feature key to the map layer selections. */
+	MAP_LAYER_ADD_FEATURE_KEY = 'mapLayerAddFeatureKey',
+
+	/** Action to remove a feature key from the map layer selections. */
+	MAP_LAYER_REMOVE_FEATURE_KEY = 'mapLayerRemoveFeatureKey',
 
 	/** Action to add map to map set */
 	MAP_ADD_TO_MAP_SET = 'addMapToMapSet',

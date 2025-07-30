@@ -12,5 +12,5 @@ export interface RenderingLayer {
 	opacity?: number;
 	datasource: Datasource;
 	interaction: Nullable<LayerTreeInteraction>;
-	activeFeatureKey?: string; // Key of the feature that is currently active
+	selectionKey?: string;
 }

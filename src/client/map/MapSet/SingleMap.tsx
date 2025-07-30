@@ -5,10 +5,11 @@ import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
 import { mergeViews } from '../../map/logic/mapView/mergeViews';
-import { ActionMapLayerSetActiveFeatureKey, ActionMapViewChange } from '../../shared/appState/state.models.actions';
+import { ActionMapViewChange } from '../../shared/appState/state.models.actions';
 import { getViewChange } from '../../map/logic/mapView/getViewChange';
 import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMapKey';
 import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
+import { handleMapClick } from './handleMapClick';
 
 export interface BasicMapProps {
 	// map view state
@@ -26,6 +27,7 @@ export interface BasicMapProps {
 export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
+	const [controlIsDown, setControlIsDown] = useState(false);
 
 	const mapState = getMapByKey(sharedState, mapKey);
 	const mapViewState = mergeViews(syncedView, mapState?.view ?? {});
@@ -39,17 +41,27 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 		} as ActionMapViewChange);
 	}, []);
 
-	const onClick = (event: any) => {
-		if (event?.object?.properties?.id) {
-			sharedStateDispatch({
-				type: 'mapLayerSetActiveFeatureKey',
-				payload: {
-					mapKey,
-					layerKey: event.layer.id,
-					activeFeatureKey: event.object?.properties?.id,
-				},
-			} as ActionMapLayerSetActiveFeatureKey);
+	document.addEventListener('keydown', (event) => {
+		if (event.key === 'Control') {
+			setControlIsDown(true);
 		}
+	});
+
+	document.addEventListener('keyup', (event) => {
+		if (event.key === 'Control') {
+			setControlIsDown(false);
+		}
+	});
+
+	const onClick = (event: any) => {
+		console.log('Map clicked:', event);
+		handleMapClick({
+			event,
+			sharedState,
+			sharedStateDispatch,
+			mapKey,
+			controlIsDown,
+		});
 	};
 
 	const onViewStateChange = ({ viewState, oldViewState }: ViewStateChangeParameters) => {

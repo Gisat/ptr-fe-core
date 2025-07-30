@@ -3,6 +3,9 @@ import { LayerGeneralProps } from './map.layers.models';
 import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
 
+/**
+ * Default options for GeoJsonLayer rendering.
+ */
 const defaultOptions = {
 	filled: true,
 	stroked: true,
@@ -13,6 +16,26 @@ const defaultOptions = {
 	getLineWidth: 1,
 };
 
+/**
+ * Converts a hex color string to an RGB array.
+ * @param {string} hex - The hex color string (e.g., "#ff0000" or "ff0000").
+ * @returns {[number, number, number]} The RGB color array.
+ */
+function hexToRgbArray(hex: string): [number, number, number] {
+	hex = hex.replace(/^#/, '');
+	if (hex.length === 3) {
+		hex = hex
+			.split('')
+			.map((x) => x + x)
+			.join('');
+	}
+	const num = parseInt(hex, 16);
+	return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+/**
+ * GeoJSON Feature interface.
+ */
 export interface Feature {
 	type: 'Feature';
 	geometry: {
@@ -30,40 +53,57 @@ export interface Feature {
  * @param {LayerGeneralProps} param0 - The properties for creating the GeoJsonLayer.
  * @param {Object} param0.sourceNode - The source node containing configuration and key.
  * @param {boolean} param0.isActive - A flag indicating whether the layer is active.
- * @param {string} param0.key - Layer identifier
- * @param {number} param0.opacity - Layer opacity
+ * @param {string} param0.key - Layer identifier.
+ * @param {number} param0.opacity - Layer opacity.
+ * @param {Object} param0.selection - Selection object containing featureKeys, distinctColours, and featureKeyColourIndexPairs.
  * @returns {GeoJsonLayer} The created GeoJsonLayer instance.
  */
-export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, activeFeatureKey }: LayerGeneralProps) => {
+export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, selection }: LayerGeneralProps) => {
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, true);
+
+	const selectedFeatureKeys = selection?.featureKeys ?? [];
+	const distinctColours = selection?.distinctColours ?? ['#000000'];
+	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
 
 	const geojsonOptions = configurationJs?.geojsonOptions ?? defaultOptions;
 
-	const layer = new GeoJsonLayer({
+	/**
+	 * Returns the line color for a feature.
+	 * If the feature is selected, returns its assigned color; otherwise, returns the default.
+	 */
+	function getLineColor(feature: Feature): number[] {
+		const featureId = feature?.properties?.id;
+		if (featureId && selectedFeatureKeys.includes(featureId)) {
+			const colourIndex = featureKeyColourIndexPairs[featureId];
+			const hex = distinctColours[colourIndex];
+			return hex ? [...hexToRgbArray(hex), 255] : [0, 255, 255, 255];
+		}
+		return geojsonOptions.getLineColor;
+	}
+
+	/**
+	 * Returns the line width for a feature.
+	 * If the feature is selected, returns a thicker line; otherwise, returns the default.
+	 */
+	function getLineWidth(feature: Feature): number {
+		const featureId = feature?.properties?.id;
+		if (featureId && selectedFeatureKeys.includes(featureId)) {
+			return 20;
+		}
+		return geojsonOptions.getLineWidth;
+	}
+
+	return new GeoJsonLayer({
 		id: key,
 		opacity: opacity ?? 1,
 		visible: isActive,
 		data: url,
 		updateTriggers: {
-			getLineColor: [activeFeatureKey],
-			getFillColor: [activeFeatureKey],
+			getLineColor: [selection],
+			getFillColor: [selection],
 		},
 		...geojsonOptions,
-		getLineColor: (feature: Feature) => {
-			if (feature?.properties?.id && activeFeatureKey && feature?.properties?.id === activeFeatureKey) {
-				return [0, 255, 255, 255]; // blue
-			} else {
-				return geojsonOptions.getLineColor;
-			}
-		},
-		getLineWidth: (feature: Feature) => {
-			if (feature?.properties?.id === activeFeatureKey) {
-				return 20; // thicker line for highlighted feature
-			} else {
-				return geojsonOptions.getLineWidth;
-			}
-		},
+		getLineColor,
+		getLineWidth,
 	});
-
-	return layer;
 };
