@@ -12,7 +12,7 @@ import { SELECTION_DEFAULT_DISTINCT_COLOURS } from '../../constants/colors';
  * If not, it creates it or updates the featureKeys array.
  *
  * @param {AppSharedState} state - The current application state.
- * @param {ActionMapLayerSetFeatureKey} action - The action containing mapKey, layerKey, and featureKey.
+ * @param {ActionMapLayerSetFeatureKey} action - The action containing mapKey, layerKey, featureKey, and optional customSelectionStyle.
  * @returns {AppSharedState} - The updated application state with the featureKey set for the specified layer.
  * @throws {Error} If the payload is missing or the map/layer is not found.
  */
@@ -25,33 +25,37 @@ export const reduceHandlerSetFeatureKeyInSelections = <T extends AppSharedState 
 	if (!payload) throw new Error('No payload provided for setting featureKey');
 	const { mapKey, layerKey, featureKey, customSelectionStyle } = payload;
 
+	// Find the map to update
 	const mapToChange = getMapByKey(state, mapKey);
 	if (!mapToChange) throw new Error(`Map with key ${mapKey} not found`);
 
 	let selectionKey: string | undefined = undefined;
 
-	// Update rendering layers and determine selectionKey
+	// Update rendering layers and determine selectionKey for the target layer
 	const changedLayers: typeof mapToChange.renderingLayers = [];
 	for (const layer of mapToChange.renderingLayers) {
 		if (layer.key === layerKey) {
 			if (!layer.selectionKey) {
+				// If the layer doesn't have a selectionKey, generate a new one
 				selectionKey = uuidv4();
 				changedLayers.push({ ...layer, selectionKey });
 			} else {
+				// Use the existing selectionKey
 				selectionKey = layer.selectionKey;
 				changedLayers.push({ ...layer });
 			}
 		} else {
+			// Keep other layers unchanged
 			changedLayers.push(layer);
 		}
 	}
 
-	// Update maps with changed layers
+	// Update the maps array with the changed layers for the target map
 	const updatedMaps: SingleMapModel[] = state.maps.map((map) =>
 		map.key === mapKey ? { ...map, renderingLayers: changedLayers } : map
 	);
 
-	// Prepare updated selections
+	// Prepare updated selections array
 	const selections = Array.isArray(state.selections) ? [...state.selections] : [];
 	let found = false;
 
@@ -62,6 +66,8 @@ export const reduceHandlerSetFeatureKeyInSelections = <T extends AppSharedState 
 				// Always overwrite featureKeys with a single featureKey and reset colour index
 				selections[i] = {
 					...selections[i],
+					distinctColours: customSelectionStyle?.distinctColours ?? SELECTION_DEFAULT_DISTINCT_COLOURS,
+					distinctItems: customSelectionStyle?.distinctItems ?? true,
 					featureKeys: [featureKey],
 					featureKeyColourIndexPairs: { [featureKey]: 0 },
 				};
@@ -80,5 +86,6 @@ export const reduceHandlerSetFeatureKeyInSelections = <T extends AppSharedState 
 		}
 	}
 
+	// Return the updated state with new maps and selections
 	return { ...state, maps: updatedMaps, selections };
 };

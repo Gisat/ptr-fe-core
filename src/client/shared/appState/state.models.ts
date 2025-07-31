@@ -16,5 +16,5 @@ export interface AppSharedState {
 	maps: SingleMapModel[]; // individual maps with defined view and list of layers to be rendered
 	styles: Style[]; // metadata of styles
 	periods: Period[]; // metadata of periods
-	selections: Selection[]; // selecttions of features in layers
+	selections: Selection[]; // selections of features in layers
 }

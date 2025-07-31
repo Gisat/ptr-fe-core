@@ -18,8 +18,9 @@ const defaultOptions = {
 
 /**
  * Converts a hex color string to an RGB array.
+ *
  * @param {string} hex - The hex color string (e.g., "#ff0000" or "ff0000").
- * @returns {[number, number, number]} The RGB color array.
+ * @returns {[number, number, number]} The RGB color array, where each value is in the range 0-255.
  */
 function hexToRgbArray(hex: string): [number, number, number] {
 	hex = hex.replace(/^#/, '');
@@ -35,6 +36,10 @@ function hexToRgbArray(hex: string): [number, number, number] {
 
 /**
  * GeoJSON Feature interface.
+ *
+ * @property {string} type - The type of the GeoJSON object (should be "Feature").
+ * @property {object} geometry - The geometry object containing type and coordinates.
+ * @property {object} properties - The properties object, must include an "id" string.
  */
 export interface Feature {
 	type: 'Feature';
@@ -70,6 +75,9 @@ export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, selecti
 	/**
 	 * Returns the line color for a feature.
 	 * If the feature is selected, returns its assigned color; otherwise, returns the default.
+	 *
+	 * @param {Feature} feature - The GeoJSON feature object.
+	 * @returns {number[]} The RGBA color array for the feature's line.
 	 */
 	function getLineColor(feature: Feature): number[] {
 		const featureId = feature?.properties?.id;
@@ -85,6 +93,9 @@ export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, selecti
 	/**
 	 * Returns the line width for a feature.
 	 * If the feature is selected, returns a thicker line; otherwise, returns the default.
+	 *
+	 * @param {Feature} feature - The GeoJSON feature object.
+	 * @returns {number} The width of the feature's line.
 	 */
 	function getLineWidth(feature: Feature): number {
 		const featureId = feature?.properties?.id;

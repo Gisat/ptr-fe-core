@@ -44,7 +44,7 @@ export const reduceHandlerMapLayerRemove = <T extends AppSharedState = AppShared
 	// Remove the selection from state.selections if selectionKey exists
 	let updatedSelections = state.selections;
 	if (selectionKeyToRemove && Array.isArray(state.selections)) {
-		updatedSelections = state.selections.filter((sel) => sel && sel.key !== selectionKeyToRemove);
+		updatedSelections = state.selections.filter((selection) => selection && selection.key !== selectionKeyToRemove);
 	}
 
 	// Return the updated application state
