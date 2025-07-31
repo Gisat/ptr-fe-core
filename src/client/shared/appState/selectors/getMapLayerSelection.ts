@@ -1,3 +1,4 @@
+import { Selection } from '../../models/models.selections';
 import { AppSharedState } from '../state.models';
 
 /**
@@ -7,7 +8,11 @@ import { AppSharedState } from '../state.models';
  * @param layerKey - The key of the layer.
  * @returns {object | undefined} The selection object or undefined if not found.
  */
-export const getMapLayerSelection = (state: AppSharedState, mapKey: string, layerKey: string): any | undefined => {
+export const getMapLayerSelection = (
+	state: AppSharedState,
+	mapKey: string,
+	layerKey: string
+): Selection | undefined => {
 	if (!Array.isArray(state.selections)) return undefined;
 	// Find the map and layer to get the selectionKey
 	const map = state.maps?.find((m) => m.key === mapKey);

@@ -35,12 +35,10 @@ export const reduceHandlerRemoveFeatureKeyInSelections = <T extends AppSharedSta
 
 	// Prepare updated selections (shared pattern)
 	const selections = Array.isArray(state.selections) ? [...state.selections] : [];
-	let found = false;
 
 	if (selectionKey) {
 		for (let i = 0; i < selections.length; i++) {
 			if (selections[i] && selections[i].key === selectionKey) {
-				found = true;
 				const newFeatureKeys = selections[i].featureKeys.filter((key: string) => key !== featureKey);
 				const { [featureKey]: _, ...newColourIndexPairs } = selections[i].featureKeyColourIndexPairs || {};
 				selections[i] = {

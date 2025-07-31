@@ -8,6 +8,7 @@ import {
 } from '../../shared/appState/state.models.actions';
 import { AppSharedState } from 'src/client/shared/appState/state.models';
 import { Dispatch } from 'react';
+import { PickingInfo } from '@deck.gl/core';
 
 /**
  * Handles map click events for feature selection logic.
@@ -24,7 +25,7 @@ export function handleMapClick({
 	controlIsDown,
 	mapLayers,
 }: {
-	event: any;
+	event: PickingInfo;
 	sharedState: AppSharedState;
 	sharedStateDispatch: Dispatch<OneOfStateActions>;
 	mapKey: string;

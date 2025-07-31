@@ -1,3 +1,4 @@
+import { Selection } from '../../models/models.selections';
 import { AppSharedState } from '../state.models';
 
 /**
@@ -7,7 +8,7 @@ import { AppSharedState } from '../state.models';
  * @param layerKey - The key of the layer.
  * @returns {object | undefined} The selection object or undefined if not found.
  */
-export const getSelectionByKey = (state: AppSharedState, selectionKey: string): any | undefined => {
+export const getSelectionByKey = (state: AppSharedState, selectionKey: string): Selection | undefined => {
 	if (!Array.isArray(state.selections)) return undefined;
 	return state.selections.find((sel) => sel && sel.key === selectionKey);
 };

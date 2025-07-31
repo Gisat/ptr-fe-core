@@ -64,10 +64,10 @@ export interface DatasourceConfiguration {
 		useChannel: number; // TODO Band name to use for rendering against deprecated `cogBitmapOptions.useChannel`
 	};
 	geojsonOptions: {
-		selectionStyle?: {
-			distinctColours?: string[];
-			distinctItems?: boolean;
-			maxSelectionCount?: number;
+		selectionStyle: {
+			distinctColours: string[];
+			distinctItems: boolean;
+			maxSelectionCount: number;
 		};
 	};
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DeckGL } from '@deck.gl/react';
-import { LayersList, ViewStateChangeParameters } from '@deck.gl/core';
+import { LayersList, PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
@@ -59,7 +59,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 		};
 	}, []);
 
-	const onClick = (event: any) => {
+	const onClick = (event: PickingInfo) => {
 		handleMapClick({
 			event,
 			sharedState,
