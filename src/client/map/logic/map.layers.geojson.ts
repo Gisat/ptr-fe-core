@@ -85,7 +85,7 @@ export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, selecti
 			const colourIndex = featureKeyColourIndexPairs[featureId];
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
 			// Convert hex to RGB array and add alpha channel
-			return hex ? [...hexToRgbArray(hex), 255] : [0, 0, 255, 255];
+			return hex ? [...hexToRgbArray(hex), 255] : [0, 255, 255, 255];
 		}
 		return geojsonOptions.getLineColor;
 	}
