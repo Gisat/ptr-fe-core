@@ -1,4 +1,6 @@
-import { RenderingLayer } from 'src/client/shared/models/models.layers';
+import { Dispatch } from 'react';
+import { PickingInfo } from '@deck.gl/core';
+import { RenderingLayer } from '../../shared/models/models.layers';
 import { getMapLayerSelection } from '../../shared/appState/selectors/getMapLayerSelection';
 import {
 	ActionMapLayerAddFeatureKey,
@@ -6,9 +8,7 @@ import {
 	ActionMapLayerSetFeatureKey,
 	OneOfStateActions,
 } from '../../shared/appState/state.models.actions';
-import { AppSharedState } from 'src/client/shared/appState/state.models';
-import { Dispatch } from 'react';
-import { PickingInfo } from '@deck.gl/core';
+import { AppSharedState } from '../../shared/appState/state.models';
 
 /**
  * Handles map click events for feature selection logic.

@@ -19,7 +19,7 @@ export interface HasSpecificName {
  * Entity with custom configuration
  */
 export interface HasConfiguration extends HasBands {
-	configuration?: Partial<DatasourceConfiguration>; // JSON string
+	configuration?: Partial<DatasourceConfiguration>; // For now we use this for datasource configuration
 }
 
 /**
