@@ -82,7 +82,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 		}
 	};
 
-	const layers: LayersList = mapLayers ? parseLayersFromSharedState([...mapLayers]) : [];
+	const layers: LayersList = mapLayers ? parseLayersFromSharedState(sharedState, [...mapLayers]) : [];
 
 	return (
 		<DeckGL

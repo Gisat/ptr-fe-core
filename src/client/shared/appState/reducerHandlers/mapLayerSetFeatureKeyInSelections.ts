@@ -46,7 +46,6 @@ export const reduceHandlerSetFeatureKeyInSelections = <T extends AppSharedState 
 		}
 	}
 
-	console.log(customSelectionStyle, 'CUSTOM SELECTION STYLE');
 	// Update maps with changed layers
 	const updatedMaps: SingleMapModel[] = state.maps.map((map) =>
 		map.key === mapKey ? { ...map, renderingLayers: changedLayers } : map

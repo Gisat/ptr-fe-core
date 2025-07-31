@@ -7,18 +7,18 @@ import { createWMSLayer } from './map.layers.wms';
 import { LayerTreeInteraction } from '../../shared/layers/models.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
 import { createCogLayer } from '../logic/map.layers.cog';
-import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getSelectionByKey } from '../../shared/appState/selectors/getSelectionByKey';
+import { AppSharedState } from '../../shared/appState/state.models';
 
 // TODO: Need better implementation for parsing layers
 export const parseLayersFromSharedState = (
+	sharedState: AppSharedState,
 	sharedStateLayers: RenderingLayer[],
 	interactionRenderingMap?: Map<LayerTreeInteraction, any>
 ) => {
-	const [sharedState] = useSharedState();
 	const layerSwitch = (layer: RenderingLayer) => {
 		const layerSelectionKey = layer.selectionKey;
-		const selectionForLayer = layerSelectionKey && getSelectionByKey(sharedState, layerSelectionKey);
+		const selectionForLayer = layerSelectionKey ? getSelectionByKey(sharedState, layerSelectionKey) : undefined;
 		const layerProps: LayerGeneralProps = {
 			style: null, // TODO: Implement style for layers
 			sourceNode: layer.datasource,
