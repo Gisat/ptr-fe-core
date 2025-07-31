@@ -19,7 +19,7 @@ export interface HasSpecificName {
  * Entity with custom configuration
  */
 export interface HasConfiguration extends HasBands {
-	configuration?: string | Partial<DatasourceConfiguration>; // JSON string
+	configuration?: Partial<DatasourceConfiguration>; // JSON string
 }
 
 /**
@@ -62,6 +62,13 @@ export interface HasLevels {
 export interface DatasourceConfiguration {
 	cogBitmapOptions: {
 		useChannel: number; // TODO Band name to use for rendering against deprecated `cogBitmapOptions.useChannel`
+	};
+	geojsonOptions: {
+		selectionStyle?: {
+			distinctColours?: string[];
+			distinctItems?: boolean;
+			maxSelectionCount?: number;
+		};
 	};
 }
 

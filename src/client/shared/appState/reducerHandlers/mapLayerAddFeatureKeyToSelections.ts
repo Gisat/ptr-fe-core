@@ -23,7 +23,7 @@ export const reduceHandlerAddFeatureKeyToSelections = <T extends AppSharedState 
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for adding featureKey');
-	const { mapKey, layerKey, featureKey } = payload;
+	const { mapKey, layerKey, featureKey, customSelectionStyle } = payload;
 
 	const mapToChange = getMapByKey(state, mapKey);
 	if (!mapToChange) throw new Error(`Map with key ${mapKey} not found`);
@@ -69,7 +69,7 @@ export const reduceHandlerAddFeatureKeyToSelections = <T extends AppSharedState 
 					featureKeys: [...selections[i].featureKeys, featureKey],
 					featureKeyColourIndexPairs: {
 						...selections[i].featureKeyColourIndexPairs,
-						[featureKey]: nextColorIndex,
+						[featureKey]: selections[i].distinctItems ? nextColorIndex : 0,
 					},
 				};
 				break;
@@ -78,7 +78,8 @@ export const reduceHandlerAddFeatureKeyToSelections = <T extends AppSharedState 
 		if (!found) {
 			selections.push({
 				key: selectionKey,
-				distinctColours: SELECTION_DEFAULT_DISTINCT_COLOURS,
+				distinctColours: customSelectionStyle?.distinctColours ?? SELECTION_DEFAULT_DISTINCT_COLOURS,
+				distinctItems: customSelectionStyle?.distinctItems ?? true,
 				featureKeys: [featureKey],
 				featureKeyColourIndexPairs: { [featureKey]: 0 },
 			});

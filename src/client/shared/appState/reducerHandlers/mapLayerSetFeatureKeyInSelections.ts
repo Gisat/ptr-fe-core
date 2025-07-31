@@ -23,7 +23,7 @@ export const reduceHandlerSetFeatureKeyInSelections = <T extends AppSharedState 
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for setting featureKey');
-	const { mapKey, layerKey, featureKey } = payload;
+	const { mapKey, layerKey, featureKey, customSelectionStyle } = payload;
 
 	const mapToChange = getMapByKey(state, mapKey);
 	if (!mapToChange) throw new Error(`Map with key ${mapKey} not found`);
@@ -46,6 +46,7 @@ export const reduceHandlerSetFeatureKeyInSelections = <T extends AppSharedState 
 		}
 	}
 
+	console.log(customSelectionStyle, 'CUSTOM SELECTION STYLE');
 	// Update maps with changed layers
 	const updatedMaps: SingleMapModel[] = state.maps.map((map) =>
 		map.key === mapKey ? { ...map, renderingLayers: changedLayers } : map
@@ -72,7 +73,8 @@ export const reduceHandlerSetFeatureKeyInSelections = <T extends AppSharedState 
 			// Create new selection object if not found
 			selections.push({
 				key: selectionKey,
-				distinctColours: SELECTION_DEFAULT_DISTINCT_COLOURS,
+				distinctColours: customSelectionStyle?.distinctColours ?? SELECTION_DEFAULT_DISTINCT_COLOURS,
+				distinctItems: customSelectionStyle?.distinctItems ?? true,
 				featureKeys: [featureKey],
 				featureKeyColourIndexPairs: { [featureKey]: 0 },
 			});

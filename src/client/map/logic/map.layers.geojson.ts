@@ -65,7 +65,7 @@ export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, selecti
 	const distinctColours = selection?.distinctColours ?? ['#000000'];
 	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
 
-	const geojsonOptions = configurationJs?.geojsonOptions ?? defaultOptions;
+	const geojsonOptions = configurationJs?.geojsonOptions?.layerStyle ?? defaultOptions;
 
 	/**
 	 * Returns the line color for a feature.

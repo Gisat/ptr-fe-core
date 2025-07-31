@@ -13,6 +13,7 @@ import { MapSetSync } from '../models/models.mapSetSync';
 import { RenderingLayer } from '../models/models.layers';
 import { StateActionType } from './enum.state.actionType'; // Import the ActionType enum
 import { AppSpecificAction } from './state.models.reducer';
+import { Selection } from '../models/models.selections';
 
 /**
  * When we set up application node
@@ -107,13 +108,23 @@ export interface ActionMapLayerRemove extends AppSpecificAction {
  */
 export interface ActionMapLayerSetFeatureKey extends AppSpecificAction {
 	type: StateActionType.MAP_LAYER_SET_FEATURE_KEY;
-	payload: { mapKey: string; layerKey: string; featureKey: string };
+	payload: {
+		mapKey: string;
+		layerKey: string;
+		featureKey: string;
+		customSelectionStyle?: Partial<Selection>;
+	};
 }
 
 /** Add feature key to map layer selections */
 export interface ActionMapLayerAddFeatureKey extends AppSpecificAction {
 	type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY;
-	payload: { mapKey: string; layerKey: string; featureKey: string };
+	payload: {
+		mapKey: string;
+		layerKey: string;
+		featureKey: string;
+		customSelectionStyle?: Partial<Selection>;
+	};
 }
 
 /** Remove feature key from map layer selections */

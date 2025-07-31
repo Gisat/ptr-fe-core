@@ -39,19 +39,25 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 			type: 'mapViewChange',
 			payload: { key: mapKey, viewChange: syncedView },
 		} as ActionMapViewChange);
+
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Control') {
+				setControlIsDown(true);
+			}
+		};
+		const handleKeyUp = (event: KeyboardEvent) => {
+			if (event.key === 'Control') {
+				setControlIsDown(false);
+			}
+		};
+		document.addEventListener('keydown', handleKeyDown);
+		document.addEventListener('keyup', handleKeyUp);
+
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+			document.removeEventListener('keyup', handleKeyUp);
+		};
 	}, []);
-
-	document.addEventListener('keydown', (event) => {
-		if (event.key === 'Control') {
-			setControlIsDown(true);
-		}
-	});
-
-	document.addEventListener('keyup', (event) => {
-		if (event.key === 'Control') {
-			setControlIsDown(false);
-		}
-	});
 
 	const onClick = (event: any) => {
 		handleMapClick({
@@ -60,6 +66,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 			sharedStateDispatch,
 			mapKey,
 			controlIsDown,
+			mapLayers,
 		});
 	};
 
