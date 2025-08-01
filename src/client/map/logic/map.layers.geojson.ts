@@ -2,6 +2,7 @@ import { GeoJsonLayer } from '@deck.gl/layers';
 import { LayerGeneralProps } from './map.layers.models';
 import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
+import { hexToRgbArray } from '../../shared/helpers/utils';
 
 /**
  * Default options for GeoJsonLayer rendering.
@@ -16,24 +17,6 @@ const defaultOptions = {
 	getLineColor: [255, 100, 100],
 	getLineWidth: 1,
 };
-
-/**
- * Converts a hex color string to an RGB array.
- *
- * @param {string} hex - The hex color string (e.g., "#ff0000" or "ff0000").
- * @returns {[number, number, number]} The RGB color array, where each value is in the range 0-255.
- */
-function hexToRgbArray(hex: string): [number, number, number] {
-	hex = hex.replace(/^#/, '');
-	if (hex.length === 3) {
-		hex = hex
-			.split('')
-			.map((x) => x + x)
-			.join('');
-	}
-	const num = parseInt(hex, 16);
-	return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
-}
 
 /**
  * GeoJSON Feature interface.
