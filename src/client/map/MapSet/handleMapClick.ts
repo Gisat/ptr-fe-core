@@ -43,13 +43,23 @@ export function handleMapClick({
 	mapLayers: RenderingLayer[] | undefined;
 }) {
 	// Extract the feature and layer IDs from the picking event
-	const featureId = event?.object?.properties?.id;
+	const pickedFeature = event?.object;
+	const featureId = pickedFeature?.properties?.id;
 	const layerId = event?.layer?.id;
 
-	if (!featureId || !layerId) return;
+	// If the user clicks on the map but does not click on a valid feature (there is no PICKABLE feature)
+	if (!pickedFeature) return;
+
+	// Warn if featureId or layerId is missing for easier debugging
+	if (!featureId || !layerId) {
+		console.warn('[handleMapClick] Missing featureId or layerId in picking event.', { featureId, layerId, event });
+		return;
+	}
 
 	// Find the mapLayer object that was clicked, to access its configuration
-	const mapLayer = Array.isArray(mapLayers) ? mapLayers.find((layer: any) => layer.key === layerId) : undefined;
+	const mapLayer = Array.isArray(mapLayers)
+		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
+		: undefined;
 
 	// Get the configuration from the clicked mapLayer's datasource
 	let config = mapLayer?.datasource?.configuration;
@@ -74,6 +84,7 @@ export function handleMapClick({
 	const isSelected = layerFeatureKeys.includes(featureId);
 	const maxSelectionCount = customSelectionStyle?.maxSelectionCount;
 
+	// Handle selection logic based on Ctrl key and current selection state
 	if (controlIsDown) {
 		if (isSelected) {
 			// Ctrl + click on selected feature: remove from selection
