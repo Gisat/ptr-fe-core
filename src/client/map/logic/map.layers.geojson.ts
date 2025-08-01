@@ -9,7 +9,7 @@ import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.pant
 const defaultOptions = {
 	filled: true,
 	stroked: true,
-	pickable: true,
+	pickable: false,
 	pointRadiusScale: 0.2,
 	getPointRadius: 50,
 	getFillColor: [255, 100, 100],
