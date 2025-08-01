@@ -46,6 +46,9 @@ export interface Feature {
  * @param {number} param0.opacity - Layer opacity.
  * @param {Object} param0.selection - Selection object containing featureKeys, distinctColours, and featureKeyColourIndexPairs.
  * @returns {GeoJsonLayer} The created GeoJsonLayer instance.
+ *
+ * @todo This is only a first draft of the GeoJSON layer implementation.
+ *       TODO: Add support for fill styling, point sizes, and other styling options.
  */
 export const createGeojsonLayer = ({
 	sourceNode,
@@ -58,7 +61,7 @@ export const createGeojsonLayer = ({
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, true);
 
 	const selectedFeatureKeys = selection?.featureKeys ?? [];
-	const distinctColours = selection?.distinctColours ?? ['#000000'];
+	const distinctColours = selection?.distinctColours ?? ['#00ffff'];
 	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
 
 	const geojsonOptions = configurationJs?.geojsonOptions?.layerStyle ?? defaultOptions;
