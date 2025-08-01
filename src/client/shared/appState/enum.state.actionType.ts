@@ -35,6 +35,9 @@ export enum StateActionType {
 	/** Action to change the active map layer. */
 	MAP_LAYER_ACTIVE_CHANGE = 'mapLayerActiveChange',
 
+	/** Action to change the interactivity of a map layer. */
+	MAP_LAYER_INTERACTIVITY_CHANGE = 'mapLayerInteractivityChange',
+
 	/** Action to change the opacity of a map layer. */
 	MAP_LAYER_OPACITY_CHANGE = 'mapLayerOpacityChange',
 

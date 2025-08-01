@@ -9,6 +9,7 @@ import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.pant
 const defaultOptions = {
 	filled: true,
 	stroked: true,
+	pickable: true,
 	pointRadiusScale: 0.2,
 	getPointRadius: 50,
 	getFillColor: [255, 100, 100],
@@ -63,7 +64,14 @@ export interface Feature {
  * @param {Object} param0.selection - Selection object containing featureKeys, distinctColours, and featureKeyColourIndexPairs.
  * @returns {GeoJsonLayer} The created GeoJsonLayer instance.
  */
-export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, selection }: LayerGeneralProps) => {
+export const createGeojsonLayer = ({
+	sourceNode,
+	isActive,
+	isInteractive,
+	key,
+	opacity,
+	selection,
+}: LayerGeneralProps) => {
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, true);
 
 	const selectedFeatureKeys = selection?.featureKeys ?? [];
@@ -113,9 +121,11 @@ export const createGeojsonLayer = ({ sourceNode, isActive, key, opacity, selecti
 		updateTriggers: {
 			getLineColor: [selection],
 			getFillColor: [selection],
+			pickable: [isInteractive],
 		},
 		...geojsonOptions,
 		getLineColor,
 		getLineWidth,
+		pickable: isInteractive ?? geojsonOptions.pickable,
 	});
 };

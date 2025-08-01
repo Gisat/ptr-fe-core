@@ -80,6 +80,14 @@ export interface ActionMapLayerActiveChange extends AppSpecificAction {
 }
 
 /**
+ * Change map layer interactivity
+ */
+export interface ActionMapLayerInteractivityChange extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE;
+	payload: { mapKey: string; layerKey: string; isInteractive: boolean };
+}
+
+/**
  * Change map layer opacity
  */
 export interface ActionMapLayerOpacityChange extends AppSpecificAction {
@@ -226,6 +234,8 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionChangePeriods
 		| ActionSetApplicationNode
 		| ActionLayerActiveChange
+		| ActionMapLayerActiveChange
+		| ActionMapLayerInteractivityChange
 		| ActionMapAddToMapSet
 		| ActionMapRemoveFromMapSet
 		| ActionMapSetRemoveMapsByKeys

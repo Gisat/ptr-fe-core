@@ -25,6 +25,7 @@ export const parseLayersFromSharedState = (
 			key: layer.key,
 			opacity: layer.opacity,
 			isActive: layer.isActive ?? true,
+			isInteractive: layer.isInteractive,
 			onClickHandler: layer.interaction && interactionRenderingMap?.get(layer.interaction),
 			selection: selectionForLayer,
 		};

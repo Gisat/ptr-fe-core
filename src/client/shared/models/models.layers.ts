@@ -13,4 +13,5 @@ export interface RenderingLayer {
 	datasource: Datasource;
 	interaction: Nullable<LayerTreeInteraction>;
 	selectionKey?: string;
+	isInteractive?: boolean;
 }

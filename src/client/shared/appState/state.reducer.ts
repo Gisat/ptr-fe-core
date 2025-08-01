@@ -7,6 +7,7 @@ import {
 	ActionMapLayerActiveChange,
 	ActionMapLayerAdd,
 	ActionMapLayerAddFeatureKey,
+	ActionMapLayerInteractivityChange,
 	ActionMapLayerOpacityChange,
 	ActionMapLayerRemove,
 	ActionMapLayerRemoveFeatureKey,
@@ -39,6 +40,7 @@ import { AppSpecificAction, AppSpecificReducerMap } from './state.models.reducer
 import { reduceHandlerAddFeatureKeyToSelections } from './reducerHandlers/mapLayerAddFeatureKeyToSelections';
 import { reduceHandlerRemoveFeatureKeyInSelections } from './reducerHandlers/mapLayerRemoveFeatureKeyInSelections';
 import { reduceHandlerSetFeatureKeyInSelections } from './reducerHandlers/mapLayerSetFeatureKeyInSelections';
+import { reduceHandlerMapLayerInteractivityChange } from './reducerHandlers/mapLayerInteractivityChange';
 
 /**
  * Creates a reducer function for a specific application state that combines core and application-specific reducers.
@@ -131,6 +133,9 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 		);
 		reducerSwitch.set(StateActionType.MAP_LAYER_REMOVE, () =>
 			reduceHandlerMapLayerRemove(currentState, action as ActionMapLayerRemove)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE, () =>
+			reduceHandlerMapLayerInteractivityChange(currentState, action as ActionMapLayerInteractivityChange)
 		);
 		reducerSwitch.set(StateActionType.MAP_LAYER_SET_FEATURE_KEY, () =>
 			reduceHandlerSetFeatureKeyInSelections(currentState, action as ActionMapLayerSetFeatureKey)
