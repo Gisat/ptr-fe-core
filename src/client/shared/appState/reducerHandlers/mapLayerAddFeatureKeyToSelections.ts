@@ -1,10 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
-
 import { AppSharedState } from '../state.models';
 import { ActionMapLayerAddFeatureKey } from '../state.models.actions';
 import { SingleMapModel } from '../../models/models.singleMap';
 import { getMapByKey } from '../selectors/getMapByKey';
-import { SELECTION_DEFAULT_DISTINCT_COLOURS } from '../../constants/colors';
+import { updateRenderingLayers, updateSelections } from '../../helpers/selections';
 
 /**
  * Reducer to add a featureKey to the selection for a vector layer in a map's rendering layers.
@@ -29,69 +27,18 @@ export const reduceHandlerAddFeatureKeyToSelections = <T extends AppSharedState 
 	const mapToChange = getMapByKey(state, mapKey);
 	if (!mapToChange) throw new Error(`Map with key ${mapKey} not found`);
 
-	let selectionKey: string | undefined = undefined;
-
-	// Update rendering layers and determine selectionKey for the target layer
-	const changedLayers: typeof mapToChange.renderingLayers = [];
-	for (const layer of mapToChange.renderingLayers) {
-		if (layer.key === layerKey) {
-			if (!layer.selectionKey) {
-				// If the layer doesn't have a selectionKey, generate a new one
-				selectionKey = uuidv4();
-				changedLayers.push({ ...layer, selectionKey });
-			} else {
-				// Use the existing selectionKey
-				selectionKey = layer.selectionKey;
-				changedLayers.push({ ...layer });
-			}
-		} else {
-			changedLayers.push(layer);
-		}
-	}
+	// Use helper to update rendering layers and get selectionKey
+	const { changedLayers, selectionKey } = updateRenderingLayers(mapToChange.renderingLayers, layerKey);
 
 	// Update the maps array with the changed layers for the target map
 	const updatedMaps: SingleMapModel[] = state.maps.map((map) =>
 		map.key === mapKey ? { ...map, renderingLayers: changedLayers } : map
 	);
 
-	// Prepare updated selections array
-	const selections = Array.isArray(state.selections) ? [...state.selections] : [];
-	let found = false;
-
-	if (selectionKey) {
-		for (let i = 0; i < selections.length; i++) {
-			if (selections[i] && selections[i].key === selectionKey) {
-				found = true;
-				// Find the next available color index for the new featureKey
-				const usedColorIndexes = Object.values(selections[i].featureKeyColourIndexPairs ?? {});
-				let nextColorIndex = 0;
-				while (usedColorIndexes.includes(nextColorIndex)) {
-					nextColorIndex++;
-				}
-				// Add the featureKey and assign its color index
-				selections[i] = {
-					...selections[i],
-					featureKeys: [...selections[i].featureKeys, featureKey],
-					featureKeyColourIndexPairs: {
-						...selections[i].featureKeyColourIndexPairs,
-						[featureKey]: selections[i].distinctItems ? nextColorIndex : 0,
-					},
-				};
-				break;
-			}
-		}
-		if (!found) {
-			// If no selection object exists for this key, create a new one
-			selections.push({
-				key: selectionKey,
-				distinctColours: customSelectionStyle?.distinctColours ?? SELECTION_DEFAULT_DISTINCT_COLOURS,
-				distinctItems: customSelectionStyle?.distinctItems ?? true,
-				featureKeys: [featureKey],
-				featureKeyColourIndexPairs: { [featureKey]: 0 },
-			});
-		}
-	}
+	// Use helper to update selections array
+	const selections = Array.isArray(state.selections) ? state.selections : [];
+	const updatedSelections = updateSelections(selections, selectionKey, featureKey, customSelectionStyle);
 
 	// Return the updated state with new maps and selections
-	return { ...state, maps: updatedMaps, selections };
+	return { ...state, maps: updatedMaps, selections: updatedSelections };
 };
