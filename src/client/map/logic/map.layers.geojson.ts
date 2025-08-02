@@ -1,8 +1,9 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
+import { Feature } from 'geojson';
 import { LayerGeneralProps } from './map.layers.models';
 import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
-import { hexToRgbArray } from '../../shared/helpers/utils';
+import { getFeatureId, hexToRgbArray } from '../../shared/helpers/utils';
 
 /**
  * Default options for GeoJsonLayer rendering.
@@ -17,24 +18,6 @@ const defaultOptions = {
 	getLineColor: [255, 100, 100],
 	getLineWidth: 1,
 };
-
-/**
- * GeoJSON Feature interface.
- *
- * @property {string} type - The type of the GeoJSON object (should be "Feature").
- * @property {object} geometry - The geometry object containing type and coordinates.
- * @property {object} properties - The properties object, must include an "id" string.
- */
-export interface Feature {
-	type: 'Feature';
-	geometry: {
-		type: string;
-		coordinates: any;
-	};
-	properties: {
-		id: string;
-	};
-}
 
 /**
  * Creates a GeoJsonLayer with the specified properties.
@@ -74,7 +57,7 @@ export const createGeojsonLayer = ({
 	 * @returns {number[]} The RGBA color array for the feature's line.
 	 */
 	function getLineColor(feature: Feature): number[] {
-		const featureId = feature?.properties?.id;
+		const featureId = getFeatureId(feature, configurationJs?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
@@ -92,7 +75,7 @@ export const createGeojsonLayer = ({
 	 * @returns {number} The width of the feature's line.
 	 */
 	function getLineWidth(feature: Feature): number {
-		const featureId = feature?.properties?.id;
+		const featureId = getFeatureId(feature, configurationJs?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			return 20;
 		}

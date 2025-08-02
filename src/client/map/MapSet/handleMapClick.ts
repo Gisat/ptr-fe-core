@@ -9,6 +9,7 @@ import {
 	OneOfStateActions,
 } from '../../shared/appState/state.models.actions';
 import { AppSharedState } from '../../shared/appState/state.models';
+import { getFeatureId } from '../../shared/helpers/utils';
 
 /**
  * Handles map click events for feature selection logic.
@@ -42,19 +43,12 @@ export function handleMapClick({
 	controlIsDown: boolean;
 	mapLayers: RenderingLayer[] | undefined;
 }) {
-	// Extract the feature and layer IDs from the picking event
+	// Get the picked feature and layer ID from the event
 	const pickedFeature = event?.object;
-	const featureId = pickedFeature?.properties?.id;
 	const layerId = event?.layer?.id;
 
-	// If the user clicks on the map but does not click on a valid feature (there is no PICKABLE feature)
+	// If the user clicks on the map but does not click on a valid feature (there is no PICKABLE feature), exit early
 	if (!pickedFeature) return;
-
-	// Warn if featureId or layerId is missing for easier debugging
-	if (!featureId || !layerId) {
-		console.warn('[handleMapClick] Missing featureId or layerId in picking event.', { featureId, layerId, event });
-		return;
-	}
 
 	// Find the mapLayer object that was clicked, to access its configuration
 	const mapLayer = Array.isArray(mapLayers)
@@ -72,6 +66,18 @@ export function handleMapClick({
 			// If parsing fails, set config to undefined to avoid runtime errors
 			config = undefined;
 		}
+	}
+
+	// Get the unique feature identifier for selection logic
+	const featureId = getFeatureId(
+		event?.object,
+		typeof config === 'object' && config !== null ? config.geojsonOptions?.featureIdProperty : undefined
+	);
+
+	// Warn if featureId or layerId is missing
+	if (!featureId || !layerId) {
+		console.warn('[handleMapClick] Missing featureId or layerId in picking event.', { featureId, layerId, event });
+		return;
 	}
 
 	// Safely extract the custom selection style from the configuration object, if available

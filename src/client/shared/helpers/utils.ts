@@ -1,3 +1,5 @@
+import type { Feature } from 'geojson';
+
 /**
  * Fetch function for SWR with redirect behavior
  * @param url - The endpoint to fetch data from
@@ -55,4 +57,33 @@ export function hexToRgbArray(hex: string): [number, number, number] {
 	}
 	const num = parseInt(hex, 16);
 	return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+/**
+ * Returns the unique identifier for a GeoJSON feature.
+ *
+ * This function checks for the identifier in both the feature's properties object and at the top level,
+ * using a configurable property name and a list of common fallback names.
+ *
+ * @param {Feature} feature - The GeoJSON feature object.
+ * @param {string} [idProperty='id'] - The preferred property name for the identifier.
+ * @returns {string | undefined} The feature identifier if found, otherwise undefined.
+ */
+export function getFeatureId(feature: Feature, idProperty: string = 'id'): string | undefined {
+	const fallbackNames = ['id', 'featureId', 'FID', 'OBJECTID'];
+	if (feature?.properties) {
+		// Try the configured property name first in properties
+		if (feature.properties[idProperty]) return feature.properties[idProperty];
+		// Fallback to common names in properties
+		for (const name of fallbackNames) {
+			if (feature.properties[name]) return feature.properties[name];
+		}
+	}
+	// Try the configured property name at top-level
+	if (feature && feature[idProperty]) return feature[idProperty];
+	// Fallback to common names at top-level
+	for (const name of fallbackNames) {
+		if (feature && feature[name]) return feature[name];
+	}
+	return undefined;
 }
