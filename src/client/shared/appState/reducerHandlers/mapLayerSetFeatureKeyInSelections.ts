@@ -8,6 +8,11 @@ import { updateRenderingLayers, updateSelections } from '../../helpers/selection
  * Reducer to set the featureKey for a vector layer in a map's rendering layers.
  * Ensures that in state.selections there is an object with the same key as the renderingLayer (selectionKey).
  * If not, it creates it or updates the featureKeys array.
+ *
+ * @param {AppSharedState} state - The current application state.
+ * @param {ActionMapLayerSetFeatureKey} action - The action containing mapKey, layerKey, featureKey, and optional customSelectionStyle.
+ * @returns {AppSharedState} - The updated application state with the featureKey set for the specified layer.
+ * @throws {Error} If the payload is missing or the map/layer is not found.
  */
 export const reduceHandlerSetFeatureKeyInSelections = <T extends AppSharedState = AppSharedState>(
 	state: T,
