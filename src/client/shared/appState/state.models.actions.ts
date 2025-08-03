@@ -239,7 +239,6 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionMapAddToMapSet
 		| ActionMapRemoveFromMapSet
 		| ActionMapSetRemoveMapsByKeys
-		| ActionMapLayerActiveChange
 		| ActionMapLayerAdd
 		| ActionMapLayerRemove
 		| ActionMapLayerSetFeatureKey
