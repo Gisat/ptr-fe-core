@@ -12,9 +12,6 @@ import { AppSharedState } from '../state.models';
  * @returns {Selection | undefined} The selection object if found, otherwise undefined.
  */
 export const getSelectionByKey = (state: AppSharedState, selectionKey: string): Selection | undefined => {
-	// Ensure selections is an array
-	if (!Array.isArray(state.selections)) return undefined;
-
 	// Find and return the selection object with the matching key
 	return state.selections.find((selection) => selection && selection.key === selectionKey);
 };
