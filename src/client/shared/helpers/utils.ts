@@ -85,5 +85,6 @@ export function getFeatureId(feature: Feature, idProperty: string = 'id'): strin
 	for (const name of fallbackNames) {
 		if (feature && feature[name]) return feature[name];
 	}
+	console.warn('GeoJSON feature identifier not found:', feature);
 	return undefined;
 }
