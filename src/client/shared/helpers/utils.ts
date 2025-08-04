@@ -69,8 +69,14 @@ export function hexToRgbArray(hex: string): [number, number, number] {
  * @param {string} [idProperty='id'] - The preferred property name for the identifier.
  * @returns {string | undefined} The feature identifier if found, otherwise undefined.
  */
-export function getFeatureId(feature: Feature, idProperty: string = 'id'): string | undefined {
+export function getFeatureId(feature: Feature, idProperty: string): string | undefined {
 	const fallbackNames = ['id', 'featureId', 'FID', 'OBJECTID'];
+	// Try the configured property name at top-level
+	if (feature && feature[idProperty]) return feature[idProperty];
+	// Fallback to common names at top-level
+	for (const name of fallbackNames) {
+		if (feature && feature[name]) return feature[name];
+	}
 	if (feature?.properties) {
 		// Try the configured property name first in properties
 		if (feature.properties[idProperty]) return feature.properties[idProperty];
@@ -78,12 +84,6 @@ export function getFeatureId(feature: Feature, idProperty: string = 'id'): strin
 		for (const name of fallbackNames) {
 			if (feature.properties[name]) return feature.properties[name];
 		}
-	}
-	// Try the configured property name at top-level
-	if (feature && feature[idProperty]) return feature[idProperty];
-	// Fallback to common names at top-level
-	for (const name of fallbackNames) {
-		if (feature && feature[name]) return feature[name];
 	}
 	console.warn('GeoJSON feature identifier not found:', feature);
 	return undefined;
