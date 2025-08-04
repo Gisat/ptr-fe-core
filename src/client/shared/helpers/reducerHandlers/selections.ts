@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { SELECTION_DEFAULT_DISTINCT_COLOURS } from '../constants/colors';
-import { RenderingLayer } from '../models/models.layers';
-import { Selection } from '../models/models.selections';
+import { SELECTION_DEFAULT_DISTINCT_COLOURS } from '../../constants/colors';
+import { RenderingLayer } from '../../models/models.layers';
+import { Selection } from '../../models/models.selections';
 
 /**
  * Updates rendering layers and returns the new selectionKey.

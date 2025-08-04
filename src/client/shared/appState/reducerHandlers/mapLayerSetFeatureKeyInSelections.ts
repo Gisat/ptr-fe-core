@@ -2,7 +2,7 @@ import { AppSharedState } from '../state.models';
 import { ActionMapLayerSetFeatureKey } from '../state.models.actions';
 import { SingleMapModel } from '../../models/models.singleMap';
 import { getMapByKey } from '../selectors/getMapByKey';
-import { updateRenderingLayers, updateSelections } from '../../helpers/selections';
+import { updateRenderingLayers, updateSelections } from '../../helpers/reducerHandlers/selections';
 
 /**
  * Reducer to set the featureKey for a vector layer in a map's rendering layers.
