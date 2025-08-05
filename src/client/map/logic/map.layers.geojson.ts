@@ -88,9 +88,9 @@ export const createGeojsonLayer = ({
 		visible: isActive,
 		data: url,
 		updateTriggers: {
-			getLineColor: [selection],
-			getFillColor: [selection],
-			pickable: [isInteractive],
+			getLineColor: [geojsonOptions, selection],
+			getFillColor: [geojsonOptions, selection],
+			pickable: [geojsonOptions, isInteractive],
 		},
 		...geojsonOptions,
 		getLineColor,
