@@ -9,6 +9,7 @@ import { ActionMapViewChange } from '../../shared/appState/state.models.actions'
 import { getViewChange } from '../../map/logic/mapView/getViewChange';
 import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMapKey';
 import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
+import { StateActionType } from '../../shared/appState/enum.state.actionType';
 
 export interface BasicMapProps {
 	// map view state
@@ -32,7 +33,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	// Set the synced part of the map view state on component mount
 	useEffect(() => {
 		sharedStateDispatch({
-			type: 'mapViewChange',
+			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: mapKey, viewChange: syncedView },
 		} as ActionMapViewChange);
 	}, []);
@@ -43,7 +44,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 		// Apply changes to map view
 		if (Object.keys(change).length > 0) {
 			sharedStateDispatch({
-				type: 'mapViewChange',
+				type: StateActionType.MAP_VIEW_CHANGE,
 				payload: { key: mapKey, viewChange: change },
 			} as ActionMapViewChange);
 		}
