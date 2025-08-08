@@ -4,21 +4,23 @@
  */
 export interface Feature {
 	type: 'Feature';
-	id?: string;
-	properties?: { [key: string]: string };
+	id?: string | number;
+	properties?: { [key: string]: string | number };
 }
 
 /**
  * Returns the unique identifier for a GeoJSON feature.
- * - By default, uses the RFC standard top-level "id" property.
- * - If a custom property name is provided, checks that in both top-level and properties.
- * - Does not guess other property names; only uses the provided or default.
+ *
+ * By default, uses the RFC 7946 standard top-level "id" property.
+ * If a custom property name is provided, checks that property in both the top-level and the properties object.
+ * Throws an error if no identifier is found.
  *
  * @param {Feature} feature - The GeoJSON feature object.
- * @param {string} [featureIdProperty='id'] - The preferred property name for the identifier.
- * @returns {string | undefined} The feature identifier if found, otherwise undefined.
+ * @param {string} [featureIdProperty='id'] - The property name to use for the identifier (defaults to "id").
+ * @returns {string | number} The feature identifier if found.
+ * @throws {Error} If the feature does not have an identifier.
  */
-export function getFeatureId(feature: Feature, featureIdProperty?: string): string | undefined {
+export function getFeatureId(feature: Feature, featureIdProperty?: string): string | number {
 	const idProperty = featureIdProperty ?? 'id';
 
 	// Check the configured property name at top-level (RFC standard)
@@ -31,7 +33,6 @@ export function getFeatureId(feature: Feature, featureIdProperty?: string): stri
 		return feature.properties[idProperty];
 	}
 
-	// If not found, return undefined and log a warning for debugging
-	console.warn('GeoJSON feature identifier not found:', feature);
-	return undefined;
+	// Throw an error if no identifier is found
+	throw new Error(`GeoJSON feature identifier not found for property "${idProperty}". Feature: ${feature}`);
 }

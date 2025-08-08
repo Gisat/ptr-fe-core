@@ -42,7 +42,7 @@ export const reduceHandlerRemoveFeatureKeyInSelections = <T extends AppSharedSta
 		for (let i = 0; i < selections.length; i++) {
 			if (selections[i] && selections[i].key === selectionKey) {
 				// Remove the featureKey from featureKeys and featureKeyColourIndexPairs
-				const newFeatureKeys = selections[i].featureKeys.filter((key: string) => key !== featureKey);
+				const newFeatureKeys = selections[i].featureKeys.filter((key: string | number) => key !== featureKey);
 				const { [featureKey]: _, ...newColourIndexPairs } = selections[i].featureKeyColourIndexPairs || {};
 				selections[i] = {
 					...selections[i],
