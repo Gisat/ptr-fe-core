@@ -6,5 +6,6 @@
  * @returns The order of magnitude of the input number.
  */
 export const getOrderOfMagnitude = (number: number): number => {
+	// Add a small epsilon to account for floating-point precision errors in logarithm calculation.
 	return Math.floor(Math.log(number) / Math.LN10 + 0.000000001);
 };
