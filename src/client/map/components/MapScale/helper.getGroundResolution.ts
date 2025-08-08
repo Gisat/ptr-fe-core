@@ -10,7 +10,7 @@
  */
 export const getGroundResolution = (latitude: number, zoomLevel: number): number => {
 	const earthRadius = 6378137; // in meters (used in Web Mercator projection)
-	const tileSize = 512; // pixels per tile at zoom level 0
+	const tileSize = 512; // pixels per tile at zoom level 0, Deck.gl uses 512 pixels as the standard tile size
 
 	// Convert latitude from degrees to radians
 	const latRad = (latitude * Math.PI) / 180;
