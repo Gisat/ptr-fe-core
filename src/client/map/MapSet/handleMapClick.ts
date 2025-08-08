@@ -10,6 +10,7 @@ import {
 } from '../../shared/appState/state.models.actions';
 import { AppSharedState } from '../../shared/appState/state.models';
 import { getFeatureId } from '../../shared/helpers/utils';
+import { StateActionType } from '../../shared/appState/enum.state.actionType';
 
 /**
  * Handles map click events for feature selection logic.
@@ -101,13 +102,13 @@ export function handleMapClick({
 		if (isSelected) {
 			// Ctrl + click on selected feature: remove from selection
 			sharedStateDispatch({
-				type: 'mapLayerRemoveFeatureKey',
+				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 				payload: { mapKey, layerKey: layerId, featureKey: featureId },
 			} as ActionMapLayerRemoveFeatureKey);
 		} else if (!maxSelectionCount || layerFeatureKeys.length < maxSelectionCount) {
 			// Ctrl + click on unselected feature: add to selection (if maxSelectionCount not reached)
 			sharedStateDispatch({
-				type: 'mapLayerAddFeatureKey',
+				type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 				payload: { mapKey, layerKey: layerId, featureKey: featureId, customSelectionStyle },
 			} as ActionMapLayerAddFeatureKey);
 		}
@@ -115,13 +116,13 @@ export function handleMapClick({
 		if (isSelected && layerFeatureKeys.length === 1) {
 			// Click on the only selected feature: remove it (deselect all)
 			sharedStateDispatch({
-				type: 'mapLayerRemoveFeatureKey',
+				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 				payload: { mapKey, layerKey: layerId, featureKey: featureId },
 			} as ActionMapLayerRemoveFeatureKey);
 		} else {
 			// Click: set this feature as the only selected feature
 			sharedStateDispatch({
-				type: 'mapLayerSetFeatureKey',
+				type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
 				payload: { mapKey, layerKey: layerId, featureKey: featureId, customSelectionStyle },
 			} as ActionMapLayerSetFeatureKey);
 		}
