@@ -9,6 +9,7 @@ import { ActionMapViewChange } from '../../shared/appState/state.models.actions'
 import { getViewChange } from '../../map/logic/mapView/getViewChange';
 import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMapKey';
 import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
+import { getSelectionByKey } from '../../shared/appState/selectors/getSelectionByKey';
 import { handleMapClick } from './handleMapClick';
 
 export interface BasicMapProps {
@@ -45,23 +46,21 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 			payload: { key: mapKey, viewChange: syncedView },
 		} as ActionMapViewChange);
 
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Control') {
-				setControlIsDown(true);
-			}
-		};
-		const handleKeyUp = (event: KeyboardEvent) => {
-			if (event.key === 'Control') {
-				setControlIsDown(false);
-			}
-		};
-		document.addEventListener('keydown', handleKeyDown);
-		document.addEventListener('keyup', handleKeyUp);
+		if (typeof window !== 'undefined') {
+			const handleKeyDown = (event: KeyboardEvent) => {
+				if (event.key === 'Control') setControlIsDown(true);
+			};
+			const handleKeyUp = (event: KeyboardEvent) => {
+				if (event.key === 'Control') setControlIsDown(false);
+			};
+			window.addEventListener('keydown', handleKeyDown);
+			window.addEventListener('keyup', handleKeyUp);
 
-		return () => {
-			document.removeEventListener('keydown', handleKeyDown);
-			document.removeEventListener('keyup', handleKeyUp);
-		};
+			return () => {
+				window.removeEventListener('keydown', handleKeyDown);
+				window.removeEventListener('keyup', handleKeyUp);
+			};
+		}
 	}, []);
 
 	/**
@@ -97,8 +96,19 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 		}
 	};
 
+	/**
+	 * Returns the selection object for a given selectionKey.
+	 * This is a selector callback passed to layer parsing logic.
+	 *
+	 * @param {string} selectionKey - The key identifying the selection.
+	 * @returns {Selection | undefined} The selection object, or undefined if not found.
+	 */
+	const getSelection = (selectionKey: string) => {
+		return getSelectionByKey(sharedState, selectionKey);
+	};
+
 	// Parse layers for DeckGL rendering
-	const layers: LayersList = mapLayers ? parseLayersFromSharedState(sharedState, [...mapLayers]) : [];
+	const layers: LayersList = mapLayers ? parseLayersFromSharedState([...mapLayers], getSelection) : [];
 
 	return (
 		<DeckGL

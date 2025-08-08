@@ -62,8 +62,14 @@ export function handleMapClick({
 	if (typeof config === 'string') {
 		try {
 			config = JSON.parse(config);
-		} catch {
+		} catch (error) {
 			// If parsing fails, set config to undefined to avoid runtime errors
+			console.warn('[handleMapClick] Failed to parse layer configuration JSON:', {
+				configString: config,
+				error,
+				layerId,
+				mapLayer,
+			});
 			config = undefined;
 		}
 	}

@@ -7,18 +7,29 @@ import { createWMSLayer } from './map.layers.wms';
 import { LayerTreeInteraction } from '../../shared/layers/models.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
 import { createCogLayer } from '../logic/map.layers.cog';
-import { getSelectionByKey } from '../../shared/appState/selectors/getSelectionByKey';
-import { AppSharedState } from '../../shared/appState/state.models';
+import { Selection } from 'src/client/shared/models/models.selections';
 
-// TODO: Need better implementation for parsing layers
+/**
+ * Parses rendering layers from shared state and returns an array of DeckGL layers.
+ * Uses a selector callback to retrieve selection objects for each layer.
+ *
+ * TODO: Need better implementation for parsing layers
+ *
+ * @param {RenderingLayer[]} sharedStateLayers - Array of rendering layers from shared state.
+ * @param {(selectionKey: string) => Selection | undefined} getSelectionForLayer - Callback to get selection for a layer by selectionKey.
+ * @param {Map<LayerTreeInteraction, any>} [interactionRenderingMap] - Optional map for interaction handlers.
+ * @returns {any[]} Array of DeckGL layers.
+ */
 export const parseLayersFromSharedState = (
-	sharedState: AppSharedState,
 	sharedStateLayers: RenderingLayer[],
+	getSelectionForLayer?: (selectionKey: string) => Selection | undefined,
 	interactionRenderingMap?: Map<LayerTreeInteraction, any>
 ) => {
 	const layerSwitch = (layer: RenderingLayer) => {
-		const layerSelectionKey = layer.selectionKey;
-		const selectionForLayer = layerSelectionKey ? getSelectionByKey(sharedState, layerSelectionKey) : undefined;
+		// Gets the selection object for the current layer
+		const selectionForLayer =
+			layer.selectionKey && getSelectionForLayer ? getSelectionForLayer(layer.selectionKey) : undefined;
+
 		const layerProps: LayerGeneralProps = {
 			style: null, // TODO: Implement style for layers
 			sourceNode: layer.datasource,

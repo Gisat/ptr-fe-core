@@ -1,9 +1,17 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
-import { Feature } from 'geojson';
 import { LayerGeneralProps } from './map.layers.models';
 import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
 import { getFeatureId, hexToRgbArray } from '../../shared/helpers/utils';
+
+/**
+ * Represents the structure needed for feature identification and property access.
+ */
+interface Feature {
+	type: 'Feature';
+	id?: string;
+	properties?: { [key: string]: string };
+}
 
 /**
  * Default options for GeoJsonLayer rendering.

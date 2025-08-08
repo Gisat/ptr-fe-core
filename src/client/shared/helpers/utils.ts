@@ -1,5 +1,3 @@
-import type { Feature } from 'geojson';
-
 /**
  * Fetch function for SWR with redirect behavior
  * @param url - The endpoint to fetch data from
@@ -60,31 +58,39 @@ export function hexToRgbArray(hex: string): [number, number, number] {
 }
 
 /**
+ * Feature interface for GeoJSON objects.
+ * Represents the minimal structure needed for feature identification and property access.
+ */
+interface Feature {
+	type: 'Feature';
+	id?: string;
+	properties?: { [key: string]: string };
+}
+
+/**
  * Returns the unique identifier for a GeoJSON feature.
- *
- * This function checks for the identifier in both the feature's properties object and at the top level,
- * using a configurable property name and a list of common fallback names.
+ * - By default, uses the RFC standard top-level "id" property.
+ * - If a custom property name is provided, checks that in both top-level and properties.
+ * - Does not guess other property names; only uses the provided or default.
  *
  * @param {Feature} feature - The GeoJSON feature object.
- * @param {string} [idProperty='id'] - The preferred property name for the identifier.
+ * @param {string} [featureIdProperty='id'] - The preferred property name for the identifier.
  * @returns {string | undefined} The feature identifier if found, otherwise undefined.
  */
-export function getFeatureId(feature: Feature, idProperty: string | undefined): string | undefined {
-	const fallbackNames = ['id', 'featureId', 'FID', 'OBJECTID'];
-	// Try the configured property name at top-level
-	if (feature && idProperty && feature[idProperty]) return feature[idProperty];
-	// Fallback to common names at top-level
-	for (const name of fallbackNames) {
-		if (feature && feature[name]) return feature[name];
+export function getFeatureId(feature: Feature, featureIdProperty?: string): string | undefined {
+	const idProperty = featureIdProperty ?? 'id';
+
+	// Check the configured property name at top-level (RFC standard)
+	if (feature && feature[idProperty] !== undefined) {
+		return feature[idProperty];
 	}
-	if (feature?.properties) {
-		// Try the configured property name first in properties
-		if (feature && idProperty && feature.properties[idProperty]) return feature.properties[idProperty];
-		// Fallback to common names in properties
-		for (const name of fallbackNames) {
-			if (feature.properties[name]) return feature.properties[name];
-		}
+
+	// Check the configured property name in properties object
+	if (feature?.properties && feature.properties[idProperty] !== undefined) {
+		return feature.properties[idProperty];
 	}
+
+	// If not found, return undefined and log a warning for debugging
 	console.warn('GeoJSON feature identifier not found:', feature);
 	return undefined;
 }
