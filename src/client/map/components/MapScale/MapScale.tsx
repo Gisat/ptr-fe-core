@@ -44,7 +44,7 @@ export const MapScale = ({ stateMapKey, color, maxWidth = 150 }: MapScaleProps) 
 
 	return (
 		<div className="ptr-MapScale">
-			<div className="ptr-MapScale-content" style={{ width: scaleWidth + 'px', borderColor: color }}>
+			<div className="ptr-MapScale-content" style={{ width: `${scaleWidth}px`, borderColor: color }}>
 				<span style={{ color }}>{label}</span>
 			</div>
 		</div>
