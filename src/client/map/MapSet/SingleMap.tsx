@@ -11,6 +11,7 @@ import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMa
 import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
 import { getSelectionByKey } from '../../shared/appState/selectors/getSelectionByKey';
 import { handleMapClick } from './handleMapClick';
+import { StateActionType } from '../../shared/appState/enum.state.actionType';
 
 export interface BasicMapProps {
 	// map view state
@@ -42,7 +43,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	// On mount: sync the map view and set up keyboard listeners for Ctrl key
 	useEffect(() => {
 		sharedStateDispatch({
-			type: 'mapViewChange',
+			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: mapKey, viewChange: syncedView },
 		} as ActionMapViewChange);
 
@@ -90,7 +91,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 		// Apply changes to map view if there are any
 		if (Object.keys(change).length > 0) {
 			sharedStateDispatch({
-				type: 'mapViewChange',
+				type: StateActionType.MAP_VIEW_CHANGE,
 				payload: { key: mapKey, viewChange: change },
 			} as ActionMapViewChange);
 		}
