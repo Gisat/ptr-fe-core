@@ -9,7 +9,7 @@ import {
 	OneOfStateActions,
 } from '../../shared/appState/state.models.actions';
 import { AppSharedState } from '../../shared/appState/state.models';
-import { getFeatureId } from '../../shared/helpers/utils';
+import { getFeatureId } from '../../shared/helpers/getFeatureId';
 import { StateActionType } from '../../shared/appState/enum.state.actionType';
 
 /**

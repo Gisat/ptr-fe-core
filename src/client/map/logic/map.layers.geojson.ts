@@ -2,7 +2,8 @@ import { GeoJsonLayer } from '@deck.gl/layers';
 import { LayerGeneralProps } from './map.layers.models';
 import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
-import { getFeatureId, hexToRgbArray } from '../../shared/helpers/utils';
+import { getFeatureId } from '../../shared/helpers/getFeatureId';
+import { hexToRgbArray } from '../../shared/helpers/hexToRgbArray';
 
 /**
  * Represents the structure needed for feature identification and property access.
