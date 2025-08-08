@@ -17,27 +17,21 @@ import { getFormattedLabel } from './helper.getFormattedLabel';
  * - `label`: A human-readable label for the scale bar (e.g., "500 m" or "1.5 km").
  */
 export const useScaleBar = (
-	latitude: number,
-	zoom: number,
+	latitude: number | undefined,
+	zoom: number | undefined,
 	maxWidth: number
 ): {
-	onePxInMeters: number;
-	maxScaleWidthInMeters: number;
-	valueForScaleInMeters: number;
 	scaleWidth: number;
 	label: string;
 } => {
 	return useMemo(() => {
-		const onePxInMeters: number = getGroundResolution(latitude, zoom);
+		const onePxInMeters: number = getGroundResolution(latitude || 0, zoom || 0);
 		const maxScaleWidthInMeters: number = maxWidth * onePxInMeters;
 		const valueForScaleInMeters: number = getValueForScaleInMeters(maxScaleWidthInMeters);
 		const scaleWidth: number = maxWidth * (valueForScaleInMeters / maxScaleWidthInMeters);
 		const label: string = getFormattedLabel(valueForScaleInMeters);
 
 		return {
-			onePxInMeters,
-			maxScaleWidthInMeters,
-			valueForScaleInMeters,
 			scaleWidth,
 			label,
 		};

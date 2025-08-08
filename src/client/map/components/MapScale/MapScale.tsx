@@ -28,6 +28,8 @@ interface MapScaleProps {
 export const MapScale = ({ stateMapKey, color, maxWidth = 150 }: MapScaleProps) => {
 	const [sharedState] = useSharedState();
 	const mapState = getMapByKey(sharedState, stateMapKey);
+	const { scaleWidth, label } = useScaleBar(mapState?.view?.latitude, mapState?.view?.zoom, maxWidth);
+
 	const { view } = mapState || {};
 	if (!view) {
 		console.warn(`Map with key "${stateMapKey}" does not have a view.`);
@@ -39,8 +41,6 @@ export const MapScale = ({ stateMapKey, color, maxWidth = 150 }: MapScaleProps) 
 		console.warn(`Invalid map view parameters: zoom=${zoom}, latitude=${latitude}`);
 		return null;
 	}
-
-	const { scaleWidth, label } = useScaleBar(latitude, zoom, maxWidth);
 
 	return (
 		<div className="ptr-MapScale">
