@@ -83,7 +83,10 @@ export const RenderingMap: React.FC<RenderMapProps> = (props: RenderMapProps) =>
 
 	console.log('Layers from state:', layersFromState);
 
-	const parsedLayersFromState: LayersList = parseLayersFromSharedState([...layersFromState], undefined, interactionMap);
+	const parsedLayersFromState: LayersList = parseLayersFromSharedState({
+		sharedStateLayers: [...layersFromState],
+		interactionRenderingMap: interactionMap,
+	});
 
 	console.log('Parsed layers from state:', parsedLayersFromState);
 

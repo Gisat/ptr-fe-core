@@ -109,7 +109,12 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	};
 
 	// Parse layers for DeckGL rendering
-	const layers: LayersList = mapLayers ? parseLayersFromSharedState([...mapLayers], getSelection) : [];
+	const layers: LayersList = mapLayers
+		? parseLayersFromSharedState({
+				sharedStateLayers: [...mapLayers],
+				getSelectionForLayer: getSelection,
+			})
+		: [];
 
 	return (
 		<DeckGL

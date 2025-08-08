@@ -10,21 +10,29 @@ import { createCogLayer } from '../logic/map.layers.cog';
 import { Selection } from 'src/client/shared/models/models.selections';
 
 /**
+ * Props for parseLayersFromSharedState function.
+ */
+export interface ParseLayersProps {
+	sharedStateLayers: RenderingLayer[];
+	getSelectionForLayer?: (selectionKey: string) => Selection | undefined;
+	interactionRenderingMap?: Map<LayerTreeInteraction, any>;
+}
+
+/**
  * Parses rendering layers from shared state and returns an array of DeckGL layers.
  * Uses a selector callback to retrieve selection objects for each layer.
  *
- * TODO: Need better implementation for parsing layers
- *
- * @param {RenderingLayer[]} sharedStateLayers - Array of rendering layers from shared state.
- * @param {(selectionKey: string) => Selection | undefined} getSelectionForLayer - Callback to get selection for a layer by selectionKey.
- * @param {Map<LayerTreeInteraction, any>} [interactionRenderingMap] - Optional map for interaction handlers.
+ * @param {ParseLayersProps} props - Object containing all parameters.
+ * @param {RenderingLayer[]} props.sharedStateLayers - Array of rendering layers from shared state.
+ * @param {(selectionKey: string) => Selection | undefined} [props.getSelectionForLayer] - Optional callback to get selection for a layer by selectionKey.
+ * @param {Map<LayerTreeInteraction, any>} [props.interactionRenderingMap] - Optional map for interaction handlers.
  * @returns {any[]} Array of DeckGL layers.
  */
-export const parseLayersFromSharedState = (
-	sharedStateLayers: RenderingLayer[],
-	getSelectionForLayer?: (selectionKey: string) => Selection | undefined,
-	interactionRenderingMap?: Map<LayerTreeInteraction, any>
-) => {
+export const parseLayersFromSharedState = ({
+	sharedStateLayers,
+	getSelectionForLayer,
+	interactionRenderingMap,
+}: ParseLayersProps) => {
 	const layerSwitch = (layer: RenderingLayer) => {
 		// Gets the selection object for the current layer
 		const selectionForLayer =
@@ -49,7 +57,5 @@ export const parseLayersFromSharedState = (
 		else if (layer.datasource.labels.includes(UsedDatasourceLabels.COG)) return createCogLayer(layerProps);
 		else throw new Error(`Datasource Error - Unknown datasource type ${layer.datasource.labels}`);
 	};
-	return sharedStateLayers.map((source: RenderingLayer) => {
-		return layerSwitch(source);
-	});
+	return sharedStateLayers.map((source: RenderingLayer) => layerSwitch(source));
 };
