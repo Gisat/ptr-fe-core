@@ -2,8 +2,6 @@ import { AppSharedState } from '../state.models';
 import { MapView } from '../../models/models.mapView';
 
 /**
- * Get map set state by map set key
- * @param state AppSharedState
  * Get map view by map key
  * @param state AppSharedState
  * @param key map key
