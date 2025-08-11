@@ -19,3 +19,5 @@ export const SELECTION_DEFAULT_DISTINCT_COLOURS = [
 	'#ffd8b1',
 	'#282892',
 ];
+
+export const SELECTION_DEFAULT_COLOUR = '#00ffff';

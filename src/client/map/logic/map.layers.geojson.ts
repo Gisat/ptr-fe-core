@@ -4,6 +4,7 @@ import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
 import { getFeatureId } from '../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../shared/helpers/hexToRgbArray';
+import { SELECTION_DEFAULT_COLOUR } from '../../shared/constants/colors';
 
 /**
  * Represents the structure needed for feature identification and property access.
@@ -53,7 +54,7 @@ export const createGeojsonLayer = ({
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, true);
 
 	const selectedFeatureKeys = selection?.featureKeys ?? [];
-	const distinctColours = selection?.distinctColours ?? ['#00ffff'];
+	const distinctColours = selection?.distinctColours ?? [SELECTION_DEFAULT_COLOUR];
 	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
 
 	const geojsonOptions = configurationJs?.geojsonOptions?.layerStyle ?? defaultOptions;
@@ -71,7 +72,7 @@ export const createGeojsonLayer = ({
 			const colourIndex = featureKeyColourIndexPairs[featureId];
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
 			// Convert hex to RGB array and add alpha channel
-			return hex ? [...hexToRgbArray(hex), 255] : [0, 255, 255, 255];
+			return [...hexToRgbArray(hex), 255];
 		}
 		return geojsonOptions.getLineColor;
 	}
