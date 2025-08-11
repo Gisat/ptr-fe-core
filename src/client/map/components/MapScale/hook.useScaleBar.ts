@@ -2,38 +2,39 @@ import { useMemo } from 'react';
 import { getGroundResolution } from './helper.getGroundResolution';
 import { getValueForScaleInMeters } from './helper.getValueForScaleInMeters';
 import { getFormattedLabel } from './helper.getFormattedLabel';
+import { MapView } from '../../../shared/models/models.mapView';
 
 /**
  * Custom hook to calculate scale bar properties for a map.
  *
- * @param {number} latitude - The latitude of the map's center in degrees.
- * @param {number} zoom - The zoom level of the map.
  * @param {number} maxWidth - The maximum width of the scale bar in pixels.
- * @returns {Object} An object containing scale bar properties:
- * - `onePxInMeters`: The distance in meters represented by one pixel.
- * - `maxScaleWidthInMeters`: The maximum scale width in meters.
- * - `valueForScaleInMeters`: A rounded scale value in meters suitable for display.
- * - `scaleWidth`: The width of the scale bar in pixels.
+ * @param {MapView | null} mapView - The current map view object containing zoom and latitude.
+ * @returns {Object|null} An object containing scale bar properties:
+ * - `width`: The width of the scale bar in pixels.
  * - `label`: A human-readable label for the scale bar (e.g., "500 m" or "1.5 km").
  */
 export const useScaleBar = (
-	latitude: number | undefined,
-	zoom: number | undefined,
+	mapView: MapView | null,
 	maxWidth: number
 ): {
-	scaleWidth: number;
+	width: number;
 	label: string;
-} => {
+} | null => {
 	return useMemo(() => {
-		const onePxInMeters: number = getGroundResolution(latitude || 0, zoom || 0);
+		if ((!mapView?.zoom && mapView?.zoom !== 0) || (!mapView?.latitude && mapView?.latitude !== 0)) {
+			console.warn('MapView is not valid for scale bar calculation', mapView);
+			return null;
+		}
+
+		const onePxInMeters: number = getGroundResolution(mapView.latitude, mapView.zoom);
 		const maxScaleWidthInMeters: number = maxWidth * onePxInMeters;
 		const valueForScaleInMeters: number = getValueForScaleInMeters(maxScaleWidthInMeters);
-		const scaleWidth: number = maxWidth * (valueForScaleInMeters / maxScaleWidthInMeters);
+		const width: number = maxWidth * (valueForScaleInMeters / maxScaleWidthInMeters);
 		const label: string = getFormattedLabel(valueForScaleInMeters);
 
 		return {
-			scaleWidth,
+			width,
 			label,
 		};
-	}, [latitude, zoom, maxWidth]);
+	}, [mapView, maxWidth]);
 };
