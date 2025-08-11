@@ -35,6 +35,9 @@ export enum StateActionType {
 	/** Action to change the active map layer. */
 	MAP_LAYER_ACTIVE_CHANGE = 'mapLayerActiveChange',
 
+	/** Action to change the interactivity of a map layer. */
+	MAP_LAYER_INTERACTIVITY_CHANGE = 'mapLayerInteractivityChange',
+
 	/** Action to change the opacity of a map layer. */
 	MAP_LAYER_OPACITY_CHANGE = 'mapLayerOpacityChange',
 
@@ -43,6 +46,15 @@ export enum StateActionType {
 
 	/** Action to remove layer from the map. */
 	MAP_LAYER_REMOVE = 'mapLayerRemove',
+
+	/** Action to set the feature key for a map layer. */
+	MAP_LAYER_SET_FEATURE_KEY = 'mapLayerSetFeatureKey',
+
+	/** Action to add a feature key to the map layer selections. */
+	MAP_LAYER_ADD_FEATURE_KEY = 'mapLayerAddFeatureKey',
+
+	/** Action to remove a feature key from the map layer selections. */
+	MAP_LAYER_REMOVE_FEATURE_KEY = 'mapLayerRemoveFeatureKey',
 
 	/** Action to add map to map set */
 	MAP_ADD_TO_MAP_SET = 'addMapToMapSet',

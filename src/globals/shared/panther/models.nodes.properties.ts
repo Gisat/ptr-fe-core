@@ -63,6 +63,14 @@ export interface DatasourceConfiguration {
 	cogBitmapOptions: {
 		useChannel: number; // TODO Band name to use for rendering against deprecated `cogBitmapOptions.useChannel`
 	};
+	geojsonOptions: {
+		featureIdProperty: string; // Property name used for feature ID
+		selectionStyle: {
+			distinctColours: string[];
+			distinctItems: boolean;
+			maxSelectionCount: number;
+		};
+	};
 }
 
 /**

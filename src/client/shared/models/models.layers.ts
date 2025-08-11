@@ -12,4 +12,6 @@ export interface RenderingLayer {
 	opacity?: number;
 	datasource: Datasource;
 	interaction: Nullable<LayerTreeInteraction>;
+	selectionKey?: string;
+	isInteractive?: boolean;
 }

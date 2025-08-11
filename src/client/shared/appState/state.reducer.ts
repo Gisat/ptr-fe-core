@@ -6,8 +6,12 @@ import {
 	ActionMapAddToMapSet,
 	ActionMapLayerActiveChange,
 	ActionMapLayerAdd,
+	ActionMapLayerAddFeatureKey,
+	ActionMapLayerInteractivityChange,
 	ActionMapLayerOpacityChange,
 	ActionMapLayerRemove,
+	ActionMapLayerRemoveFeatureKey,
+	ActionMapLayerSetFeatureKey,
 	ActionMapRemoveFromMapSet,
 	ActionMapSetAdd,
 	ActionMapSetModeChange,
@@ -33,6 +37,10 @@ import { reduceHandlerMapSetModeChange } from './reducerHandlers/mapSetModeChang
 import { reduceHandlerMapSetAddMapSet } from './reducerHandlers/mapSetAdd';
 import { reduceHandlerMapSetRemove } from './reducerHandlers/mapSetRemove';
 import { AppSpecificAction, AppSpecificReducerMap } from './state.models.reducer';
+import { reduceHandlerAddFeatureKeyToSelections } from './reducerHandlers/mapLayerAddFeatureKeyToSelections';
+import { reduceHandlerRemoveFeatureKeyInSelections } from './reducerHandlers/mapLayerRemoveFeatureKeyInSelections';
+import { reduceHandlerSetFeatureKeyInSelections } from './reducerHandlers/mapLayerSetFeatureKeyInSelections';
+import { reduceHandlerMapLayerInteractivityChange } from './reducerHandlers/mapLayerInteractivityChange';
 
 /**
  * Creates a reducer function for a specific application state that combines core and application-specific reducers.
@@ -125,6 +133,18 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 		);
 		reducerSwitch.set(StateActionType.MAP_LAYER_REMOVE, () =>
 			reduceHandlerMapLayerRemove(currentState, action as ActionMapLayerRemove)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE, () =>
+			reduceHandlerMapLayerInteractivityChange(currentState, action as ActionMapLayerInteractivityChange)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_SET_FEATURE_KEY, () =>
+			reduceHandlerSetFeatureKeyInSelections(currentState, action as ActionMapLayerSetFeatureKey)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_ADD_FEATURE_KEY, () =>
+			reduceHandlerAddFeatureKeyToSelections(currentState, action as ActionMapLayerAddFeatureKey)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY, () =>
+			reduceHandlerRemoveFeatureKeyInSelections(currentState, action as ActionMapLayerRemoveFeatureKey)
 		);
 		reducerSwitch.set(StateActionType.MAP_LAYER_OPACITY_CHANGE, () =>
 			reduceHandlerMapLayerOpacityChange(currentState, action as ActionMapLayerOpacityChange)

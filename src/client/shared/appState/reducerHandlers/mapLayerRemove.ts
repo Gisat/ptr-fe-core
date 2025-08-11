@@ -25,19 +25,28 @@ export const reduceHandlerMapLayerRemove = <T extends AppSharedState = AppShared
 	const mapToChange = getMapByKey(state, mapKey);
 	if (!mapToChange) throw new Error(`Map with key ${mapKey} not found`);
 
+	// Find the selectionKey for the layer to be removed
+	const layerToRemove = mapToChange.renderingLayers.find((layer) => layer.key === layerKey);
+	const selectionKeyToRemove = layerToRemove?.selectionKey;
+
+	// Remove the layer from renderingLayers
 	const filteredLayers = mapToChange.renderingLayers.filter((layerToChange) => layerToChange.key !== layerKey);
 
 	// Update the maps array with the modified map
 	const updatedMaps: SingleMapModel[] = state.maps.map((map: SingleMapModel) => {
 		if (map.key === mapKey) {
-			// Update the map that matches the key
 			return { ...map, renderingLayers: filteredLayers };
 		} else {
-			// Return unchanged maps
 			return map;
 		}
 	});
 
+	// Remove the selection from state.selections if selectionKey exists
+	let updatedSelections = state.selections;
+	if (selectionKeyToRemove && Array.isArray(state.selections)) {
+		updatedSelections = state.selections.filter((selection) => selection && selection.key !== selectionKeyToRemove);
+	}
+
 	// Return the updated application state
-	return { ...state, maps: updatedMaps };
+	return { ...state, maps: updatedMaps, selections: updatedSelections };
 };

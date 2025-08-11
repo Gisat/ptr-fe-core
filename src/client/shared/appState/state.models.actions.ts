@@ -13,6 +13,7 @@ import { MapSetSync } from '../models/models.mapSetSync';
 import { RenderingLayer } from '../models/models.layers';
 import { StateActionType } from './enum.state.actionType'; // Import the ActionType enum
 import { AppSpecificAction } from './state.models.reducer';
+import { Selection } from '../models/models.selections';
 
 /**
  * When we set up application node
@@ -79,6 +80,14 @@ export interface ActionMapLayerActiveChange extends AppSpecificAction {
 }
 
 /**
+ * Change map layer interactivity
+ */
+export interface ActionMapLayerInteractivityChange extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE;
+	payload: { mapKey: string; layerKey: string; isInteractive: boolean };
+}
+
+/**
  * Change map layer opacity
  */
 export interface ActionMapLayerOpacityChange extends AppSpecificAction {
@@ -100,6 +109,36 @@ export interface ActionMapLayerAdd extends AppSpecificAction {
 export interface ActionMapLayerRemove extends AppSpecificAction {
 	type: StateActionType.MAP_LAYER_REMOVE;
 	payload: { mapKey: string; layerKey: string };
+}
+
+/**
+ * Set feature key for vector layer in map's rendering layers
+ */
+export interface ActionMapLayerSetFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_SET_FEATURE_KEY;
+	payload: {
+		mapKey: string;
+		layerKey: string;
+		featureKey: string;
+		customSelectionStyle?: Partial<Selection>;
+	};
+}
+
+/** Add feature key to map layer selections */
+export interface ActionMapLayerAddFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY;
+	payload: {
+		mapKey: string;
+		layerKey: string;
+		featureKey: string;
+		customSelectionStyle?: Partial<Selection>;
+	};
+}
+
+/** Remove feature key from map layer selections */
+export interface ActionMapLayerRemoveFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY;
+	payload: { mapKey: string; layerKey: string; featureKey: string };
 }
 
 /**
@@ -195,12 +234,16 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionChangePeriods
 		| ActionSetApplicationNode
 		| ActionLayerActiveChange
+		| ActionMapLayerActiveChange
+		| ActionMapLayerInteractivityChange
 		| ActionMapAddToMapSet
 		| ActionMapRemoveFromMapSet
 		| ActionMapSetRemoveMapsByKeys
-		| ActionMapLayerActiveChange
 		| ActionMapLayerAdd
 		| ActionMapLayerRemove
+		| ActionMapLayerSetFeatureKey
+		| ActionMapLayerAddFeatureKey
+		| ActionMapLayerRemoveFeatureKey
 		| ActionMapLayerOpacityChange
 		| ActionMapViewChange
 		| ActionMapSetSyncChange

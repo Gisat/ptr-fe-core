@@ -52,7 +52,6 @@ export interface RenderMapProps {
 
 /** Rendered map with DeckGL tool used as a geospatial renderer */
 export const RenderingMap: React.FC<RenderMapProps> = (props: RenderMapProps) => {
-
 	// shared application state in context
 	const [sharedState] = useSharedState();
 
@@ -84,10 +83,12 @@ export const RenderingMap: React.FC<RenderMapProps> = (props: RenderMapProps) =>
 
 	console.log('Layers from state:', layersFromState);
 
-	const parsedLayersFromState: LayersList = parseLayersFromSharedState([...layersFromState], interactionMap);
+	const parsedLayersFromState: LayersList = parseLayersFromSharedState({
+		sharedStateLayers: [...layersFromState],
+		interactionRenderingMap: interactionMap,
+	});
 
 	console.log('Parsed layers from state:', parsedLayersFromState);
-
 
 	const layers = [...parsedLayersFromState, ...(props.layer || [])];
 
