@@ -4,7 +4,9 @@ import { MapView } from '../../models/models.mapView';
 /**
  * Get map set state by map set key
  * @param state AppSharedState
- * @param key map set identifier
+ * Get map view by map key
+ * @param state AppSharedState
+ * @param key map key
  * @returns {MapView|null} map view
  */
 export const getMapViewByKey = (state: AppSharedState, key: string): MapView | null => {
