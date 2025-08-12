@@ -1,6 +1,16 @@
 {
 	"directory": "./src/client",
-	"exclude": ["node_modules", "dist", "coverage", "test", "tests", "spec", "specs"],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"coverage",
+		"test",
+		"tests",
+		"spec",
+		"specs",
+		"webpack.config.js",
+		"webpack.config.ts"
+	],
 	"delete": true,
 	"location": "top",
 	"barrelName": "index.ts",
