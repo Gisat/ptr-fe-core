@@ -1,6 +1,6 @@
 import { getFormattedLabel } from './helper.getFormattedLabel';
 
-describe('getFormattedLabel', () => {
+describe('Get formatted label with units', () => {
 	// Test that values less than 1000 are formatted as meters
 	it('should return the value in meters when the input is less than 1000', () => {
 		expect(getFormattedLabel(500)).toBe('500 m');
