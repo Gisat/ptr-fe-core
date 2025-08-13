@@ -10,10 +10,10 @@
 	"types": "./dist/server/index.d.ts",
 	"exports": {
 		".": {
-			"require": "./dist/server/index.cjs.js",
-			"import": "./dist/server/index.esm.js",
+			"types": "./dist/server/index.d.ts",
 			"browser": "./dist/client/index.esm.js",
-			"types": "./dist/server/index.d.ts"
+			"require": "./dist/server/index.cjs.js",
+			"import": "./dist/server/index.esm.js"
 		},
 		"./client": {
 			"import": "./dist/client/index.esm.js",
@@ -65,6 +65,7 @@
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-react": "^7.37.5",
 		"eslint-plugin-react-hooks": "^5.2.0",
+		"jsdom": "^26.1.0",
 		"postcss": "^8.5.3",
 		"postcss-import": "^16.1.0",
 		"postcss-preset-mantine": "^1.17.0",
@@ -79,7 +80,6 @@
 		"vitest": "^3.2.4"
 	},
 	"peerDependencies": {
-		"axios": "^1.10.0",
 		"@deck.gl/core": "^9.1.8",
 		"@deck.gl/extensions": "^9.1.8",
 		"@deck.gl/geo-layers": "^9.1.8",

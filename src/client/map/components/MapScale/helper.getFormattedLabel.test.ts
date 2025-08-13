@@ -1,14 +1,15 @@
-import { describe, expect, it } from 'vitest';
 import { getFormattedLabel } from './helper.getFormattedLabel';
 
 describe('getFormattedLabel', () => {
-	it('formats values less than 1000 as meters', () => {
+	// Test that values less than 1000 are formatted as meters
+	it('should return the value in meters when the input is less than 1000', () => {
 		expect(getFormattedLabel(500)).toBe('500 m');
 		expect(getFormattedLabel(0)).toBe('0 m');
 		expect(getFormattedLabel(999)).toBe('999 m');
 	});
 
-	it('formats values 1000 or more as kilometers', () => {
+	// Test that values of 1000 or more are converted to kilometers and formatted correctly
+	it('should convert values of 1000 or more to kilometers and format them correctly', () => {
 		expect(getFormattedLabel(1000)).toBe('1 km');
 		expect(getFormattedLabel(1500)).toBe('1.5 km');
 		expect(getFormattedLabel(12345)).toBe('12.345 km');

@@ -5,7 +5,8 @@
 		"emitDeclarationOnly": true,
 		"declarationDir": "dist",
 		"outDir": "dist",
-		"rootDir": "src"
+		"rootDir": "src",
+		"types": ["vitest/globals"]
 	},
 	"include": ["src"],
 	"exclude": ["src/others", "**/*.test.ts", "**/*.test.tsx", "**/*.fixture.ts", "**/*.fixture.tsx"]
