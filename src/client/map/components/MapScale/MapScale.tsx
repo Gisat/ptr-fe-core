@@ -1,5 +1,5 @@
 import { useSharedState } from '../../../shared/hooks/state.useSharedState';
-import { getMapByKey } from '../../../shared/appState/selectors/getMapByKey';
+import { getMapViewByKey } from '../../../shared/appState/selectors/getMapViewByKey';
 import { useScaleBar } from './hook.useScaleBar';
 import './MapScale.css';
 
@@ -27,25 +27,17 @@ interface MapScaleProps {
  */
 export const MapScale = ({ stateMapKey, color, maxWidth = 150 }: MapScaleProps) => {
 	const [sharedState] = useSharedState();
-	const mapState = getMapByKey(sharedState, stateMapKey);
-	const { view } = mapState || {};
-	if (!view) {
-		console.warn(`Map with key "${stateMapKey}" does not have a view.`);
+	const mapView = getMapViewByKey(sharedState, stateMapKey);
+	const scale = useScaleBar(mapView, maxWidth);
+
+	if (!scale) {
 		return null;
 	}
-
-	const { zoom, latitude } = view;
-	if (zoom === undefined || latitude === undefined) {
-		console.warn(`Invalid map view parameters: zoom=${zoom}, latitude=${latitude}`);
-		return null;
-	}
-
-	const { scaleWidth, label } = useScaleBar(latitude, zoom, maxWidth);
 
 	return (
 		<div className="ptr-MapScale">
-			<div className="ptr-MapScale-content" style={{ width: `${scaleWidth}px`, borderColor: color }}>
-				<span style={{ color }}>{label}</span>
+			<div className="ptr-MapScale-content" style={{ width: `${scale.width}px`, borderColor: color }}>
+				<span style={{ color }}>{scale.label}</span>
 			</div>
 		</div>
 	);

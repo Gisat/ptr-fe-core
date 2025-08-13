@@ -1,6 +1,6 @@
 {
 	"name": "@gisatcz/ptr-fe-core",
-	"version": "0.0.6-dev.2",
+	"version": "0.0.6-dev.3",
 	"description": "",
 	"type": "module",
 	"main": "./dist/client/index.js",
@@ -10,10 +10,10 @@
 	"types": "./dist/server/index.d.ts",
 	"exports": {
 		".": {
-			"browser": "./dist/client/index.esm.js",
-			"types": "./dist/server/index.d.ts",
 			"require": "./dist/server/index.cjs.js",
-			"import": "./dist/server/index.esm.js"
+			"import": "./dist/server/index.esm.js",
+			"browser": "./dist/client/index.esm.js",
+			"types": "./dist/server/index.d.ts"
 		},
 		"./client": {
 			"import": "./dist/client/index.esm.js",
@@ -79,6 +79,7 @@
 		"vitest": "^3.2.4"
 	},
 	"peerDependencies": {
+		"axios": "^1.10.0",
 		"@deck.gl/core": "^9.1.8",
 		"@deck.gl/extensions": "^9.1.8",
 		"@deck.gl/geo-layers": "^9.1.8",

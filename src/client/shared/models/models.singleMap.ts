@@ -6,6 +6,6 @@ import { RenderingLayer } from './models.layers';
  */
 export interface SingleMapModel {
 	key: string;
-	view: Partial<MapView>;
+	view: MapView;
 	renderingLayers: Partial<RenderingLayer>[];
 }
