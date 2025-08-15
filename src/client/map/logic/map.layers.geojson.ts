@@ -16,9 +16,9 @@ interface Feature {
 }
 
 /**
- * Default options for GeoJsonLayer rendering.
+ * Default layer style for GeoJsonLayer rendering.
  */
-const defaultOptions = {
+const defaultLayerStyle = {
 	filled: true,
 	stroked: true,
 	pickable: false,
@@ -57,7 +57,8 @@ export const createGeojsonLayer = ({
 	const distinctColours = selection?.distinctColours ?? [SELECTION_DEFAULT_COLOUR];
 	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
 
-	const geojsonOptions = configurationJs?.geojsonOptions?.layerStyle ?? defaultOptions;
+	const geojsonOptions = configurationJs?.geojsonOptions ?? {};
+	const layerStyle = geojsonOptions?.layerStyle ?? defaultLayerStyle;
 
 	/**
 	 * Returns the line color for a feature.
@@ -67,14 +68,14 @@ export const createGeojsonLayer = ({
 	 * @returns {number[]} The RGBA color array for the feature's line.
 	 */
 	function getLineColor(feature: Feature): number[] {
-		const featureId = getFeatureId(feature, configurationJs?.featureIdProperty);
+		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
 			// Convert hex to RGB array and add alpha channel
 			return [...hexToRgbArray(hex), 255];
 		}
-		return geojsonOptions.getLineColor;
+		return layerStyle.getLineColor;
 	}
 
 	/**
@@ -85,11 +86,11 @@ export const createGeojsonLayer = ({
 	 * @returns {number} The width of the feature's line.
 	 */
 	function getLineWidth(feature: Feature): number {
-		const featureId = getFeatureId(feature, configurationJs?.featureIdProperty);
+		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			return 20;
 		}
-		return geojsonOptions.getLineWidth;
+		return layerStyle.getLineWidth;
 	}
 
 	return new GeoJsonLayer({
@@ -98,13 +99,13 @@ export const createGeojsonLayer = ({
 		visible: isActive,
 		data: url,
 		updateTriggers: {
-			getLineColor: [geojsonOptions, selection],
-			getFillColor: [geojsonOptions, selection],
-			pickable: [geojsonOptions, isInteractive],
+			getLineColor: [layerStyle, selection],
+			getFillColor: [layerStyle, selection],
+			pickable: [layerStyle, isInteractive],
 		},
-		...geojsonOptions,
+		...layerStyle,
 		getLineColor,
 		getLineWidth,
-		pickable: isInteractive ?? geojsonOptions.pickable,
+		pickable: isInteractive ?? layerStyle.pickable,
 	});
 };
