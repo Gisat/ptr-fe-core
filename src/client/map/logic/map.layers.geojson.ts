@@ -42,6 +42,7 @@ const defaultLayerStyle = {
  *
  * @todo This is only a first draft of the GeoJSON layer implementation.
  *       TODO: Add support for fill styling, point sizes, and other styling options.
+ *       TODO: featureIdProperty should be defined and validated in the datasource configuration, not just in geojsonOptions.
  */
 export const createGeojsonLayer = ({
 	sourceNode,
