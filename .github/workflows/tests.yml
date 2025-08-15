@@ -1,0 +1,23 @@
+name: tests
+
+on:
+  pull_request:
+    branches:
+    - main
+    - master
+    - dev
+    - rc
+
+jobs:
+  code:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test
