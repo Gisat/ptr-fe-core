@@ -395,7 +395,7 @@ export const sharedStateMocks: Record<string, AppSharedState> = {
 					labels: ['datasource'],
 					lastUpdatedAt: 123456,
 					configuration: '{}',
-					url: 'https://example.com/layer-2',
+					url: 'https://example.com/layer-1',
 				},
 			},
 		],
