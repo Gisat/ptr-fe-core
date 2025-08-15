@@ -40,7 +40,8 @@
 		"build:dev": "npm run build:prebuild && rollup --config && npm pack",
 		"build": "npm run build:prebuild && rollup --config",
 		"lint": "eslint",
-		"test": "vitest",
+		"test": "vitest run",
+		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage"
 	},
 	"keywords": [],
