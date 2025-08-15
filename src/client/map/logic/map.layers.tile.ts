@@ -15,13 +15,13 @@ import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.pant
  * @returns {TileLayer<ImageBitmap>} - The created TileLayer instance.
  */
 export const createTileLayer = ({ sourceNode, isActive, key, opacity }: LayerGeneralProps) => {
-	const { configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.XYZ, true);
+	const { url } = validateDatasource(sourceNode, UsedDatasourceLabels.XYZ, true);
 	// build DeckGL layer
 	const layer = new TileLayer<ImageBitmap>({
 		id: key,
 		visible: isActive,
 		opacity: opacity ?? 1,
-		data: [configurationJs.url],
+		data: url,
 		minZoom: 0,
 		maxZoom: 19,
 		tileSize: 256,

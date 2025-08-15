@@ -9,10 +9,10 @@ import { MapSetModel } from '../../models/models.mapSet';
  * @param action ActionMapSetSyncChange
  * @returns Updated AppSharedState
  */
-export const reduceHandlerMapSetSyncChange = (
-	state: AppSharedState,
+export const reduceHandlerMapSetSyncChange = <T extends AppSharedState = AppSharedState>(
+	state: T,
 	action: ActionMapSetSyncChange
-): AppSharedState => {
+): T => {
 	const { payload } = action;
 
 	if (!payload) throw new Error('No payload provided for map set sync change action');

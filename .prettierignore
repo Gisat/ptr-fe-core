@@ -1,0 +1,8 @@
+.github
+.idea
+.next
+doc
+node_modules
+public
+
+package-lock.json

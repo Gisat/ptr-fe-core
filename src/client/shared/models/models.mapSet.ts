@@ -8,6 +8,7 @@ import { MapSetSync } from '../models/models.mapSetSync';
 export interface MapSetModel {
 	key: string;
 	maps: string[];
+	mode?: 'slider' | 'grid';
 	sync: MapSetSync;
 	view: Partial<MapView>;
 }

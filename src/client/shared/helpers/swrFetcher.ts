@@ -14,10 +14,9 @@ export const swrFetcher = async (
 	try {
 		const res = await fetch(url, {
 			redirect: 'manual',
-			credentials: 'include', // Ensure cookies are sent
+			credentials: 'include',
 			...options?.init,
 		});
-		console.log(res);
 		const currentPath = window.location.pathname;
 		if (res.status === 401 && res.statusText === 'Unauthorized') {
 			const loginBasePath = options?.loginRedirectPath;
@@ -26,7 +25,6 @@ export const swrFetcher = async (
 				return;
 			}
 		} else if (res.status >= 400 && res.status < 600) {
-			// Handle client and server error responses
 			const errorPath = options?.errorRedirectPath;
 			if (errorPath && currentPath !== errorPath) {
 				window.location.href = `${errorPath}?code=${res.status}&message=${encodeURIComponent(res.statusText)}`;

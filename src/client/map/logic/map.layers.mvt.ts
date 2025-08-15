@@ -17,14 +17,14 @@ import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.pant
  * @throws {Error} If the canvas element is not found during hover events.
  */
 export const createMVTLayer = ({ sourceNode, isActive, onClickHandler, key, opacity }: LayerGeneralProps) => {
-	const { configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.MVT, true);
+	const { url } = validateDatasource(sourceNode, UsedDatasourceLabels.MVT, true);
 
 	// build DeckGL layer
 	const layer = new MVTLayer({
 		id: key,
 		visible: isActive,
 		opacity: opacity ?? 1,
-		data: configurationJs.url,
+		data: url,
 		minZoom: 0,
 		maxZoom: 16,
 		getLineColor: [0, 0, 200, 255],

@@ -7,10 +7,10 @@ import { ActionLayerActiveChange } from '../state.models.actions';
  * @param action
  * @returns
  */
-export const reduceHandlerActiveLayerChange = (
-	state: AppSharedState,
+export const reduceHandlerActiveLayerChange = <T extends AppSharedState = AppSharedState>(
+	state: T,
 	action: ActionLayerActiveChange
-): AppSharedState => {
+): T => {
 	const { payload } = action;
 
 	const changedLayerIndex = state.renderingLayers.findIndex((layer) => layer.datasource.key === payload.key);

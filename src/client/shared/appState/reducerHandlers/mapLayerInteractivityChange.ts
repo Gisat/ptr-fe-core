@@ -1,0 +1,48 @@
+import { AppSharedState } from '../state.models';
+import { ActionMapLayerInteractivityChange } from '../state.models.actions';
+import { SingleMapModel } from '../../models/models.singleMap';
+import { getMapByKey } from '../../appState/selectors/getMapByKey';
+
+/**
+ * Handler for map layer interactivity change action
+ * @param state AppSharedState
+ * @param action ActionMapLayerInteractivityChange
+ * @returns Updated AppSharedState
+ */
+export const reduceHandlerMapLayerInteractivityChange = <T extends AppSharedState = AppSharedState>(
+	state: T,
+	action: ActionMapLayerInteractivityChange
+): T => {
+	const { payload } = action;
+
+	if (!payload) throw new Error('No payload provided for map layer interactivity change action');
+	const { mapKey, layerKey, isInteractive } = payload;
+
+	// Find the map
+	const mapToChange = getMapByKey(state, mapKey);
+	if (!mapToChange) throw new Error(`Map with key ${mapKey} not found`);
+
+	// Get updated layers
+	const changedLayers = mapToChange.renderingLayers.map((layer) => {
+		if (layer.key === layerKey) {
+			// Update layer interactivity
+			return { ...layer, isInteractive: isInteractive };
+		} else {
+			// Return unchanged layer
+			return layer;
+		}
+	});
+
+	const updatedMaps: SingleMapModel[] = state.maps.map((map: SingleMapModel) => {
+		if (map.key === mapKey) {
+			// Update the map that triggered the change
+			return { ...map, renderingLayers: changedLayers };
+		} else {
+			// Return unchanged map
+			return map;
+		}
+	});
+
+	// Return the updated state
+	return { ...state, maps: updatedMaps };
+};

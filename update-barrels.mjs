@@ -12,22 +12,22 @@ const __dirname = path.dirname(__filename);
  * @returns {string|null} - The resolved absolute path or null if not found.
  */
 function resolveModulePath(modulePath, baseDir) {
-    // create absolute path
-    const fullPath = path.resolve(baseDir, modulePath);
+	// create absolute path
+	const fullPath = path.resolve(baseDir, modulePath);
 
-    if (fs.existsSync(fullPath)) {
-        return fullPath;
-    }
+	if (fs.existsSync(fullPath)) {
+		return fullPath;
+	}
 
-    const extensions = ['.tsx', '.ts', '.js'];
-    for (const ext of extensions) {
-        const fullPathWithExt = fullPath + ext;
-        if (fs.existsSync(fullPathWithExt)) {
-            return fullPathWithExt;
-        }
-    }
+	const extensions = ['.tsx', '.ts', '.js'];
+	for (const ext of extensions) {
+		const fullPathWithExt = fullPath + ext;
+		if (fs.existsSync(fullPathWithExt)) {
+			return fullPathWithExt;
+		}
+	}
 
-    return null;
+	return null;
 }
 
 /**
@@ -36,13 +36,13 @@ function resolveModulePath(modulePath, baseDir) {
  * @returns {boolean} - True if the module has a default export, false otherwise.
  */
 function moduleHasDefaultExport(moduleFilePath) {
-    try {
-        const content = fs.readFileSync(moduleFilePath, 'utf8');
-        return /\bexport\s+default\b/.test(content);
-    } catch (err) {
-        console.warn(`Cannot load file ${moduleFilePath}: ${err}`);
-        return false;
-    }
+	try {
+		const content = fs.readFileSync(moduleFilePath, 'utf8');
+		return /\bexport\s+default\b/.test(content);
+	} catch (err) {
+		console.warn(`Cannot load file ${moduleFilePath}: ${err}`);
+		return false;
+	}
 }
 
 /**
@@ -51,38 +51,41 @@ function moduleHasDefaultExport(moduleFilePath) {
  * @param {string} filePath - The file path of the index file to transform.
  */
 function transformIndexFile(filePath) {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const regex = /^export\s+\*\s+from\s+['"](.*)['"];$/gm;
-    let modifiedContent = content;
-    let match;
+	const content = fs.readFileSync(filePath, 'utf8');
+	const regex = /^export\s+\*\s+from\s+['"](.*)['"];$/gm;
+	let modifiedContent = content;
+	let match;
 
-    while ((match = regex.exec(content)) !== null) {
-        const modulePath = match[1];
+	while ((match = regex.exec(content)) !== null) {
+		const modulePath = match[1];
 
+		const absoluteModulePath = resolveModulePath(modulePath, path.dirname(filePath));
+		if (!absoluteModulePath) {
+			console.warn(`Cannot load file ${modulePath}`);
+			continue;
+		}
 
-        const absoluteModulePath = resolveModulePath(modulePath, path.dirname(filePath));
-        if (!absoluteModulePath) {
-            console.warn(`Cannot load file ${modulePath}`);
-            continue;
-        }
+		if (!moduleHasDefaultExport(absoluteModulePath)) {
+			console.log(`Module ${modulePath} does not have default export, no change here.`);
+			continue;
+		}
 
-        if (!moduleHasDefaultExport(absoluteModulePath)) {
-            console.log(`Module ${modulePath} does not have default export, no change here.`);
-            continue;
-        }
+		const baseName = path.basename(modulePath).replace(/\.[^.]+$/, '');
+		const newLine = `export { default as ${baseName} } from "${modulePath}";`;
+		modifiedContent = modifiedContent.replace(match[0], newLine);
+	}
 
-        const baseName = path.basename(modulePath).replace(/\.[^.]+$/, '');
-        const newLine = `export { default as ${baseName} } from "${modulePath}";`;
-        modifiedContent = modifiedContent.replace(match[0], newLine);
-    }
-
-    if (modifiedContent !== content) {
-        fs.writeFileSync(filePath, modifiedContent, 'utf8');
-        console.log(`File ${filePath} was updated.`);
-    } else {
-        console.log(`In file ${filePath} no changes.`);
-    }
+	if (modifiedContent !== content) {
+		fs.writeFileSync(filePath, modifiedContent, 'utf8');
+		console.log(`File ${filePath} was updated.`);
+	} else {
+		console.log(`In file ${filePath} no changes.`);
+	}
 }
 
 const indexFilePath = process.argv[2] || path.resolve(__dirname, 'src/client/index.ts');
-transformIndexFile(indexFilePath);
+if (fs.existsSync(indexFilePath)) {
+	transformIndexFile(indexFilePath);
+} else {
+	console.warn(`Index file not found: ${indexFilePath}. Skipping transformation.`);
+}

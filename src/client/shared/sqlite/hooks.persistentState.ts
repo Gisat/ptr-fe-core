@@ -82,24 +82,23 @@ export const usePersistentState = <T>(defaultState: T) => {
 
 		// ... and set the key in the state
 		// If the key is not in the URL, set it to null
-		setPersistentStateKey(urlParams.get('key') || null);
+		const initialKey = urlParams.get('key');
+		setPersistentStateKey(initialKey || null);
 
 		/**
 		 * Asynchronously retrieves persistent state data from the server.
 		 *
 		 * @async
 		 * @function handleReadPersistentState
-		 * @returns {Promise<any>} The retrieved state data in JSON format
-		 * @throws {Error} Throws an error if the fetch request fails with a non-OK status
-		 * @description Fetches state data from the API endpoint. If a persistentStateKey is provided,
+		 * @param {string} initialPersistentStateKey - The key used to fetch the specific state data from the server.
+		 * @returns {Promise<any>} The retrieved state data in JSON format.
+		 * @throws {Error} Throws an error if the fetch request fails with a non-OK status.
+		 * @description Fetches state data from the API endpoint. If a `persistentStateKey` is provided,
 		 * it will be used as a query parameter to fetch specific state data. Otherwise, it fetches all state data.
 		 */
-		const handleReadPersistentState = async () => {
-			// If no key is provided, no need to bother SQLite
-			if (!persistentStateKey) return null;
-
+		const handleReadPersistentState = async (initialPersistentStateKey: string) => {
 			// Fetch the state from the server using the provided key from SQLite
-			const fetchUrl = `/api/stateStorage?key=${persistentStateKey}`;
+			const fetchUrl = `/api/stateStorage?key=${initialPersistentStateKey}`;
 			const response = await fetch(fetchUrl, {
 				method: 'GET',
 				headers: {
@@ -107,13 +106,14 @@ export const usePersistentState = <T>(defaultState: T) => {
 				},
 			});
 
+			// Check if the response status is not OK and throw an error
 			if (!response.ok) {
 				throw new Error('Fetch State: Status Error');
 
 				// TODO: Add error handler here for the case when the state is not found
 			}
 
-			// Return SQLite route response as JSON
+			// Parse and return the SQLite route response as JSON
 			const json = await response.json();
 			return json;
 		};
@@ -121,20 +121,21 @@ export const usePersistentState = <T>(defaultState: T) => {
 		/**
 		 * Fetches persistent state data asynchronously.
 		 *
-		 * Attempts to read the persistent state using the `handleReadPersistentState` function
-		 * if a default key exists. If data is successfully retrieved, it updates the persistent
-		 * state key and state using their respective setter functions. If no data is found or
-		 * the default state will remain
+		 * This function attempts to retrieve the persistent state using the `handleReadPersistentState` function
+		 * with the provided key. If the data is successfully retrieved, it updates the persistent state key,
+		 * state, and expiration time using their respective setter functions. If no data is found, the default
+		 * state remains unchanged.
 		 *
 		 * @async
 		 * @function fetchData
-		 * @returns {Promise<void>}
-		 * @throws {Error} Logs error to console if fetching fails
+		 * @param {string} initialPersistentStateKey - The key used to fetch the specific state data from the server.
+		 * @returns {Promise<void>} Resolves when the operation is complete.
+		 * @throws {Error} Logs an error to the console and updates the error state if fetching fails.
 		 */
-		const fetchData = async (): Promise<void> => {
+		const fetchData = async (initialPersistentStateKey: string): Promise<void> => {
 			try {
 				// Get data from SQLite route
-				const data: any | null = await handleReadPersistentState();
+				const data: any | null = await handleReadPersistentState(initialPersistentStateKey);
 
 				// No data found, keep the default state
 				if (!data) return; // no data, keep defaults
@@ -144,15 +145,16 @@ export const usePersistentState = <T>(defaultState: T) => {
 				setPersistentState(data.state);
 				setExpiresAtState(data.expiresAt);
 				setError(null); // Clear any previous errors
-				// TODO set sharedAppState
 			} catch (error) {
 				console.error('Persistent state load:', error);
 				setError((error as Error).message);
 			}
 		};
-
-		fetchData();
-	}, [persistentStateKey]);
+		// If an initial key is present, fetches the corresponding persistent state data.
+		if (initialKey) {
+			fetchData(initialKey);
+		}
+	}, []);
 
 	return {
 		// The current key identifying the persisted state on the server
