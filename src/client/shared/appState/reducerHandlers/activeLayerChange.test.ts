@@ -1,59 +1,80 @@
+import { StateActionType } from '../enum.state.actionType';
 import { ActionLayerActiveChange } from '../state.models.actions';
 import { sharedStateMocks } from '../tests/state.fixture';
 import { reduceHandlerActiveLayerChange } from './activeLayerChange';
 
-/**
- * Unit tests for the reduceHandlerActiveLayerChange reducer.
- * This reducer handles activating or deactivating a rendering layer in the shared state.
- */
-describe('Reducer test: Change active layer', () => {
-	/**
-	 * Should activate the specified layer and leave others unchanged.
-	 */
-	it('should activate the specified layer', () => {
-		const state = { ...sharedStateMocks.twoLayersFound };
+const freshState = () => structuredClone(sharedStateMocks.twoLayersFound);
+const freshMissingState = () => structuredClone(sharedStateMocks.oneLayerMissing);
+
+describe('changing active state of a rendering layer (array reused, target layer replaced)', () => {
+	it('activates the specified layer (array reused, target layer replaced)', () => {
+		const state = freshState();
+		const originalArrayRef = state.renderingLayers;
+		const originalLayer1Ref = state.renderingLayers[0];
+		const originalLayer2Ref = state.renderingLayers[1];
+
 		const action: ActionLayerActiveChange = {
-			type: 'LAYER_ACTIVE_CHANGE' as any,
+			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'layer-1', newValue: true },
 		};
-
 		const newState = reduceHandlerActiveLayerChange(state, action);
 
+		// Array reused
+		expect(newState.renderingLayers).toBe(originalArrayRef);
+		// Target layer replaced
+		expect(newState.renderingLayers[0]).not.toBe(originalLayer1Ref);
 		expect(newState.renderingLayers[0].isActive).toBe(true);
+		// Other layer unchanged (same reference)
+		expect(newState.renderingLayers[1]).toBe(originalLayer2Ref);
 		expect(newState.renderingLayers[1].isActive).toBe(false);
 	});
 
-	/**
-	 * Should deactivate the specified layer after it has been activated.
-	 */
-	it('should deactivate the specified layer', () => {
-		const state = { ...sharedStateMocks.twoLayersFound };
-		// First activate, then deactivate
-		const activateAction: ActionLayerActiveChange = {
-			type: 'LAYER_ACTIVE_CHANGE' as any,
+	it('deactivates a previously activated layer (array reused, target layer replaced)', () => {
+		const state = freshState();
+
+		// Activate layer-2 first
+		const activate: ActionLayerActiveChange = {
+			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'layer-2', newValue: true },
 		};
-		const activatedState = reduceHandlerActiveLayerChange(state, activateAction);
+		const activated = reduceHandlerActiveLayerChange(state, activate);
+		const originalArrayRef = activated.renderingLayers;
+		const activatedLayer2Ref = activated.renderingLayers[1];
 
-		const deactivateAction: ActionLayerActiveChange = {
-			type: 'LAYER_ACTIVE_CHANGE' as any,
+		// Deactivate
+		const deactivate: ActionLayerActiveChange = {
+			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'layer-2', newValue: false },
 		};
-		const deactivatedState = reduceHandlerActiveLayerChange(activatedState, deactivateAction);
+		const deactivated = reduceHandlerActiveLayerChange(activated, deactivate);
 
-		expect(deactivatedState.renderingLayers[1].isActive).toBe(false);
+		expect(deactivated.renderingLayers).toBe(originalArrayRef);
+		expect(deactivated.renderingLayers[1]).not.toBe(activatedLayer2Ref);
+		expect(deactivated.renderingLayers[1].isActive).toBe(false);
 	});
 
-	/**
-	 * Should throw an error if the specified layer key does not exist in the state.
-	 */
-	it('should throw if the layer key does not exist', () => {
-		const state = { ...sharedStateMocks.oneLayerMissing };
+	it('no-op still replaces the target layer object (array reused)', () => {
+		const state = freshState();
+		const originalArrayRef = state.renderingLayers;
+		const originalLayer1Ref = state.renderingLayers[0];
+
 		const action: ActionLayerActiveChange = {
-			type: 'LAYER_ACTIVE_CHANGE' as any,
+			type: StateActionType.LAYER_ACTIVE_CHANGE,
+			payload: { key: 'layer-1', newValue: false }, // already false
+		};
+		const newState = reduceHandlerActiveLayerChange(state, action);
+
+		expect(newState.renderingLayers).toBe(originalArrayRef);
+		expect(newState.renderingLayers[0]).not.toBe(originalLayer1Ref);
+		expect(newState.renderingLayers[0].isActive).toBe(false);
+	});
+
+	it('throws when the layer key does not exist', () => {
+		const state = freshMissingState();
+		const action: ActionLayerActiveChange = {
+			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'layer-x', newValue: true },
 		};
-
 		expect(() => reduceHandlerActiveLayerChange(state, action)).toThrow(
 			'Shared State: Layer with key layer-x not found'
 		);

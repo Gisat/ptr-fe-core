@@ -1,4 +1,51 @@
 import { AppSharedState } from '../state.models';
+
+/**
+ * Fixture: base shared state with two maps and rendering layers.
+ * Accepts optional shallow overrides to tweak the returned state for specific tests.
+ * @param overrides Partial overrides for the base AppSharedState
+ * @returns AppSharedState
+ */
+export const createBaseState = (overrides: Partial<AppSharedState> = {}): AppSharedState => {
+	const base: AppSharedState = {
+		appNode: {
+			key: 'app',
+			description: null,
+			lastUpdatedAt: Date.now(),
+			nameDisplay: 'App',
+			nameInternal: 'appInternal',
+			configuration: {},
+			labels: [],
+		},
+		renderingLayers: [],
+		layers: [],
+		places: [],
+		mapSets: [],
+		maps: [
+			{
+				key: 'map1',
+				name: 'Map 1',
+				renderingLayers: [
+					{ key: 'layerA', isActive: true, isInteractive: false },
+					{ key: 'layerB', isActive: true, isInteractive: true },
+				],
+				view: { center: [0, 0], zoom: 5, boxRange: 1000 },
+			},
+			{
+				key: 'map2',
+				name: 'Map 2',
+				renderingLayers: [{ key: 'layerC', isActive: false, isInteractive: false }],
+				view: { center: [1, 1], zoom: 4, boxRange: 1000 },
+			},
+		] as any,
+		styles: [],
+		periods: [],
+		selections: [],
+	};
+
+	return { ...base, ...overrides };
+};
+
 export const sharedStateMocks: Record<string, AppSharedState> = {
 	twoLayersFound: {
 		appNode: {
