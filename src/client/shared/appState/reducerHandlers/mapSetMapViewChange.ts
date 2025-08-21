@@ -68,17 +68,27 @@ export const reduceHandlerMapSetMapViewChange = <T extends AppSharedState = AppS
 	}
 
 	// Update map set view (for synced parameters)
-	const updatedMapSets: MapSetModel[] = state.mapSets.map((mapSet: MapSetModel) =>
-		mapSet.key === parentMapSet.key ? { ...mapSet, view: { ...mapSet.view, ...mapSetViewChange } } : mapSet
-	);
+	const updatedMapSets: MapSetModel[] = state.mapSets.map((mapSet: MapSetModel) => {
+		const isChangeInMapSetView = Object.keys(mapSetViewChange).length !== 0;
+		if (isChangeInMapSetView && mapSet.key === parentMapSet.key) {
+			// If the map set is the one being changed, update its view
+			return { ...mapSet, view: { ...mapSet.view, ...mapSetViewChange } };
+		} else {
+			// Otherwise, return the map set unchanged
+			return mapSet;
+		}
+	});
 
 	// Update all maps in map set view
 	const updatedMaps: SingleMapModel[] = state.maps.map((map: SingleMapModel) => {
+		const isChangeInOtherMapView = Object.keys(otherMapsViewChange).length !== 0;
+		const isMapPartOfCurrentMapSet = parentMapSet.maps.includes(map.key);
+
 		if (map.key === mapKey) {
 			// Update the map that triggered the change
 			return { ...map, view: { ...map.view, ...thisMapViewChange } };
-		} else if (map.key !== mapKey && parentMapSet.maps.includes(map.key)) {
-			// Update other maps in the map set
+		} else if (map.key !== mapKey && isMapPartOfCurrentMapSet && isChangeInOtherMapView) {
+			// Update other maps in the map set, if there was a change
 			return { ...map, view: { ...map.view, ...otherMapsViewChange } };
 		} else {
 			// Return unchanged map
