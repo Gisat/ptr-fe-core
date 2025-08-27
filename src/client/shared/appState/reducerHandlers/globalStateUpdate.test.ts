@@ -1,49 +1,61 @@
+/**
+ * @file Unit tests for the globalStateUpdate reducer handler.
+ */
+
+import { Datasource } from '../../../../globals/shared/panther/models.nodes';
+import { RenderingLayer } from '../../models/models.layers';
+import { MapSetModel } from '../../models/models.mapSet';
+import { SingleMapModel } from '../../models/models.singleMap';
+import { StateActionType } from '../enum.state.actionType';
 import { reduceHandlerGlobalStateUpdate } from '../reducerHandlers/globalStateUpdate';
 import { ActionGlobalStateUpdate } from '../state.models.actions';
-import { sharedStateMocks } from '../tests/state.fixture';
+import { createFakeFullState } from '../tests/state.mock';
 
 describe('Reducer test: Global state update', () => {
 	/**
 	 * Should add new maps, mapSets, and renderingLayers to the state.
 	 */
+
 	it('should update state with new maps, mapSets, and renderingLayers', () => {
-		const state = { ...sharedStateMocks.twoLayersFound };
-		const newMap = {
+		const fakeState = createFakeFullState();
+		const newMap: SingleMapModel = {
 			key: 'map-new',
 			renderingLayers: [],
 			view: { zoom: 1, latitude: 10, longitude: 10 },
 		};
-		const newMapSet = {
+		const newMapSet: MapSetModel = {
 			key: 'mapSet-new',
 			maps: [],
-			name: 'New MapSet',
+			view: {},
+			sync: { zoom: false, center: false },
 		};
-		const newLayer = {
+		const datasource: Datasource = {
+			key: 'layer-new',
+			nameDisplay: 'Layer New',
+			nameInternal: 'Layer New',
+			description: '',
+			labels: ['datasource'],
+			lastUpdatedAt: 0,
+			configuration: '{}',
+			url: 'https://example.com/layer-new',
+		};
+		const newLayer: RenderingLayer = {
 			key: 'layer-new',
 			isActive: false,
 			level: 0,
 			interaction: null,
-			datasource: {
-				key: 'layer-new',
-				nameDisplay: 'Layer New',
-				nameInternal: 'Layer New',
-				description: '',
-				labels: ['datasource'],
-				lastUpdatedAt: 123456,
-				configuration: '{}',
-			},
+			datasource,
 		};
 
 		const action: ActionGlobalStateUpdate = {
-			type: 'GLOBAL_STATE_UPDATE' as any,
+			type: StateActionType.GLOBAL_STATE_UPDATE,
 			payload: {
 				maps: [newMap],
 				mapSets: [newMapSet],
 				renderingLayers: [newLayer],
 			},
 		};
-
-		const newState = reduceHandlerGlobalStateUpdate(state, action);
+		const newState = reduceHandlerGlobalStateUpdate(fakeState, action);
 
 		expect(newState.maps.some((m) => m.key === 'map-new')).toBe(true);
 		expect(newState.mapSets.some((ms) => ms.key === 'mapSet-new')).toBe(true);
@@ -53,13 +65,13 @@ describe('Reducer test: Global state update', () => {
 	/**
 	 * Should throw if no payload is provided.
 	 */
-	it('should throw if no payload is provided', () => {
-		const state = { ...sharedStateMocks.twoLayersFound };
-		const action = {
-			type: 'GLOBAL_STATE_UPDATE' as any,
-			payload: undefined,
-		} as any;
 
-		expect(() => reduceHandlerGlobalStateUpdate(state, action)).toThrow('No payload provided global state update');
+	it('should throw if no payload is provided', () => {
+		const fakeState = createFakeFullState();
+		const action = {
+			type: StateActionType.GLOBAL_STATE_UPDATE,
+			payload: undefined,
+		} as unknown as ActionGlobalStateUpdate;
+		expect(() => reduceHandlerGlobalStateUpdate(fakeState, action)).toThrow('No payload provided global state update');
 	});
 });

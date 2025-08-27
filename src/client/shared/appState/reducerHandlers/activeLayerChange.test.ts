@@ -1,23 +1,24 @@
+/**
+ * @file Unit tests for the activeLayerChange reducer handler.
+ */
+
 import { StateActionType } from '../enum.state.actionType';
 import { ActionLayerActiveChange } from '../state.models.actions';
-import { sharedStateMocks } from '../tests/state.fixture';
+import { buildFakeState } from '../tests/state.helpers';
 import { reduceHandlerActiveLayerChange } from './activeLayerChange';
-
-const freshState = () => structuredClone(sharedStateMocks.twoLayersFound);
-const freshMissingState = () => structuredClone(sharedStateMocks.oneLayerMissing);
 
 describe('changing active state of a rendering layer (array reused, target layer replaced)', () => {
 	it('activates the specified layer (array reused, target layer replaced)', () => {
-		const state = freshState();
-		const originalArrayRef = state.renderingLayers;
-		const originalLayer1Ref = state.renderingLayers[0];
-		const originalLayer2Ref = state.renderingLayers[1];
+		const fakeState = buildFakeState({ layersPerMap: 2 });
+		const originalArrayRef = fakeState.renderingLayers;
+		const originalLayer1Ref = fakeState.renderingLayers[0];
+		const originalLayer2Ref = fakeState.renderingLayers[1];
 
 		const action: ActionLayerActiveChange = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'layer-1', newValue: true },
 		};
-		const newState = reduceHandlerActiveLayerChange(state, action);
+		const newState = reduceHandlerActiveLayerChange(fakeState, action);
 
 		// Array reused
 		expect(newState.renderingLayers).toBe(originalArrayRef);
@@ -28,16 +29,15 @@ describe('changing active state of a rendering layer (array reused, target layer
 		expect(newState.renderingLayers[1]).toBe(originalLayer2Ref);
 		expect(newState.renderingLayers[1].isActive).toBe(false);
 	});
-
 	it('deactivates a previously activated layer (array reused, target layer replaced)', () => {
-		const state = freshState();
+		const fakeState = buildFakeState({ layersPerMap: 2 });
 
 		// Activate layer-2 first
 		const activate: ActionLayerActiveChange = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'layer-2', newValue: true },
 		};
-		const activated = reduceHandlerActiveLayerChange(state, activate);
+		const activated = reduceHandlerActiveLayerChange(fakeState, activate);
 		const originalArrayRef = activated.renderingLayers;
 		const activatedLayer2Ref = activated.renderingLayers[1];
 
@@ -52,31 +52,29 @@ describe('changing active state of a rendering layer (array reused, target layer
 		expect(deactivated.renderingLayers[1]).not.toBe(activatedLayer2Ref);
 		expect(deactivated.renderingLayers[1].isActive).toBe(false);
 	});
-
 	it('no-op still replaces the target layer object (array reused)', () => {
-		const state = freshState();
-		const originalArrayRef = state.renderingLayers;
-		const originalLayer1Ref = state.renderingLayers[0];
+		const fakeState = buildFakeState({ layersPerMap: 2 });
+		const originalArrayRef = fakeState.renderingLayers;
+		const originalLayer1Ref = fakeState.renderingLayers[0];
 
 		const action: ActionLayerActiveChange = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'layer-1', newValue: false }, // already false
 		};
-		const newState = reduceHandlerActiveLayerChange(state, action);
+		const newState = reduceHandlerActiveLayerChange(fakeState, action);
 
 		expect(newState.renderingLayers).toBe(originalArrayRef);
 		expect(newState.renderingLayers[0]).not.toBe(originalLayer1Ref);
 		expect(newState.renderingLayers[0].isActive).toBe(false);
 	});
-
 	it('throws when the layer key does not exist', () => {
-		const state = freshMissingState();
+		const fakeState = buildFakeState({ layersPerMap: 1 });
 		const action: ActionLayerActiveChange = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
-			payload: { key: 'layer-x', newValue: true },
+			payload: { key: 'layer-2', newValue: true },
 		};
-		expect(() => reduceHandlerActiveLayerChange(state, action)).toThrow(
-			'Shared State: Layer with key layer-x not found'
+		expect(() => reduceHandlerActiveLayerChange(fakeState, action)).toThrow(
+			'Shared State: Layer with key layer-2 not found'
 		);
 	});
 });

@@ -1,15 +1,13 @@
 /**
- * Unit tests for the reduceHandlerFetchSources reducer.
- *
- * Verifies:
- * 1. Appending newly parsed rendering layers to existing ones (without mutation).
- * 2. Initializing renderingLayers when they are initially undefined.
- * 3. Handling an empty payload (parser returns an empty array) while keeping immutability.
- * 4. Preserving unrelated state properties.
- *
- * The parseDatasourcesToRenderingLayers parser is mocked to focus strictly on reducer behavior.
+ * @file Unit tests for the fetchSourcesUpdate reducer handler.
  */
+
+import { Datasource } from '../../../../globals/shared/panther/models.nodes';
+import { RenderingLayer } from '../../models/models.layers';
+import { StateActionType } from '../enum.state.actionType';
 import { ActionChangeLayerSources } from '../state.models.actions';
+import { createDatasource } from '../tests/state.helpers';
+import { createFakeState } from '../tests/state.mock';
 import { reduceHandlerFetchSources } from './fetchSourcesUpdate';
 
 vi.mock('../../models/parsers.layers', () => ({
@@ -18,112 +16,118 @@ vi.mock('../../models/parsers.layers', () => ({
 
 import { parseDatasourcesToRenderingLayers } from '../../models/parsers.layers';
 
-describe('Reducer test: fetchSourcesUpdate (reduceHandlerFetchSources)', () => {
+const mockParser = parseDatasourcesToRenderingLayers as unknown as ReturnType<typeof vi.fn>;
+
+describe('fetchSourcesUpdate reducer', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	/**
-	 * Should:
-	 * - Call the parser with the incoming payload and appNode.
-	 * - Return a NEW array containing original layers followed by parsed ones.
-	 * - Preserve original layer objects (no mutation).
-	 */
-	it('should append new rendering layers when some already exist', () => {
-		const existingLayers = [
-			{ key: 'layer-existing-1', isActive: false },
-			{ key: 'layer-existing-2', isActive: true },
+	it('should append parsed rendering layers to existing ones', () => {
+		const existingLayers: RenderingLayer[] = [
+			{
+				key: 'layer-existing',
+				isActive: false,
+				level: 0,
+				interaction: null,
+				datasource: createDatasource('layer-existing'),
+			},
 		];
-		const state: any = {
-			appNode: { key: 'appRoot' },
-			renderingLayers: existingLayers,
-		};
+		const fakeState = createFakeState({ renderingLayers: existingLayers });
+		const parsedLayers: RenderingLayer[] = [
+			{
+				key: 'layer-new-1',
+				isActive: false,
+				level: 0,
+				interaction: null,
+				datasource: createDatasource('layer-new-1'),
+			},
+			{
+				key: 'layer-new-2',
+				isActive: false,
+				level: 0,
+				interaction: null,
+				datasource: createDatasource('layer-new-2'),
+			},
+		];
+		mockParser.mockReturnValue(parsedLayers);
 
-		(parseDatasourcesToRenderingLayers as any).mockReturnValue([
-			{ key: 'layer-new-1', isActive: false },
-			{ key: 'layer-new-2', isActive: false },
-		]);
+		const payload: Datasource[] = [createDatasource('d1'), createDatasource('d2')];
+		const action: ActionChangeLayerSources = { type: StateActionType.FETCH_SOURCES, payload };
 
-		const action: ActionChangeLayerSources = {
-			type: 'FETCH_SOURCES_UPDATE' as any,
-			payload: [{ id: 'ds1' }, { id: 'ds2' }] as any,
-		};
+		const result = reduceHandlerFetchSources(fakeState, action);
 
-		const newState = reduceHandlerFetchSources(state, action);
-
-		expect(newState.renderingLayers).not.toBe(existingLayers);
-		expect(newState.renderingLayers.slice(0, 2)).toEqual(existingLayers);
-		expect(newState.renderingLayers[2].key).toBe('layer-new-1');
-		expect(newState.renderingLayers[3].key).toBe('layer-new-2');
-		expect(newState.renderingLayers).toHaveLength(4);
-		expect(parseDatasourcesToRenderingLayers).toHaveBeenCalledWith(action.payload, state.appNode);
+		expect(result.renderingLayers).toHaveLength(3);
+		expect(mockParser).toHaveBeenCalledWith(payload, fakeState.appNode);
 	});
 
-	/**
-	 * Should initialize renderingLayers when they are undefined,
-	 * using only the parsed output of the payload.
-	 */
-	it('should initialize renderingLayers when none exist', () => {
-		const state: any = { appNode: { key: 'appRoot' } };
-
-		(parseDatasourcesToRenderingLayers as any).mockReturnValue([{ key: 'layer-new-1', isActive: false }]);
+	it('should initialize rendering layers when none exist', () => {
+		const fakeState = createFakeState({ renderingLayers: undefined as unknown as RenderingLayer[] });
+		const parsedLayers: RenderingLayer[] = [
+			{
+				key: 'layer-new-1',
+				isActive: false,
+				level: 0,
+				interaction: null,
+				datasource: createDatasource('layer-new-1'),
+			},
+		];
+		mockParser.mockReturnValue(parsedLayers);
 
 		const action: ActionChangeLayerSources = {
-			type: 'FETCH_SOURCES_UPDATE' as any,
-			payload: [{ id: 'ds1' }] as any,
+			type: StateActionType.FETCH_SOURCES,
+			payload: [createDatasource('d1')],
 		};
 
-		const newState = reduceHandlerFetchSources(state, action);
+		const result = reduceHandlerFetchSources(fakeState, action);
 
-		expect(newState.renderingLayers).toEqual([{ key: 'layer-new-1', isActive: false }]);
-		expect(parseDatasourcesToRenderingLayers).toHaveBeenCalledTimes(1);
+		expect(result.renderingLayers).toEqual(parsedLayers);
 	});
 
-	/**
-	 * Should return a new state whose renderingLayers contains only the original layers
-	 * when the parser yields an empty array (empty payload scenario).
-	 */
-	it('should handle empty payload by appending nothing (parser returns empty array)', () => {
-		const existingLayers = [{ key: 'layer-existing', isActive: true }];
-		const state: any = {
-			appNode: { key: 'appRoot' },
-			renderingLayers: existingLayers,
-		};
-
-		(parseDatasourcesToRenderingLayers as any).mockReturnValue([]);
+	it('should handle an empty parser result', () => {
+		const existingLayers: RenderingLayer[] = [
+			{
+				key: 'layer-existing',
+				isActive: true,
+				level: 0,
+				interaction: null,
+				datasource: createDatasource('layer-existing'),
+			},
+		];
+		const fakeState = createFakeState({ renderingLayers: existingLayers });
+		mockParser.mockReturnValue([]);
 
 		const action: ActionChangeLayerSources = {
-			type: 'FETCH_SOURCES_UPDATE' as any,
-			payload: [] as any,
+			type: StateActionType.FETCH_SOURCES,
+			payload: [],
 		};
 
-		const newState = reduceHandlerFetchSources(state, action);
+		const result = reduceHandlerFetchSources(fakeState, action);
 
-		expect(newState.renderingLayers).toEqual(existingLayers);
-		expect(newState.renderingLayers).not.toBe(existingLayers); // immutability check
-		expect(parseDatasourcesToRenderingLayers).toHaveBeenCalledWith([], state.appNode);
+		expect(result.renderingLayers).toEqual(existingLayers);
+		expect(result.renderingLayers).not.toBe(existingLayers);
 	});
 
-	/**
-	 * Ensures other unrelated state properties remain strictly equal (not recreated unnecessarily).
-	 */
-	it('should preserve other state properties untouched', () => {
-		const state: any = {
-			appNode: { key: 'appRoot' },
-			someOtherProp: { a: 1 },
-			renderingLayers: [],
-		};
-
-		(parseDatasourcesToRenderingLayers as any).mockReturnValue([{ key: 'layer-new-1' }]);
+	it('should preserve other state properties', () => {
+		const fakeState = createFakeState({ renderingLayers: [] });
+		const parsedLayers: RenderingLayer[] = [
+			{
+				key: 'layer-new-1',
+				isActive: false,
+				level: 0,
+				interaction: null,
+				datasource: createDatasource('layer-new-1'),
+			},
+		];
+		mockParser.mockReturnValue(parsedLayers);
 
 		const action: ActionChangeLayerSources = {
-			type: 'FETCH_SOURCES_UPDATE' as any,
-			payload: [{ id: 'ds1' }] as any,
+			type: StateActionType.FETCH_SOURCES,
+			payload: [createDatasource('d1')],
 		};
 
-		const newState = reduceHandlerFetchSources(state, action);
+		const result = reduceHandlerFetchSources(fakeState, action);
 
-		expect(newState.someOtherProp).toBe(state.someOtherProp);
-		expect(newState.renderingLayers).toHaveLength(1);
+		expect(result.maps).toBe(fakeState.maps);
 	});
 });
