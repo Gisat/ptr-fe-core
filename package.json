@@ -1,6 +1,6 @@
 {
 	"name": "@gisatcz/ptr-fe-core",
-	"version": "0.0.6-dev.11",
+	"version": "0.0.6-dev.12",
 	"description": "",
 	"type": "module",
 	"main": "./dist/client/index.js",
