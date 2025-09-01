@@ -34,7 +34,6 @@ export const useSharedState = <
 	const sharedState = useContext(SharedStateContext);
 
 	const sharedStateDispatch = useContext(SharedStateDispatchContext);
-
 	const prevStateRef = useRef<AppSpecificState | undefined>(undefined);
 
 	// Wrap dispatch to log previous state and action
