@@ -1,50 +1,59 @@
-import { Dispatch, useContext, useRef, useEffect } from 'react';
+import { Dispatch, useContext, useRef, useEffect, useCallback, useMemo } from 'react';
 import { AppSharedState } from '../appState/state.models';
 import { OneOfStateActions } from '../appState/state.models.actions';
 import { SharedStateContext, SharedStateDispatchContext } from '../appState/state.context';
 
 
 /**
- * A custom hook that provides access to shared state and dispatch function
- * Using application specific react contexts containing shared state and its dispatch function.
+ * A custom React hook that provides access to shared state and a dispatch function
+ * for managing application state using React Context.
  *
- * @template AppSpecificState - Type extending AppSharedState representing the application-specific state structure
- * @template AppSpecificActions - Type representing the possible actions (defaults to OneOfStateActions)
+ * @template AppSpecificState - A type extending `AppSharedState` representing the application-specific state structure.
+ * @template AppSpecificActions - A type representing the possible actions (defaults to `OneOfStateActions`).
  *
- * @param logSharedState - Enable logging of previous state, action, and current state (default is false)
- * @returns A tuple containing:
- * - The current shared state of type AppSpecificState
- * - A dispatch function for updating the state with AppSpecificActions
+ * @param {boolean} [logSharedState=false] - Whether to log the previous state, action, and current state for debugging.
  *
- * @throws {Error} If the hook is used outside of a SharedStateProvider context
+ * @returns {[AppSpecificState, Dispatch<AppSpecificActions>]} A tuple containing:
+ * - The current shared state of type `AppSpecificState`.
+ * - A dispatch function for updating the state with `AppSpecificActions`.
  *
- * @example
- * ```typescript
- * const [state, dispatch] = useSharedState<MyAppState>();
- * ```
+ * @throws {Error} If the hook is used outside of a `SharedStateProvider` context.
+ *
  */
+
 export const useSharedState = <
 	AppSpecificState extends AppSharedState,
 	AppSpecificActions = OneOfStateActions
 >(
 	logSharedState: boolean = false
-):[AppSpecificState, Dispatch<AppSpecificActions>] => {
+): [AppSpecificState, Dispatch<AppSpecificActions>] => {
 
-	// load actual state context using native React useContext hook
+	// Access the shared state from the context
 	const sharedState = useContext(SharedStateContext);
-
+	// Access the dispatch function from the context
 	const sharedStateDispatch = useContext(SharedStateDispatchContext);
+	// Ref to keep track of the previous state for logging purposes
 	const prevStateRef = useRef<AppSpecificState | undefined>(undefined);
 
-	// Wrap dispatch to log previous state and action
-	const dispatchWithLog: Dispatch<AppSpecificActions> = (action) => {
-		if (logSharedState) {
-			console.log('--- SharedState LOG ---');
-			console.log('Previous state:', prevStateRef.current);
-			console.log('Action:', action);
-		}
-		sharedStateDispatch(action);
-	};
+	if (sharedState === undefined || sharedStateDispatch === undefined) {
+		throw new Error('Use Shared State hook has problem with state contexts');
+	}
+
+	/**
+	 * A wrapped dispatch function that logs the previous state, action, and current state
+	 * if `logSharedState` is enabled.
+	 */
+	const dispatchWithLog = useCallback<Dispatch<AppSpecificActions>>(
+		(action) => {
+			if (logSharedState) {
+				console.log('--- SharedState LOG ---');
+				console.log('Previous state:', prevStateRef.current);
+				console.log('Action:', action);
+			}
+			sharedStateDispatch(action as any);
+		},
+		[logSharedState, sharedStateDispatch]
+	);
 
 	useEffect(() => {
 		if (logSharedState) {
@@ -53,9 +62,8 @@ export const useSharedState = <
 		prevStateRef.current = sharedState as AppSpecificState;
 	}, [sharedState, logSharedState]);
 
-	if (sharedState === undefined || sharedStateDispatch === undefined) {
-		throw new Error('Use Shared State hook has problem with state contexts');
-	}
-
-	return [sharedState as AppSpecificState, dispatchWithLog];
+	return useMemo(
+		() => [sharedState as AppSpecificState, dispatchWithLog],
+		[sharedState, dispatchWithLog]
+	);
 };
