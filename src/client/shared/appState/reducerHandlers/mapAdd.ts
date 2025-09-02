@@ -18,7 +18,7 @@ export const reduceHandlerMapAdd = <T extends AppSharedState = AppSharedState>(
 	const newMap: SingleMapModel = action.payload;
 
 	// Prevent adding duplicate maps by checking if a map with the same key already exists
-	if (state.mapSets.some((ms) => ms.key === newMap.key)) {
+	if (state.maps.some((m) => m.key === newMap.key)) {
 		return state; // Return the original state if a duplicate is found
 	}
 
