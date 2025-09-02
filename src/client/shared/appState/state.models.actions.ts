@@ -223,6 +223,14 @@ export interface ActionMapSetRemove extends AppSpecificAction {
 }
 
 /**
+ * Add map to state
+ */
+export interface ActionMapAdd extends AppSpecificAction {
+	type: StateActionType.MAP_ADD;
+	payload: SingleMapModel;
+}
+
+/**
  * One of any of possible actions
  */
 export type OneOfStateActions = AppSpecificAction &
@@ -252,4 +260,5 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionApplyPersistentState
 		| ActionMapSetAdd
 		| ActionMapSetRemove
+		| ActionMapAdd
 	);

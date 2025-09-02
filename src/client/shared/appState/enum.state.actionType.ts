@@ -59,6 +59,9 @@ export enum StateActionType {
 	/** Action to add map to map set */
 	MAP_ADD_TO_MAP_SET = 'addMapToMapSet',
 
+	/** Action to add map */
+	MAP_ADD = 'addMap',
+
 	/** Action to remove map from map set. */
 	MAP_REMOVE_FROM_MAP_SET = 'removeMapFromMapSet',
 
