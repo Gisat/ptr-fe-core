@@ -1,0 +1,717 @@
+import { AppSharedState } from '../../../../client/shared/appState/state.models';
+
+export const fullAppSharedStateMock: AppSharedState = {
+  appNode: {
+    labels: [
+      'application'
+    ],
+    key: 'n0',
+    nameInternal: '',
+    nameDisplay: 'fe-core',
+    description: '',
+    lastUpdatedAt: 1750426411072
+  },
+  renderingLayers: [
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n80',
+        nameInternal: '',
+        nameDisplay: 'NPP_act_1km(africa) 2018',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/africa-npp_act-2018_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n47',
+          'n1',
+          'n10',
+          'n9'
+        ]
+      },
+      key: 'n80',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n81',
+        nameInternal: '',
+        nameDisplay: 'NPP_act_1km(africa) 2019',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/africa-npp_act-2019_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n46',
+          'n1',
+          'n9',
+          'n10'
+        ]
+      },
+      key: 'n81',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n90',
+        nameInternal: '',
+        nameDisplay: 'NPP_act_20m(uganda) 2019',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/UG-npp_act-2019_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n12',
+          'n9',
+          'n46',
+          'n1'
+        ]
+      },
+      key: 'n90',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n93',
+        nameInternal: '',
+        nameDisplay: 'NPP_act_20m(senegal) 2019',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/SN-npp_act-2019_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n1',
+          'n9',
+          'n46',
+          'n23'
+        ]
+      },
+      key: 'n93',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n94',
+        nameInternal: '',
+        nameDisplay: 'NPP_act_20m(uganda) 2018',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/UG-npp_act-2018_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n9',
+          'n1',
+          'n47',
+          'n12'
+        ]
+      },
+      key: 'n94',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n97',
+        nameInternal: '',
+        nameDisplay: 'NPP_act_20m(senegal) 2018',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/SN-npp_act-2018_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n23',
+          'n9',
+          'n47',
+          'n1'
+        ]
+      },
+      key: 'n97',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n122',
+        nameInternal: '',
+        nameDisplay: 'sos_20m(uganda) 2019',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/UG-sosd-2019_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n16',
+          'n46',
+          'n12',
+          'n1'
+        ]
+      },
+      key: 'n122',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n125',
+        nameInternal: '',
+        nameDisplay: 'sos_20m(senegal) 2019',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/SN-sosd-2019_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n16',
+          'n46',
+          'n1',
+          'n23'
+        ]
+      },
+      key: 'n125',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n126',
+        nameInternal: '',
+        nameDisplay: 'sos_20m(uganda) 2018',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/UG-sosd-2018_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n12',
+          'n47',
+          'n16',
+          'n1'
+        ]
+      },
+      key: 'n126',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap'
+        ],
+        key: 'n129',
+        nameInternal: '',
+        nameDisplay: 'sos_20m(senegal) 2018',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/rasters/luisa/SN-sosd-2018_cog.tif',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n16',
+          'n23',
+          'n1',
+          'n47'
+        ]
+      },
+      key: 'n129',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      datasource: {
+        labels: [
+          'datasource',
+          'cogBitmap',
+          'geojson'
+        ],
+        key: 'n20',
+        nameInternal: '',
+        nameDisplay: 's2tiles',
+        description: '',
+        url: 'https://eu-central-1.linodeobjects.com/gisat-data/Panther_GST-35/fe-core/dev/vectors/amazonas/tiles.min.json',
+        lastUpdatedAt: 1754919714681,
+        neighbours: [
+          'n0',
+          'n21'
+        ]
+      },
+      key: 'n20',
+      isActive: false,
+      level: 0,
+      interaction: null
+    },
+    {
+      key: 'cartoLightNoLabels',
+      datasource: {
+        key: 'cartoLightNoLabels',
+        labels: [
+          'datasource',
+          'xyz'
+        ],
+        nameDisplay: 'Carto base',
+        nameInternal: 'Carto base',
+        description: null,
+        lastUpdatedAt: 123,
+        url: 'https://a.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png',
+        configuration: '{}'
+      },
+      level: 0,
+      isActive: true,
+      interaction: null
+    },
+    {
+      key: 'esriWorldImagery',
+      level: 0,
+      isActive: true,
+      interaction: null,
+      datasource: {
+        key: 'esriWorldImagery',
+        labels: [
+          'datasource',
+          'xyz'
+        ],
+        nameDisplay: 'Aerial',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        description: 'Aerial imagery from ArcGIS',
+        lastUpdatedAt: 0,
+        nameInternal: 'Aerial',
+        configuration: '{}'
+      }
+    }
+  ],
+  layers: [
+    {
+      labels: [
+        'layer'
+      ],
+      key: 'n9',
+      nameInternal: '',
+      nameDisplay: 'Net Primary Productivity (20m)',
+      description: 'Net Primary Productivity (NPP) is the rate at which plants convert atmospheric carbon dioxide into organic matter through photosynthesis, minus the carbon they use for their own respiration. It represents the amount of energy available to herbivores and other consumers in an ecosystem. NPP is a key indicator of ecosystem health and productivity, and it varies depending on climate, soil fertility, and land use.',
+      lastUpdatedAt: 1754919714681,
+      neighbours: [
+        'n94',
+        'n1',
+        'n90',
+        'n8',
+        'n93',
+        'n97',
+        'n81',
+        'n80'
+      ]
+    },
+    {
+      labels: [
+        'layer'
+      ],
+      key: 'n16',
+      nameInternal: '',
+      nameDisplay: 'Start of season (20m)',
+      description: 'The Start of the Season (SOS) refers to the time in the growing cycle when vegetation begins to actively photosynthesize and grow, often marked by events like leaf-out or green-up. This period is crucial for understanding phenological changes, agricultural planning, and monitoring ecosystem responses to climate. Tracking SOS helps scientists assess shifts in plant growth patterns due to environmental factors such as temperature, precipitation, or land management practices.',
+      lastUpdatedAt: 1754919714681,
+      neighbours: [
+        'n122',
+        'n125',
+        'n129',
+        'n14',
+        'n126',
+        'n1'
+      ]
+    },
+    {
+      labels: [
+        'layer'
+      ],
+      key: 'n21',
+      nameInternal: '',
+      nameDisplay: 'Detailed Monitoring - S2 tiles',
+      description: '',
+      lastUpdatedAt: 1754919714681,
+      neighbours: [
+        'n0',
+        'n20',
+        'n22'
+      ]
+    }
+  ],
+  places: [
+    {
+      labels: [
+        'place'
+      ],
+      key: 'n10',
+      nameInternal: '',
+      nameDisplay: 'Africa',
+      description: '',
+      bbox: [
+        -19.5,
+        -36.3,
+        53,
+        38.1
+      ],
+      geometry: '',
+      lastUpdatedAt: 1754919714681
+    },
+    {
+      labels: [
+        'place'
+      ],
+      key: 'n12',
+      nameInternal: '',
+      nameDisplay: 'Uganda',
+      description: 'Mount Elgon Agroforestry Zone',
+      bbox: [
+        34.117575,
+        0.886787,
+        34.537803,
+        1.150966
+      ],
+      geometry: '',
+      lastUpdatedAt: 1754919714681
+    },
+    {
+      labels: [
+        'place'
+      ],
+      key: 'n23',
+      nameInternal: '',
+      nameDisplay: 'Senegal',
+      description: 'Silvopastoral area',
+      bbox: [
+        -17.0501,
+        14.8627,
+        -13.8684,
+        16.4619
+      ],
+      geometry: '',
+      lastUpdatedAt: 1754919714681
+    }
+  ],
+  mapSets: [
+    {
+      key: 'mapSetLayersDemo',
+      maps: [
+        'mapA',
+        'mapB'
+      ],
+      sync: {
+        zoom: true,
+        center: true
+      },
+      view: {
+        zoom: 6,
+        latitude: 16,
+        longitude: -15
+      }
+    }
+  ],
+  maps: [
+    {
+      key: 'mapA',
+      view: {
+        zoom: 6,
+        latitude: 16,
+        longitude: -15
+      },
+      renderingLayers: [
+        {
+          key: 'cartoLightNoLabels',
+          isActive: true
+        },
+        {
+          key: 'n80',
+          isActive: true
+        }
+      ]
+    },
+    {
+      key: 'mapB',
+      view: {
+        zoom: 6,
+        latitude: 16,
+        longitude: -15
+      },
+      renderingLayers: [
+        {
+          key: 'esriWorldImagery',
+          isActive: true
+        },
+        {
+          key: 'n125',
+          isActive: true
+        }
+      ]
+    }
+  ],
+  styles: [
+    {
+      labels: [
+        'style'
+      ],
+      key: 'n8',
+      nameInternal: '',
+      nameDisplay: 'Net Primary Productivity',
+      description: '',
+      specificName: 'npp_act',
+      lastUpdatedAt: 1754919714681,
+      configuration: {
+        cogBitmapOptions: {
+          type: 'image',
+          useChannel: 1,
+          useHeatMap: true,
+          clipLow: 0,
+          blurredTexture: false,
+          colorScale: [
+            '#f7f7d9',
+            '#f9f9c5',
+            '#f3f8b2',
+            '#e0f4a0',
+            '#d0ee91',
+            '#bce49d',
+            '#a5d97b',
+            '#99d88e',
+            '#6cc17b',
+            '#41a167',
+            '#268954',
+            '#1d754a',
+            '#17633f',
+            '#115337'
+          ],
+          colorScaleValueRange: [
+            0,
+            5,
+            50,
+            100,
+            200,
+            300,
+            400,
+            500,
+            600,
+            700,
+            800,
+            900,
+            1000,
+            1100,
+            3000
+          ],
+          unit: 'gC/sqm/year',
+          name: 'NPP act'
+        }
+      }
+    },
+    {
+      labels: [
+        'style'
+      ],
+      key: 'n14',
+      nameInternal: '',
+      nameDisplay: 'Start of season',
+      description: '',
+      specificName: 'sos',
+      lastUpdatedAt: 1754919714681,
+      configuration: {
+        cogBitmapOptions: {
+          type: 'image',
+          useChannel: 1,
+          useHeatMap: true,
+          blurredTexture: false,
+          colorScale: [
+            '#a6cee37f',
+            '#1f78b47f',
+            '#b2df8a7f',
+            '#33a02c7f',
+            '#fb9a997f',
+            '#e31a1c7f',
+            '#fdbf6f7f',
+            '#ff7f007f',
+            '#cab2d67f',
+            '#6a3d9a7f',
+            '#ffff997f',
+            '#b259287f',
+            '#a6cee3ff',
+            '#1f78b4ff',
+            '#b2df8aff',
+            '#33a02cff',
+            '#fb9a99ff',
+            '#e31a1cff',
+            '#fdbf6fff',
+            '#ff7f00ff',
+            '#cab2d6ff',
+            '#6a3d9aff',
+            '#ffff99ff',
+            '#b25928ff'
+          ],
+          colorScaleValueRange: [
+            -334,
+            -306,
+            -275,
+            -245,
+            -214,
+            -184,
+            -153,
+            -122,
+            -92,
+            -61,
+            -31,
+            0,
+            31,
+            59,
+            90,
+            120,
+            151,
+            181,
+            212,
+            243,
+            273,
+            304,
+            334,
+            365
+          ],
+          labels: [
+            'Jan (previous)',
+            'Feb (previous)',
+            'Mar (previous)',
+            'Apr (previous)',
+            'May (previous)',
+            'Jun (previous)',
+            'Jul (previous)',
+            'Aug (previous)',
+            'Sep (previous)',
+            'Oct (previous)',
+            'Nov (previous)',
+            'Dec (previous)',
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec'
+          ],
+          name: 'End of season',
+          unit: 'days from January 1st of selected year'
+        }
+      }
+    },
+    {
+      labels: [
+        'style'
+      ],
+      key: 'n22',
+      nameInternal: '',
+      nameDisplay: 'S2 tiles',
+      description: '',
+      specificName: 's2tiles',
+      lastUpdatedAt: 1754919714681,
+      configuration: {
+        geojsonOptions: {
+          featureIdProperty: 'id',
+          color: 'rgb(0, 0, 0)',
+          layerStyle: {
+            filled: true,
+            stroked: true,
+            pickable: true,
+            getFillColor: [
+              0,
+              0,
+              0,
+              100
+            ],
+            getLineColor: [
+              0,
+              0,
+              0,
+              10
+            ],
+            getLineWidth: 1.5,
+            lineWidthMinPixels: 1.5,
+            lineWidthMaxPixels: 20
+          },
+          selectionStyle: {
+            distinctColours: [
+              '#42d4f4',
+              '#e15dda',
+              '#f58231',
+              '#e6194B',
+              '#25b537',
+              '#4363d8',
+              '#6a632f',
+              '#aaffc3'
+            ],
+            distinctItems: true,
+            maxSelectionCount: 8
+          }
+        }
+      }
+    }
+  ],
+  periods: [
+    {
+      labels: [
+        'period'
+      ],
+      key: 'n47',
+      nameInternal: '',
+      nameDisplay: '2018',
+      description: '',
+      lastUpdatedAt: 1754919714681,
+      validUtcIntervalIso: '2018',
+      validFrom: 1514761200000,
+      validTo: 1543618800000
+    },
+    {
+      labels: [
+        'period'
+      ],
+      key: 'n46',
+      nameInternal: '',
+      nameDisplay: '2019',
+      description: '',
+      lastUpdatedAt: 1754919714681,
+      validUtcIntervalIso: '2019',
+      validFrom: 1546297200000,
+      validTo: 1575154800000
+    }
+  ],
+  selections: []
+};

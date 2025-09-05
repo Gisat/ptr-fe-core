@@ -1,6 +1,6 @@
 import { getMapByKey } from './getMapByKey';
 // Import mock
-import { sharedStateMocks } from '../tests/state.fixture';
+import { sharedStateMocks } from '../../../../tests/client/state/helpers/state.fixture';
 
 /**
  * Unit tests for the getMapByKey selector.

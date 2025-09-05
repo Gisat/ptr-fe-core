@@ -1,4 +1,4 @@
-import { AppSharedState } from '../state.models';
+import { AppSharedState } from '../../../../client/shared/appState/state.models';
 
 /**
  * Fixture: base shared state with two maps and rendering layers.

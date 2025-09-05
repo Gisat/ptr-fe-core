@@ -1,4 +1,4 @@
-import { sharedStateMocks } from '../tests/state.fixture';
+import { sharedStateMocks } from '../../../../tests/client/state/helpers/state.fixture';
 import { getMapSetByMapKey } from './getMapSetByMapKey';
 
 /**

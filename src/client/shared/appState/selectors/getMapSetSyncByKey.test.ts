@@ -1,5 +1,5 @@
 // /tests/units/state/selectors/getMapSetSyncByKey.test.ts
-import { sharedStateMocks } from '../tests/state.fixture';
+import { sharedStateMocks } from '../../../../tests/client/state/helpers/state.fixture';
 import { getMapSetSyncByKey } from './getMapSetSyncByKey';
 
 /**

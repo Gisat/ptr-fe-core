@@ -5,19 +5,21 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerGlobalStateUpdate } from '../../../../client/shared/appState/reducerHandlers/globalStateUpdate';
 import { ActionGlobalStateUpdate } from '../../../../client/shared/appState/state.models.actions';
-import { createFakeFullState } from '../../../../client/shared/appState/tests/state.mock';
 import { RenderingLayer } from '../../../../client/shared/models/models.layers';
 import { MapSetModel } from '../../../../client/shared/models/models.mapSet';
 import { SingleMapModel } from '../../../../client/shared/models/models.singleMap';
-import { Datasource } from '../../../../globals/shared/panther/models.nodes';
+import type { Datasource } from '../../../../globals/shared/panther/models.nodes';
+import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Global state update', () => {
-	/**
-	 * Should add new maps, mapSets, and renderingLayers to the state.
-	 */
+	it('appends provided maps, mapSets and renderingLayers', () => {
+		const state: typeof fullAppSharedStateMock = {
+			...fullAppSharedStateMock,
+			maps: [] as SingleMapModel[],
+			mapSets: [] as MapSetModel[],
+			renderingLayers: [] as RenderingLayer[],
+		};
 
-	it('should update state with new maps, mapSets, and renderingLayers', () => {
-		const fakeState = createFakeFullState();
 		const newMap: SingleMapModel = {
 			key: 'map-new',
 			renderingLayers: [],
@@ -29,49 +31,124 @@ describe('Reducer test: Global state update', () => {
 			view: {},
 			sync: { zoom: false, center: false },
 		};
-		const datasource: Datasource = {
-			key: 'layer-new',
-			nameDisplay: 'Layer New',
-			nameInternal: 'Layer New',
-			description: '',
-			labels: ['datasource'],
-			lastUpdatedAt: 0,
-			configuration: '{}',
-			url: 'https://example.com/layer-new',
-		};
 		const newLayer: RenderingLayer = {
 			key: 'layer-new',
 			isActive: false,
 			level: 0,
 			interaction: null,
-			datasource,
+			datasource: {
+				key: 'layer-new',
+				labels: ['datasource'],
+				nameDisplay: '',
+				nameInternal: '',
+				description: '',
+				lastUpdatedAt: 0,
+				url: '',
+				configuration: '{}',
+			} as Datasource,
+		};
+
+		const action: ActionGlobalStateUpdate = {
+			type: StateActionType.GLOBAL_STATE_UPDATE,
+			payload: { maps: [newMap], mapSets: [newMapSet], renderingLayers: [newLayer] },
+		};
+
+		const result = reduceHandlerGlobalStateUpdate(state, action);
+		expect(result.maps).toHaveLength(1);
+		expect(result.mapSets).toHaveLength(1);
+		expect(result.renderingLayers).toHaveLength(1);
+		expect(result.maps[0].key).toBe('map-new');
+		expect(result.mapSets[0].key).toBe('mapSet-new');
+		expect(result.renderingLayers[0].key).toBe('layer-new');
+	});
+
+	it('deduplicates by key when appending', () => {
+		const state: typeof fullAppSharedStateMock = {
+			...fullAppSharedStateMock,
+			maps: [
+				{ key: 'map-1', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
+			] as unknown as SingleMapModel[],
+			mapSets: [{ key: 'set-1', maps: [], view: {}, sync: { zoom: false, center: false } }] as unknown as MapSetModel[],
+			renderingLayers: [
+				{
+					key: 'layer-1',
+					isActive: false,
+					level: 0,
+					interaction: null,
+					datasource: {
+						key: 'layer-1',
+						labels: ['datasource'],
+						nameDisplay: '',
+						nameInternal: '',
+						description: '',
+						lastUpdatedAt: 0,
+						url: '',
+						configuration: '{}',
+					} as Datasource,
+				},
+			] as unknown as RenderingLayer[],
 		};
 
 		const action: ActionGlobalStateUpdate = {
 			type: StateActionType.GLOBAL_STATE_UPDATE,
 			payload: {
-				maps: [newMap],
-				mapSets: [newMapSet],
-				renderingLayers: [newLayer],
+				maps: [
+					{ key: 'map-1', renderingLayers: [], view: { zoom: 2, latitude: 0, longitude: 0 } },
+					{ key: 'map-2', renderingLayers: [], view: { zoom: 3, latitude: 0, longitude: 0 } },
+				],
+				mapSets: [
+					{ key: 'set-1', maps: [], view: {}, sync: { zoom: true, center: true } },
+					{ key: 'set-2', maps: [], view: {}, sync: { zoom: false, center: true } },
+				],
+				renderingLayers: [
+					{
+						key: 'layer-1',
+						isActive: true,
+						level: 1,
+						interaction: null,
+						datasource: {
+							key: 'layer-1',
+							labels: ['datasource'],
+							nameDisplay: '',
+							nameInternal: '',
+							description: '',
+							lastUpdatedAt: 0,
+							url: '',
+							configuration: '{}',
+						} as Datasource,
+					},
+					{
+						key: 'layer-2',
+						isActive: false,
+						level: 0,
+						interaction: null,
+						datasource: {
+							key: 'layer-2',
+							labels: ['datasource'],
+							nameDisplay: '',
+							nameInternal: '',
+							description: '',
+							lastUpdatedAt: 0,
+							url: '',
+							configuration: '{}',
+						} as Datasource,
+					},
+				],
 			},
 		};
-		const newState = reduceHandlerGlobalStateUpdate(fakeState, action);
 
-		expect(newState.maps.some((m) => m.key === 'map-new')).toBe(true);
-		expect(newState.mapSets.some((ms) => ms.key === 'mapSet-new')).toBe(true);
-		expect(newState.renderingLayers.some((l) => l.key === 'layer-new')).toBe(true);
+		const result = reduceHandlerGlobalStateUpdate(state, action);
+		expect(result.maps.map((m) => m.key)).toEqual(['map-1', 'map-2']);
+		expect(result.mapSets.map((s) => s.key)).toEqual(['set-1', 'set-2']);
+		expect(result.renderingLayers.map((l) => l.key)).toEqual(['layer-1', 'layer-2']);
 	});
 
-	/**
-	 * Should throw if no payload is provided.
-	 */
-
-	it('should throw if no payload is provided', () => {
-		const fakeState = createFakeFullState();
+	it('throws when payload is missing', () => {
+		const state = { ...fullAppSharedStateMock };
 		const action = {
 			type: StateActionType.GLOBAL_STATE_UPDATE,
 			payload: undefined,
 		} as unknown as ActionGlobalStateUpdate;
-		expect(() => reduceHandlerGlobalStateUpdate(fakeState, action)).toThrow('No payload provided global state update');
+		expect(() => reduceHandlerGlobalStateUpdate(state, action)).toThrow('No payload provided global state update');
 	});
 });

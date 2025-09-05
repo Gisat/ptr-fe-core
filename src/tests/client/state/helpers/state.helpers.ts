@@ -1,5 +1,5 @@
+import { AppSharedState } from '../../../../client/shared/appState/state.models';
 import { ApplicationNode, Datasource } from '../../../../globals/shared/panther/models.nodes';
-import { AppSharedState } from '../state.models';
 
 /**
  * Creates a minimal datasource object.

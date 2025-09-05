@@ -1,4 +1,4 @@
-import { AppSharedState } from '../state.models';
+import { AppSharedState } from '../../../../client/shared/appState/state.models';
 import { appNode, buildFakeState, createDatasource } from './state.helpers';
 
 // Minimal state used for most reducer tests
