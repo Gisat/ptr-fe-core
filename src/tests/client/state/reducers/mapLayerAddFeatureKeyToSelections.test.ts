@@ -6,9 +6,9 @@
  *  - Immutability of state
  *  - Normalization of invalid selections input
  */
-import { StateActionType } from '../enum.state.actionType';
-import { AppSharedState } from '../state.models';
-import { reduceHandlerAddFeatureKeyToSelections } from './mapLayerAddFeatureKeyToSelections';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerAddFeatureKeyToSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerAddFeatureKeyToSelections';
+import { AppSharedState } from '../../../../client/shared/appState/state.models';
 
 const mockGetMapByKey = vi.fn();
 const mockUpdateRenderingLayers = vi.fn();

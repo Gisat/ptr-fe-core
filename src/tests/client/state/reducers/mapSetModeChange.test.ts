@@ -7,9 +7,9 @@
  *  - Other map sets keep original object reference
  *  - Behavior when setting the same mode value again
  */
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerMapSetModeChange } from './mapSetModeChange';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetModeChange } from '../../../../client/shared/appState/reducerHandlers/mapSetModeChange';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
 
 const mockGetMapSetByKey = vi.fn();
 

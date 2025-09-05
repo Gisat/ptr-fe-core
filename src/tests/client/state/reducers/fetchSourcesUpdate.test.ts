@@ -2,19 +2,19 @@
  * @file Unit tests for the fetchSourcesUpdate reducer handler.
  */
 
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerFetchSources } from '../../../../client/shared/appState/reducerHandlers/fetchSourcesUpdate';
+import { ActionChangeLayerSources } from '../../../../client/shared/appState/state.models.actions';
+import { createDatasource } from '../../../../client/shared/appState/tests/state.helpers';
+import { createFakeState } from '../../../../client/shared/appState/tests/state.mock';
+import { RenderingLayer } from '../../../../client/shared/models/models.layers';
 import { Datasource } from '../../../../globals/shared/panther/models.nodes';
-import { RenderingLayer } from '../../models/models.layers';
-import { StateActionType } from '../enum.state.actionType';
-import { ActionChangeLayerSources } from '../state.models.actions';
-import { createDatasource } from '../tests/state.helpers';
-import { createFakeState } from '../tests/state.mock';
-import { reduceHandlerFetchSources } from './fetchSourcesUpdate';
 
 vi.mock('../../models/parsers.layers', () => ({
 	parseDatasourcesToRenderingLayers: vi.fn(),
 }));
 
-import { parseDatasourcesToRenderingLayers } from '../../models/parsers.layers';
+import { parseDatasourcesToRenderingLayers } from '../../../../client/shared/models/parsers.layers';
 
 const mockParser = parseDatasourcesToRenderingLayers as unknown as ReturnType<typeof vi.fn>;
 

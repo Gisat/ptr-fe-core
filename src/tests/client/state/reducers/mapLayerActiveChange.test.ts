@@ -1,6 +1,6 @@
-import { reduceHandlerMapLayerActiveChange } from '../reducerHandlers/mapLayerActiveChange';
-import { ActionMapLayerActiveChange } from '../state.models.actions';
-import { sharedStateMocks } from '../tests/state.fixture';
+import { reduceHandlerMapLayerActiveChange } from '../../../../client/shared/appState/reducerHandlers/mapLayerActiveChange';
+import { ActionMapLayerActiveChange } from '../../../../client/shared/appState/state.models.actions';
+import { sharedStateMocks } from '../../../../client/shared/appState/tests/state.fixture';
 
 describe('Reducer test: Map layer active change', () => {
 	/**

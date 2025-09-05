@@ -7,9 +7,9 @@
  *  - Only targeted map set object cloned; others keep reference
  *  - Behavior when removing map not listed in map set (still removes global map)
  */
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerMapSetRemoveMap } from './mapSetRemoveMap';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetRemoveMap } from '../../../../client/shared/appState/reducerHandlers/mapSetRemoveMap';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
 
 const mockGetMapSetByKey = vi.fn();
 

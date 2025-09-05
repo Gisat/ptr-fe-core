@@ -7,9 +7,9 @@
  *  - No changes to other maps
  *  - No change when layerKey not found (layer objects remain same)
  */
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerMapLayerInteractivityChange } from './mapLayerInteractivityChange';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapLayerInteractivityChange } from '../../../../client/shared/appState/reducerHandlers/mapLayerInteractivityChange';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
 
 const mockGetMapByKey = vi.fn();
 

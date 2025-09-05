@@ -2,10 +2,10 @@
  * @file Unit tests for the activeLayerChange reducer handler.
  */
 
-import { StateActionType } from '../enum.state.actionType';
-import { ActionLayerActiveChange } from '../state.models.actions';
-import { buildFakeState } from '../tests/state.helpers';
-import { reduceHandlerActiveLayerChange } from './activeLayerChange';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerActiveLayerChange } from '../../../../client/shared/appState/reducerHandlers/activeLayerChange';
+import { ActionLayerActiveChange } from '../../../../client/shared/appState/state.models.actions';
+import { buildFakeState } from '../../../../client/shared/appState/tests/state.helpers';
 
 describe('changing active state of a rendering layer (array reused, target layer replaced)', () => {
 	it('activates the specified layer (array reused, target layer replaced)', () => {

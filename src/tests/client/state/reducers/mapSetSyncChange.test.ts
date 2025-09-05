@@ -7,10 +7,10 @@
  *  - Other map sets keep original reference
  *  - Partial sync change merges with existing sync values
  */
-import { MapSetModel } from '../../models/models.mapSet';
-import { AppSharedState } from '../state.models';
-import { ActionMapSetSyncChange } from '../state.models.actions';
-import { reduceHandlerMapSetSyncChange } from './mapSetSyncChange';
+import { reduceHandlerMapSetSyncChange } from '../../../../client/shared/appState/reducerHandlers/mapSetSyncChange';
+import { AppSharedState } from '../../../../client/shared/appState/state.models';
+import { ActionMapSetSyncChange } from '../../../../client/shared/appState/state.models.actions';
+import { MapSetModel } from '../../../../client/shared/models/models.mapSet';
 
 // Helper to build a minimal MapSet
 const baseMapSet = (overrides: Partial<MapSetModel> = {}): MapSetModel =>

@@ -8,9 +8,9 @@
  *  - Synchronizing zoom & center across all maps in the map set when sync is enabled
  *  - Updating map set aggregated view when sync enabled
  */
-import { ActionMapViewChange } from '../state.models.actions';
-import { sharedStateMocks } from '../tests/state.fixture';
-import { reduceHandlerMapSetMapViewChange } from './mapSetMapViewChange';
+import { reduceHandlerMapSetMapViewChange } from '../../../../client/shared/appState/reducerHandlers/mapSetMapViewChange';
+import { ActionMapViewChange } from '../../../../client/shared/appState/state.models.actions';
+import { sharedStateMocks } from '../../../../client/shared/appState/tests/state.fixture';
 
 describe('changing a map view within a map set', () => {
 	/**

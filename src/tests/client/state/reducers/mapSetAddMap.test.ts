@@ -7,10 +7,10 @@
  *  - Only the targeted map set object is cloned; others keep reference
  *  - Global maps array extended immutably with the new map
  */
-import { MapSetModel } from '../../models/models.mapSet';
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerMapSetAddMap } from './mapSetAddMap';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetAddMap } from '../../../../client/shared/appState/reducerHandlers/mapSetAddMap';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
+import { MapSetModel } from '../../../../client/shared/models/models.mapSet';
 
 const mockGetMapSetByKey = vi.fn();
 

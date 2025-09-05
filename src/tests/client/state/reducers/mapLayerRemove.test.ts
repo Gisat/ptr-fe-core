@@ -8,9 +8,9 @@
  *  - No selection change when layer has no selectionKey
  *  - No changes to layer objects when layerKey not found (array recreated)
  */
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerMapLayerRemove } from './mapLayerRemove';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapLayerRemove } from '../../../../client/shared/appState/reducerHandlers/mapLayerRemove';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
 
 const mockGetMapByKey = vi.fn();
 

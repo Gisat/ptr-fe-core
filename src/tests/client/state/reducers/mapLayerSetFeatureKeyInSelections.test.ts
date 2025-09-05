@@ -9,9 +9,9 @@
  *  - Normalization when selections is not an array
  *  - Overwrite flag (true) passed to updateSelections helper
  */
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerSetFeatureKeyInSelections } from './mapLayerSetFeatureKeyInSelections';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerSetFeatureKeyInSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerSetFeatureKeyInSelections';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
 
 const mockGetMapByKey = vi.fn();
 const mockUpdateRenderingLayers = vi.fn();

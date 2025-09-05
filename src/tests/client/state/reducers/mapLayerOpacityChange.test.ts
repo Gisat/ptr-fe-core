@@ -1,6 +1,6 @@
-import { ActionMapLayerOpacityChange } from '../state.models.actions';
-import { sharedStateMocks } from '../tests/state.fixture';
-import { reduceHandlerMapLayerOpacityChange } from './mapLayerOpacityChange';
+import { reduceHandlerMapLayerOpacityChange } from '../../../../client/shared/appState/reducerHandlers/mapLayerOpacityChange';
+import { ActionMapLayerOpacityChange } from '../../../../client/shared/appState/state.models.actions';
+import { sharedStateMocks } from '../../../../client/shared/appState/tests/state.fixture';
 
 describe('Reducer test: Map layer opacity change', () => {
 	/**

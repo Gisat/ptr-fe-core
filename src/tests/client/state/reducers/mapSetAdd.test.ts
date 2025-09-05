@@ -6,10 +6,10 @@
  *  - Duplicate key ignored (state reference unchanged)
  *  - Irrelevant action type returns original state
  */
-import { MapSetModel } from '../../models/models.mapSet';
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerMapSetAddMapSet } from './mapSetAdd';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetAddMapSet } from '../../../../client/shared/appState/reducerHandlers/mapSetAdd';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
+import { MapSetModel } from '../../../../client/shared/models/models.mapSet';
 
 describe('adding a map set to state', () => {
 	/**

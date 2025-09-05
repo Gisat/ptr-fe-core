@@ -8,9 +8,9 @@
  *  - Graceful handling when selections is not an array
  *  - Immutability of selections array and modified selection object
  */
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerRemoveFeatureKeyInSelections } from './mapLayerRemoveFeatureKeyInSelections';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerRemoveFeatureKeyInSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerRemoveFeatureKeyInSelections';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
 
 const mockGetMapByKey = vi.fn();
 

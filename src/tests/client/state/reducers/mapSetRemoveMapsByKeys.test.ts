@@ -9,9 +9,9 @@
  *  - Behavior when removing keys none of which are in map set (map set maps unchanged, globals still filtered)
  *  - Behavior when removing all maps from the map set
  */
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerRemoveMapSetMapsByKeys } from './mapSetRemoveMapsByKeys';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerRemoveMapSetMapsByKeys } from '../../../../client/shared/appState/reducerHandlers/mapSetRemoveMapsByKeys';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
 
 const mockGetMapSetByKey = vi.fn();
 

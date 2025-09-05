@@ -7,9 +7,9 @@
  *  - Behavior when removing non-existent map set (new state, same contents)
  *  - Irrelevant action type returns original state
  */
-import { StateActionType } from '../enum.state.actionType';
-import { createBaseState } from '../tests/state.fixture';
-import { reduceHandlerMapSetRemove } from './mapSetRemove';
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetRemove } from '../../../../client/shared/appState/reducerHandlers/mapSetRemove';
+import { createBaseState } from '../../../../client/shared/appState/tests/state.fixture';
 
 describe('removing a map set from state', () => {
 	/**

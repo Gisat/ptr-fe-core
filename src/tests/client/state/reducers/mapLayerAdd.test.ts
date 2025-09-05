@@ -11,10 +11,10 @@
  * Additional checks:
  * - Immutability of maps array and replaced map object.
  */
-import { AppSharedState } from '../state.models';
-import { ActionMapLayerAdd } from '../state.models.actions';
-import { sharedStateMocks } from '../tests/state.fixture';
-import { reduceHandlerMapLayerAdd } from './mapLayerAdd';
+import { reduceHandlerMapLayerAdd } from '../../../../client/shared/appState/reducerHandlers/mapLayerAdd';
+import { AppSharedState } from '../../../../client/shared/appState/state.models';
+import { ActionMapLayerAdd } from '../../../../client/shared/appState/state.models.actions';
+import { sharedStateMocks } from '../../../../client/shared/appState/tests/state.fixture';
 
 // Minimal shape for a map rendering layer (inferred from fixtures)
 interface TestMapRenderingLayer {

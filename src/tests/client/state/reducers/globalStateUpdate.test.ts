@@ -2,14 +2,14 @@
  * @file Unit tests for the globalStateUpdate reducer handler.
  */
 
+import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerGlobalStateUpdate } from '../../../../client/shared/appState/reducerHandlers/globalStateUpdate';
+import { ActionGlobalStateUpdate } from '../../../../client/shared/appState/state.models.actions';
+import { createFakeFullState } from '../../../../client/shared/appState/tests/state.mock';
+import { RenderingLayer } from '../../../../client/shared/models/models.layers';
+import { MapSetModel } from '../../../../client/shared/models/models.mapSet';
+import { SingleMapModel } from '../../../../client/shared/models/models.singleMap';
 import { Datasource } from '../../../../globals/shared/panther/models.nodes';
-import { RenderingLayer } from '../../models/models.layers';
-import { MapSetModel } from '../../models/models.mapSet';
-import { SingleMapModel } from '../../models/models.singleMap';
-import { StateActionType } from '../enum.state.actionType';
-import { reduceHandlerGlobalStateUpdate } from '../reducerHandlers/globalStateUpdate';
-import { ActionGlobalStateUpdate } from '../state.models.actions';
-import { createFakeFullState } from '../tests/state.mock';
 
 describe('Reducer test: Global state update', () => {
 	/**
