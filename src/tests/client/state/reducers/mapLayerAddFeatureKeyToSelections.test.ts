@@ -5,12 +5,19 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerAddFeatureKeyToSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerAddFeatureKeyToSelections';
 import { ActionMapLayerAddFeatureKey } from '../../../../client/shared/appState/state.models.actions';
-import type { Selection } from '../../../../client/shared/models/models.selections';
+// Local minimal type to keep tests decoupled from production types
+type TestSelection = {
+  key: string;
+  distinctColours: string[];
+  distinctItems: boolean;
+  featureKeys: Array<string | number>;
+  featureKeyColourIndexPairs: Record<string, number>;
+};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer add feature key to selections', () => {
 	it('creates selection and assigns selectionKey when missing', () => {
-		const state = { ...fullAppSharedStateMock, selections: [] as Selection[] };
+    const state = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
 
 		const action: ActionMapLayerAddFeatureKey = {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
@@ -33,8 +40,8 @@ describe('Reducer test: Map layer add feature key to selections', () => {
 		expect(selection.distinctColours.length).toBeGreaterThan(0);
 	});
 
-	it('appends featureKey to existing selection and assigns next color index', () => {
-		const initial = { ...fullAppSharedStateMock, selections: [] as Selection[] };
+  it('appends featureKey to existing selection and assigns next color index', () => {
+    const initial = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
 
 		// First add
 		const first = reduceHandlerAddFeatureKeyToSelections(initial, {

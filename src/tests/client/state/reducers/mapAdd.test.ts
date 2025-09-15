@@ -5,13 +5,18 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapAdd } from '../../../../client/shared/appState/reducerHandlers/mapAdd';
 import { ActionMapAdd } from '../../../../client/shared/appState/state.models.actions';
-import { SingleMapModel } from '../../../../client/shared/models/models.singleMap';
+// Local minimal type to decouple tests from production SingleMapModel
+type TestSingleMap = {
+  key: string;
+  view: { zoom: number; latitude: number; longitude: number };
+  renderingLayers: Array<{ key: string; isActive?: boolean }>;
+};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map add', () => {
 	it('adds a new map when key does not exist', () => {
-		const state = { ...fullAppSharedStateMock, maps: [] as SingleMapModel[] };
-		const newMap: SingleMapModel = {
+    const state = { ...fullAppSharedStateMock, maps: [] as TestSingleMap[] };
+    const newMap: TestSingleMap = {
 			key: 'map-new',
 			view: { zoom: 3, latitude: 10, longitude: 20 },
 			renderingLayers: [],
@@ -27,14 +32,14 @@ describe('Reducer test: Map add', () => {
 	});
 
 	it('does not add duplicate map and returns original state', () => {
-		const existing: SingleMapModel = {
+    const existing: TestSingleMap = {
 			key: 'map-1',
 			view: { zoom: 5, latitude: 0, longitude: 0 },
 			renderingLayers: [],
 		};
-		const state = { ...fullAppSharedStateMock, maps: [existing] as SingleMapModel[] };
+    const state = { ...fullAppSharedStateMock, maps: [existing] as TestSingleMap[] };
 
-		const duplicate: SingleMapModel = {
+    const duplicate: TestSingleMap = {
 			key: 'map-1',
 			view: { zoom: 6, latitude: 1, longitude: 1 },
 			renderingLayers: [],
@@ -51,14 +56,14 @@ describe('Reducer test: Map add', () => {
 	});
 
 	it('appends map to existing list and preserves other properties', () => {
-		const existingMap: SingleMapModel = {
+    const existingMap: TestSingleMap = {
 			key: 'map-A',
 			view: { zoom: 4, latitude: 45, longitude: 9 },
 			renderingLayers: [],
 		};
-		const state = { ...fullAppSharedStateMock, maps: [existingMap] as SingleMapModel[] };
+    const state = { ...fullAppSharedStateMock, maps: [existingMap] as TestSingleMap[] };
 
-		const newMap: SingleMapModel = {
+    const newMap: TestSingleMap = {
 			key: 'map-B',
 			view: { zoom: 2, latitude: -10, longitude: 120 },
 			renderingLayers: [],

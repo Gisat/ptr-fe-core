@@ -5,7 +5,14 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerRemoveFeatureKeyInSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerRemoveFeatureKeyInSelections';
 import { ActionMapLayerRemoveFeatureKey } from '../../../../client/shared/appState/state.models.actions';
-import type { Selection } from '../../../../client/shared/models/models.selections';
+// Local minimal type to decouple tests from production Selection
+type TestSelection = {
+  key: string;
+  distinctColours: string[];
+  distinctItems: boolean;
+  featureKeys: Array<string | number>;
+  featureKeyColourIndexPairs: Record<string, number>;
+};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer remove feature key in selections', () => {
@@ -35,7 +42,7 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 					featureKeys: ['x'],
 					featureKeyColourIndexPairs: { x: 0 },
 				},
-			] as Selection[],
+			] as TestSelection[],
 		};
 
 		const action: ActionMapLayerRemoveFeatureKey = {
@@ -56,7 +63,7 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 	});
 
 	it('leaves selections unchanged if target layer has no selectionKey', () => {
-		const state = { ...fullAppSharedStateMock, selections: [] as Selection[] };
+		const state = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
 
 		const action: ActionMapLayerRemoveFeatureKey = {
 			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
@@ -86,7 +93,7 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 					featureKeys: ['z'],
 					featureKeyColourIndexPairs: { z: 0 },
 				},
-			] as Selection[],
+			] as TestSelection[],
 		};
 
 		const action: ActionMapLayerRemoveFeatureKey = {

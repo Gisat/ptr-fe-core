@@ -5,33 +5,57 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerGlobalStateUpdate } from '../../../../client/shared/appState/reducerHandlers/globalStateUpdate';
 import { ActionGlobalStateUpdate } from '../../../../client/shared/appState/state.models.actions';
-import { RenderingLayer } from '../../../../client/shared/models/models.layers';
-import { MapSetModel } from '../../../../client/shared/models/models.mapSet';
-import { SingleMapModel } from '../../../../client/shared/models/models.singleMap';
-import type { Datasource } from '../../../../globals/shared/panther/models.nodes';
+// Local minimal types to decouple tests from production models
+type TestRenderingLayer = {
+  key: string;
+  isActive: boolean;
+  level: number;
+  interaction: null;
+  datasource: {
+    key: string;
+    labels: string[];
+    nameDisplay: string;
+    nameInternal: string;
+    description: string | null | '';
+    lastUpdatedAt: number;
+    url: string;
+    configuration: string;
+  };
+};
+type TestMapSet = {
+  key: string;
+  maps: string[];
+  view: Record<string, unknown>;
+  sync: { zoom: boolean; center: boolean };
+};
+type TestSingleMap = {
+  key: string;
+  renderingLayers: Array<{ key: string; isActive?: boolean }>;
+  view: { zoom: number; latitude: number; longitude: number };
+};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Global state update', () => {
 	it('appends provided maps, mapSets and renderingLayers', () => {
 		const state: typeof fullAppSharedStateMock = {
 			...fullAppSharedStateMock,
-			maps: [] as SingleMapModel[],
-			mapSets: [] as MapSetModel[],
-			renderingLayers: [] as RenderingLayer[],
+        maps: [] as TestSingleMap[],
+        mapSets: [] as TestMapSet[],
+        renderingLayers: [] as TestRenderingLayer[],
 		};
 
-		const newMap: SingleMapModel = {
+        const newMap: TestSingleMap = {
 			key: 'map-new',
 			renderingLayers: [],
 			view: { zoom: 1, latitude: 10, longitude: 10 },
 		};
-		const newMapSet: MapSetModel = {
+        const newMapSet: TestMapSet = {
 			key: 'mapSet-new',
 			maps: [],
 			view: {},
 			sync: { zoom: false, center: false },
 		};
-		const newLayer: RenderingLayer = {
+        const newLayer: TestRenderingLayer = {
 			key: 'layer-new',
 			isActive: false,
 			level: 0,
@@ -45,7 +69,7 @@ describe('Reducer test: Global state update', () => {
 				lastUpdatedAt: 0,
 				url: '',
 				configuration: '{}',
-			} as Datasource,
+            },
 		};
 
 		const action: ActionGlobalStateUpdate = {
@@ -63,31 +87,31 @@ describe('Reducer test: Global state update', () => {
 	});
 
 	it('deduplicates by key when appending', () => {
-		const state: typeof fullAppSharedStateMock = {
-			...fullAppSharedStateMock,
-			maps: [
-				{ key: 'map-1', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
-			] as unknown as SingleMapModel[],
-			mapSets: [{ key: 'set-1', maps: [], view: {}, sync: { zoom: false, center: false } }] as unknown as MapSetModel[],
-			renderingLayers: [
-				{
-					key: 'layer-1',
-					isActive: false,
-					level: 0,
-					interaction: null,
-					datasource: {
-						key: 'layer-1',
-						labels: ['datasource'],
-						nameDisplay: '',
-						nameInternal: '',
-						description: '',
-						lastUpdatedAt: 0,
-						url: '',
-						configuration: '{}',
-					} as Datasource,
-				},
-			] as unknown as RenderingLayer[],
-		};
+        const state: typeof fullAppSharedStateMock = {
+            ...fullAppSharedStateMock,
+            maps: [
+                { key: 'map-1', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
+            ] as unknown as TestSingleMap[],
+            mapSets: [{ key: 'set-1', maps: [], view: {}, sync: { zoom: false, center: false } }] as unknown as TestMapSet[],
+            renderingLayers: [
+                {
+                    key: 'layer-1',
+                    isActive: false,
+                    level: 0,
+                    interaction: null,
+                    datasource: {
+                        key: 'layer-1',
+                        labels: ['datasource'],
+                        nameDisplay: '',
+                        nameInternal: '',
+                        description: '',
+                        lastUpdatedAt: 0,
+                        url: '',
+                        configuration: '{}',
+                    },
+                },
+            ] as unknown as TestRenderingLayer[],
+        };
 
 		const action: ActionGlobalStateUpdate = {
 			type: StateActionType.GLOBAL_STATE_UPDATE,
@@ -115,7 +139,7 @@ describe('Reducer test: Global state update', () => {
 							lastUpdatedAt: 0,
 							url: '',
 							configuration: '{}',
-						} as Datasource,
+                        },
 					},
 					{
 						key: 'layer-2',
@@ -131,7 +155,7 @@ describe('Reducer test: Global state update', () => {
 							lastUpdatedAt: 0,
 							url: '',
 							configuration: '{}',
-						} as Datasource,
+                        },
 					},
 				],
 			},

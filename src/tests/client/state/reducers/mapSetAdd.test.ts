@@ -5,13 +5,20 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetAddMapSet } from '../../../../client/shared/appState/reducerHandlers/mapSetAdd';
 import { ActionMapSetAdd } from '../../../../client/shared/appState/state.models.actions';
-import { MapSetModel } from '../../../../client/shared/models/models.mapSet';
+// Local minimal type for map set to decouple tests from production types
+type TestMapSet = {
+  key: string;
+  maps: string[];
+  view: Partial<{ zoom: number; latitude: number; longitude: number }>;
+  sync: { zoom: boolean; center: boolean };
+  mode?: 'slider' | 'grid';
+};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet add', () => {
 	it('adds a new mapSet when key does not exist', () => {
-		const state = { ...fullAppSharedStateMock, mapSets: [] as MapSetModel[] };
-		const newMapSet: MapSetModel = {
+    const state = { ...fullAppSharedStateMock, mapSets: [] as TestMapSet[] };
+    const newMapSet: TestMapSet = {
 			key: 'set-new',
 			maps: [],
 			sync: { zoom: true, center: false },
@@ -34,16 +41,16 @@ describe('Reducer test: MapSet add', () => {
 	});
 
 	it('does not add duplicate mapSet and returns original state', () => {
-		const existing: MapSetModel = {
+    const existing: TestMapSet = {
 			key: 'set-1',
 			maps: [],
 			sync: { zoom: false, center: true },
 			view: {},
 			mode: 'slider',
 		};
-		const state = { ...fullAppSharedStateMock, mapSets: [existing] as MapSetModel[] };
+    const state = { ...fullAppSharedStateMock, mapSets: [existing] as TestMapSet[] };
 
-		const duplicate: MapSetModel = { ...existing, view: { zoom: 5 } };
+    const duplicate: TestMapSet = { ...existing, view: { zoom: 5 } };
 		const action: ActionMapSetAdd = { type: StateActionType.MAP_SET_ADD, payload: duplicate };
 
 		const result = reduceHandlerMapSetAddMapSet(state, action);

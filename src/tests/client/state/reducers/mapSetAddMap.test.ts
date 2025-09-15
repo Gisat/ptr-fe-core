@@ -5,14 +5,19 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetAddMap } from '../../../../client/shared/appState/reducerHandlers/mapSetAddMap';
 import { ActionMapAddToMapSet } from '../../../../client/shared/appState/state.models.actions';
-import { SingleMapModel } from '../../../../client/shared/models/models.singleMap';
+// Local minimal type to decouple tests from production SingleMapModel
+type TestSingleMap = {
+  key: string;
+  renderingLayers: Array<{ key: string; isActive?: boolean }>;
+  view: { zoom: number; latitude: number; longitude: number };
+};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet add map', () => {
 	it('adds the map and appends its key to the target mapSet', () => {
 		const state = { ...fullAppSharedStateMock };
 
-		const newMap: SingleMapModel = {
+    const newMap: TestSingleMap = {
 			key: 'mapC',
 			renderingLayers: [],
 			view: { zoom: 3, latitude: 0, longitude: 0 },

@@ -5,12 +5,19 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerSetFeatureKeyInSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerSetFeatureKeyInSelections';
 import { ActionMapLayerSetFeatureKey } from '../../../../client/shared/appState/state.models.actions';
-import type { Selection } from '../../../../client/shared/models/models.selections';
+// Local minimal type to avoid coupling tests to production types
+type TestSelection = {
+  key: string;
+  distinctColours: string[];
+  distinctItems: boolean;
+  featureKeys: Array<string | number>;
+  featureKeyColourIndexPairs: Record<string, number>;
+};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer set feature key in selections', () => {
 	it('creates selection and sets the single featureKey when selectionKey is missing', () => {
-		const state = { ...fullAppSharedStateMock, selections: [] as Selection[] };
+    const state = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
 
 		const action: ActionMapLayerSetFeatureKey = {
 			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
@@ -30,7 +37,7 @@ describe('Reducer test: Map layer set feature key in selections', () => {
 	});
 
 	it('overwrites existing selection with the new single featureKey', () => {
-		const initial = { ...fullAppSharedStateMock, selections: [] as Selection[] };
+    const initial = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
 
 		// First set to A1
 		const first = reduceHandlerSetFeatureKeyInSelections(initial, {

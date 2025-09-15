@@ -4,15 +4,30 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerFetchSources } from '../../../../client/shared/appState/reducerHandlers/fetchSourcesUpdate';
-import { ActionChangeLayerSources } from '../../../../client/shared/appState/state.models.actions';
-import { RenderingLayer } from '../../../../client/shared/models/models.layers';
+// Define local minimal types to decouple tests from production types
+type TestDatasource = {
+  key: string;
+  labels: string[];
+  nameDisplay: string;
+  nameInternal: string;
+  description: string | null | '';
+  lastUpdatedAt: number;
+  url: string;
+  configuration: string;
+};
+type TestRenderingLayer = {
+  key: string;
+  isActive: boolean;
+  level: number;
+  interaction: null;
+  datasource: TestDatasource;
+};
 import { parseDatasourcesToRenderingLayers } from '../../../../client/shared/models/parsers.layers';
-import type { Datasource } from '../../../../globals/shared/panther/models.nodes';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('fetchSourcesUpdate reducer', () => {
-	it('should append parsed rendering layers to existing ones', () => {
-		const existingLayers: RenderingLayer[] = [
+  it('should append parsed rendering layers to existing ones', () => {
+    const existingLayers: TestRenderingLayer[] = [
 			{
 				key: 'layer-existing',
 				isActive: false,
@@ -27,12 +42,12 @@ describe('fetchSourcesUpdate reducer', () => {
 					lastUpdatedAt: 0,
 					url: '',
 					configuration: '{}',
-				} as Datasource,
+          } as TestDatasource,
 			},
 		];
 		const fakeState = { ...fullAppSharedStateMock, renderingLayers: existingLayers };
 
-		const payload: Datasource[] = [
+    const payload = [
 			{
 				key: 'd1',
 				labels: ['datasource'],
@@ -54,7 +69,7 @@ describe('fetchSourcesUpdate reducer', () => {
 				configuration: '{}',
 			},
 		];
-		const action: ActionChangeLayerSources = { type: StateActionType.FETCH_SOURCES, payload };
+    const action = { type: StateActionType.FETCH_SOURCES as StateActionType.FETCH_SOURCES, payload };
 
 		const result = reduceHandlerFetchSources(fakeState, action);
 
@@ -62,33 +77,33 @@ describe('fetchSourcesUpdate reducer', () => {
 		expect(result.renderingLayers).toEqual([...existingLayers, ...expectedParsed]);
 	});
 
-	it('should initialize rendering layers when none exist', () => {
-		const fakeState = { ...fullAppSharedStateMock, renderingLayers: undefined as unknown as RenderingLayer[] };
+  it('should initialize rendering layers when none exist', () => {
+    const fakeState = { ...fullAppSharedStateMock, renderingLayers: undefined as unknown as TestRenderingLayer[] };
 
-		const action: ActionChangeLayerSources = {
-			type: StateActionType.FETCH_SOURCES,
-			payload: [
-				{
-					key: 'd1',
-					labels: ['datasource'],
-					nameDisplay: '',
-					nameInternal: '',
-					description: '',
-					lastUpdatedAt: 0,
-					url: '',
-					configuration: '{}',
-				},
-			] as Datasource[],
-		};
+    const action = {
+      type: StateActionType.FETCH_SOURCES as StateActionType.FETCH_SOURCES,
+      payload: [
+        {
+          key: 'd1',
+          labels: ['datasource'],
+          nameDisplay: '',
+          nameInternal: '',
+          description: '',
+          lastUpdatedAt: 0,
+          url: '',
+          configuration: '{}',
+        },
+      ] as TestDatasource[],
+    };
 
 		const result = reduceHandlerFetchSources(fakeState, action);
 
-		const expectedParsed = parseDatasourcesToRenderingLayers(action.payload as Datasource[], fakeState.appNode);
+    const expectedParsed = parseDatasourcesToRenderingLayers(action.payload, fakeState.appNode);
 		expect(result.renderingLayers).toEqual(expectedParsed);
 	});
 
 	it('should handle an empty parser result', () => {
-		const existingLayers: RenderingLayer[] = [
+    const existingLayers: TestRenderingLayer[] = [
 			{
 				key: 'layer-existing',
 				isActive: true,
@@ -103,15 +118,15 @@ describe('fetchSourcesUpdate reducer', () => {
 					lastUpdatedAt: 0,
 					url: '',
 					configuration: '{}',
-				} as Datasource,
+          } as TestDatasource,
 			},
 		];
 		const fakeState = { ...fullAppSharedStateMock, renderingLayers: existingLayers };
 
-		const action: ActionChangeLayerSources = {
-			type: StateActionType.FETCH_SOURCES,
-			payload: [],
-		};
+    const action = {
+      type: StateActionType.FETCH_SOURCES as StateActionType.FETCH_SOURCES,
+      payload: [],
+    };
 
 		const result = reduceHandlerFetchSources(fakeState, action);
 
@@ -120,23 +135,23 @@ describe('fetchSourcesUpdate reducer', () => {
 	});
 
 	it('should preserve other state properties', () => {
-		const fakeState = { ...fullAppSharedStateMock, renderingLayers: [] };
+    const fakeState = { ...fullAppSharedStateMock, renderingLayers: [] as TestRenderingLayer[] };
 
-		const action: ActionChangeLayerSources = {
-			type: StateActionType.FETCH_SOURCES,
-			payload: [
-				{
-					key: 'd1',
-					labels: ['datasource'],
-					nameDisplay: '',
-					nameInternal: '',
-					description: '',
-					lastUpdatedAt: 0,
-					url: '',
-					configuration: '{}',
-				},
-			] as Datasource[],
-		};
+    const action = {
+      type: StateActionType.FETCH_SOURCES,
+      payload: [
+        {
+          key: 'd1',
+          labels: ['datasource'],
+          nameDisplay: '',
+          nameInternal: '',
+          description: '',
+          lastUpdatedAt: 0,
+          url: '',
+          configuration: '{}',
+        },
+      ] as TestDatasource[],
+    } as const;
 
 		const result = reduceHandlerFetchSources(fakeState, action);
 
