@@ -6,14 +6,14 @@ import { StateActionType } from '../../../../client/shared/appState/enum.state.a
 import { reduceHandlerMapAdd } from '../../../../client/shared/appState/reducerHandlers/mapAdd';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-	describe('Reducer test: Map add', () => {
-		it('adds a new map when key does not exist', () => {
-			const state = { ...fullAppSharedStateMock, maps: [] };
-			const newMap = {
-				key: 'map-new',
-				view: { zoom: 3, latitude: 10, longitude: 20 },
-				renderingLayers: [],
-			};
+describe('Reducer test: Map add', () => {
+	it('adds a new map when key does not exist', () => {
+		const state = { ...fullAppSharedStateMock, maps: [] };
+		const newMap = {
+			key: 'map-new',
+			view: { zoom: 3, latitude: 10, longitude: 20 },
+			renderingLayers: [],
+		};
 
 		const action = { type: StateActionType.MAP_ADD, payload: newMap } as const;
 		const result = reduceHandlerMapAdd(state, action);
@@ -24,19 +24,19 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		expect(result.maps[0]).toEqual(newMap);
 	});
 
-		it('does not add duplicate map and returns original state', () => {
-			const existing = {
-				key: 'map-1',
-				view: { zoom: 5, latitude: 0, longitude: 0 },
-				renderingLayers: [],
-			};
-			const state = { ...fullAppSharedStateMock, maps: [existing] };
+	it('does not add duplicate map and returns original state', () => {
+		const existing = {
+			key: 'map-1',
+			view: { zoom: 5, latitude: 0, longitude: 0 },
+			renderingLayers: [],
+		};
+		const state = { ...fullAppSharedStateMock, maps: [existing] };
 
-			const duplicate = {
-				key: 'map-1',
-				view: { zoom: 6, latitude: 1, longitude: 1 },
-				renderingLayers: [],
-			};
+		const duplicate = {
+			key: 'map-1',
+			view: { zoom: 6, latitude: 1, longitude: 1 },
+			renderingLayers: [],
+		};
 		const action = { type: StateActionType.MAP_ADD, payload: duplicate } as const;
 
 		const result = reduceHandlerMapAdd(state, action);
@@ -48,19 +48,19 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		expect(result.maps[0]).toEqual(existing);
 	});
 
-		it('appends map to existing list and preserves other properties', () => {
-			const existingMap = {
-				key: 'map-A',
-				view: { zoom: 4, latitude: 45, longitude: 9 },
-				renderingLayers: [],
-			};
-			const state = { ...fullAppSharedStateMock, maps: [existingMap] };
+	it('appends map to existing list and preserves other properties', () => {
+		const existingMap = {
+			key: 'map-A',
+			view: { zoom: 4, latitude: 45, longitude: 9 },
+			renderingLayers: [],
+		};
+		const state = { ...fullAppSharedStateMock, maps: [existingMap] };
 
-			const newMap = {
-				key: 'map-B',
-				view: { zoom: 2, latitude: -10, longitude: 120 },
-				renderingLayers: [],
-			};
+		const newMap = {
+			key: 'map-B',
+			view: { zoom: 2, latitude: -10, longitude: 120 },
+			renderingLayers: [],
+		};
 		const action = { type: StateActionType.MAP_ADD, payload: newMap } as const;
 
 		const result = reduceHandlerMapAdd(state, action);
