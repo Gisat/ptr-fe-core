@@ -4,16 +4,18 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerAddFeatureKeyToSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerAddFeatureKeyToSelections';
+import { ActionMapLayerAddFeatureKey } from '../../../../client/shared/appState/state.models.actions';
+import { Selection } from '../../../../client/shared/models/models.selections';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-	describe('Reducer test: Map layer add feature key to selections', () => {
-		it('creates selection and assigns selectionKey when missing', () => {
-			const state = { ...fullAppSharedStateMock, selections: [] };
+describe('Reducer test: Map layer add feature key to selections', () => {
+	it('creates selection and assigns selectionKey when missing', () => {
+		const state = { ...fullAppSharedStateMock, selections: [] as Selection[] };
 
-		const action = {
+		const action: ActionMapLayerAddFeatureKey = {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-1' },
-		} as const;
+		};
 
 		const result = reduceHandlerAddFeatureKeyToSelections(state, action);
 
@@ -33,13 +35,13 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 	});
 
 	it('appends featureKey to existing selection and assigns next color index', () => {
-			const initial = { ...fullAppSharedStateMock, selections: [] };
+		const initial = { ...fullAppSharedStateMock, selections: [] as Selection[] };
 
 		// First add
 		const first = reduceHandlerAddFeatureKeyToSelections(initial, {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-1' },
-		} as const);
+		} as ActionMapLayerAddFeatureKey);
 
 		const mapA1 = first.maps.find((m) => m.key === 'mapA')!;
 		const layer1 = mapA1.renderingLayers.find((l) => l.key === 'n80');
@@ -49,7 +51,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const second = reduceHandlerAddFeatureKeyToSelections(first, {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-2' },
-		} as const);
+		} as ActionMapLayerAddFeatureKey);
 
 		const selection = second.selections.find((s) => s.key === layer1.selectionKey)!;
 		expect(selection.featureKeys).toEqual(['f-1', 'f-2']);
@@ -57,31 +59,29 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		expect(selection.featureKeyColourIndexPairs['f-2']).toBe(1);
 	});
 
-		it('throws when map is not found', () => {
-			const state = { ...fullAppSharedStateMock };
-		const action = {
+	it('throws when map is not found', () => {
+		const state = { ...fullAppSharedStateMock };
+		const action: ActionMapLayerAddFeatureKey = {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'x' },
-		} as const;
+		};
 		expect(() => reduceHandlerAddFeatureKeyToSelections(state, action)).toThrow('Map with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		// @ts-expect-error runtime check for missing payload
-		expect(() =>
-			reduceHandlerAddFeatureKeyToSelections(state, {
-				type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
-			} as const)
-		).toThrow('No payload provided for adding featureKey');
+		const invalidAction = { type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY } as unknown as ActionMapLayerAddFeatureKey;
+		expect(() => reduceHandlerAddFeatureKeyToSelections(state, invalidAction)).toThrow(
+			'No payload provided for adding featureKey'
+		);
 	});
 
 	it('throws when layer is not found in target map', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
+		const action: ActionMapLayerAddFeatureKey = {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'does-not-exist', featureKey: 'x' },
-		} as const;
+		};
 		expect(() => reduceHandlerAddFeatureKeyToSelections(state, action)).toThrow('No selectionKey found or generated');
 	});
 });
