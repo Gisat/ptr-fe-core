@@ -4,6 +4,7 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerAdd } from '../../../../client/shared/appState/reducerHandlers/mapLayerAdd';
+import { ActionMapLayerAdd } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer add', () => {
@@ -13,10 +14,10 @@ describe('Reducer test: Map layer add', () => {
 		const prevLen = beforeMapA.renderingLayers.length;
 
 		const newLayer = { key: 'layer-new', isActive: true };
-		const action = {
+		const action: ActionMapLayerAdd = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: newLayer },
-		} as const;
+		};
 
 		const result = reduceHandlerMapLayerAdd(state, action);
 
@@ -46,10 +47,10 @@ describe('Reducer test: Map layer add', () => {
 
 		const index = 1; // within bounds for mock mapA (2 layers)
 		const replacement = { key: 'layer-replacement', isActive: false };
-		const action = {
+		const action: ActionMapLayerAdd = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: replacement, index },
-		} as const;
+		};
 
 		const result = reduceHandlerMapLayerAdd(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -69,7 +70,7 @@ describe('Reducer test: Map layer add', () => {
 		const res1 = reduceHandlerMapLayerAdd(state, {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: layer1, index: len },
-		} as const);
+		} as ActionMapLayerAdd);
 		const after1MapA = res1.maps.find((m) => m.key === 'mapA')!;
 		expect(after1MapA.renderingLayers).toHaveLength(len + 1);
 		expect(after1MapA.renderingLayers[len]).toEqual(layer1);
@@ -78,7 +79,7 @@ describe('Reducer test: Map layer add', () => {
 		const res2 = reduceHandlerMapLayerAdd(res1, {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: layer2, index: len + 5 },
-		} as const);
+		} as ActionMapLayerAdd);
 		const after2MapA = res2.maps.find((m) => m.key === 'mapA')!;
 		expect(after2MapA.renderingLayers).toHaveLength(len + 2);
 		expect(after2MapA.renderingLayers[len + 1]).toEqual(layer2);
@@ -86,20 +87,18 @@ describe('Reducer test: Map layer add', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
+		const action: ActionMapLayerAdd = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'not-there', layer: { key: 'x', isActive: true } },
-		} as const;
+		};
 		expect(() => reduceHandlerMapLayerAdd(state, action)).toThrow('Map with key not-there not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		// @ts-expect-error runtime check for missing payload
-		expect(() =>
-			reduceHandlerMapLayerAdd(state, {
-				type: StateActionType.MAP_LAYER_ADD,
-			} as const)
-		).toThrow('No payload provided for map layer add action');
+		const invalidAction = { type: StateActionType.MAP_LAYER_ADD } as ActionMapLayerAdd;
+		expect(() => reduceHandlerMapLayerAdd(state, invalidAction)).toThrow(
+			'No payload provided for map layer add action'
+		);
 	});
 });
