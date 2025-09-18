@@ -21,10 +21,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const beforeSet = beforeMapSets.find((s) => s.key === 'mapSetLayersDemo')!;
 		const beforeSetMapsLen = beforeSet.maps.length;
 
-			const action = {
-				type: StateActionType.MAP_ADD_TO_MAP_SET,
-				payload: { mapSetKey: 'mapSetLayersDemo', map: newMap },
-			};
+		const action = {
+			type: StateActionType.MAP_ADD_TO_MAP_SET,
+			payload: { mapSetKey: 'mapSetLayersDemo', map: newMap },
+		} as const;
 
 		const result = reduceHandlerMapSetAddMap(state, action);
 
@@ -47,20 +47,23 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 	it('throws when mapSet is not found', () => {
 			const state = { ...fullAppSharedStateMock };
-			const action = {
-				type: StateActionType.MAP_ADD_TO_MAP_SET,
-				payload: {
-					mapSetKey: 'missing',
-					map: { key: 'X', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
-				},
-			};
+		const action = {
+			type: StateActionType.MAP_ADD_TO_MAP_SET,
+			payload: {
+				mapSetKey: 'missing',
+				map: { key: 'X', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
+			},
+		} as const;
 		expect(() => reduceHandlerMapSetAddMap(state, action)).toThrow('MapSet with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_ADD_TO_MAP_SET;
-		expect(() => reduceHandlerMapSetAddMap(state, action)).toThrow('No payload provided for map add to map set action');
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerMapSetAddMap(state, {
+				type: StateActionType.MAP_ADD_TO_MAP_SET,
+			} as const)
+		).toThrow('No payload provided for map add to map set action');
 	});
 });

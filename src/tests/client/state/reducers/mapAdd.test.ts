@@ -15,7 +15,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 				renderingLayers: [],
 			};
 
-			const action = { type: StateActionType.MAP_ADD, payload: newMap };
+		const action = { type: StateActionType.MAP_ADD, payload: newMap } as const;
 		const result = reduceHandlerMapAdd(state, action);
 
 		expect(result).not.toBe(state);
@@ -37,7 +37,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 				view: { zoom: 6, latitude: 1, longitude: 1 },
 				renderingLayers: [],
 			};
-			const action = { type: StateActionType.MAP_ADD, payload: duplicate };
+		const action = { type: StateActionType.MAP_ADD, payload: duplicate } as const;
 
 		const result = reduceHandlerMapAdd(state, action);
 
@@ -61,7 +61,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 				view: { zoom: 2, latitude: -10, longitude: 120 },
 				renderingLayers: [],
 			};
-			const action = { type: StateActionType.MAP_ADD, payload: newMap };
+		const action = { type: StateActionType.MAP_ADD, payload: newMap } as const;
 
 		const result = reduceHandlerMapAdd(state, action);
 

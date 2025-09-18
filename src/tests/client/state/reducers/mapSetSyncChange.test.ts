@@ -16,7 +16,7 @@ describe('Reducer test: MapSet sync change', () => {
 		const action = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: targetKey, syncChange: { center: false } },
-		};
+		} as const;
 
 		const result = reduceHandlerMapSetSyncChange(state, action);
 
@@ -41,7 +41,7 @@ describe('Reducer test: MapSet sync change', () => {
 		const action = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: 'mapSetLayersDemo', syncChange: { zoom: false, center: false } },
-		};
+		} as const;
 		const result = reduceHandlerMapSetSyncChange(state, action);
 		const after = result.mapSets.find((s) => s.key === 'mapSetLayersDemo')!;
 		expect(after.sync).toEqual({ zoom: false, center: false });
@@ -52,16 +52,17 @@ describe('Reducer test: MapSet sync change', () => {
 		const action = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: 'missing', syncChange: { zoom: false } },
-		};
+		} as const;
 		expect(() => reduceHandlerMapSetSyncChange(state, action)).toThrow('MapSet with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_SET_SYNC_CHANGE;
-		expect(() => reduceHandlerMapSetSyncChange(state, action)).toThrow(
-			'No payload provided for map set sync change action'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerMapSetSyncChange(state, {
+				type: StateActionType.MAP_SET_SYNC_CHANGE,
+			} as const)
+		).toThrow('No payload provided for map set sync change action');
 	});
 });

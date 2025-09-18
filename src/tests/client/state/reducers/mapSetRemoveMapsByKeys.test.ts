@@ -17,7 +17,7 @@ describe('Reducer test: MapSet remove maps by keys', () => {
 		const action = {
 			type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS,
 			payload: { mapSetKey: 'mapSetLayersDemo', mapKeys: ['mapA', 'mapB'] },
-		};
+		} as const;
 
 		const result = reduceHandlerRemoveMapSetMapsByKeys(state, action);
 
@@ -42,7 +42,7 @@ describe('Reducer test: MapSet remove maps by keys', () => {
 		const action = {
 			type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS,
 			payload: { mapSetKey: 'mapSetLayersDemo', mapKeys: ['nope1', 'nope2'] },
-		};
+		} as const;
 
 		const result = reduceHandlerRemoveMapSetMapsByKeys(state, action);
 		expect(result.mapSets).not.toBe(state.mapSets);
@@ -56,16 +56,17 @@ describe('Reducer test: MapSet remove maps by keys', () => {
 		const action = {
 			type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS,
 			payload: { mapSetKey: 'missing', mapKeys: ['mapA'] },
-		};
+		} as const;
 		expect(() => reduceHandlerRemoveMapSetMapsByKeys(state, action)).toThrow('MapSet with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS;
-		expect(() => reduceHandlerRemoveMapSetMapsByKeys(state, action)).toThrow(
-			'No payload provided for remove maps from map set by keys action'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerRemoveMapSetMapsByKeys(state, {
+				type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS,
+			} as const)
+		).toThrow('No payload provided for remove maps from map set by keys action');
 	});
 });

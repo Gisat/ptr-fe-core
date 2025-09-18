@@ -16,7 +16,7 @@ describe('Reducer test: Map layer interactivity change', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'n80', isInteractive: true },
-		};
+		} as const;
 
 		const result = reduceHandlerMapLayerInteractivityChange(state, action);
 
@@ -48,7 +48,7 @@ describe('Reducer test: Map layer interactivity change', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'non-existent', isInteractive: true },
-		};
+		} as const;
 
 		const result = reduceHandlerMapLayerInteractivityChange(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -63,16 +63,17 @@ describe('Reducer test: Map layer interactivity change', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE,
 			payload: { mapKey: 'nope', layerKey: 'n80', isInteractive: false },
-		};
+		} as const;
 		expect(() => reduceHandlerMapLayerInteractivityChange(state, action)).toThrow('Map with key nope not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE;
-		expect(() => reduceHandlerMapLayerInteractivityChange(state, action)).toThrow(
-			'No payload provided for map layer interactivity change action'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerMapLayerInteractivityChange(state, {
+				type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE,
+			} as const)
+		).toThrow('No payload provided for map layer interactivity change action');
 	});
 });

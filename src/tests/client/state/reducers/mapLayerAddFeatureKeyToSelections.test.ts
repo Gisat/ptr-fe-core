@@ -10,10 +10,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		it('creates selection and assigns selectionKey when missing', () => {
 			const state = { ...fullAppSharedStateMock, selections: [] };
 
-			const action = {
-				type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
-				payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-1' },
-			};
+		const action = {
+			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
+			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-1' },
+		} as const;
 
 		const result = reduceHandlerAddFeatureKeyToSelections(state, action);
 
@@ -39,7 +39,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const first = reduceHandlerAddFeatureKeyToSelections(initial, {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-1' },
-		});
+		} as const);
 
 		const mapA1 = first.maps.find((m) => m.key === 'mapA')!;
 		const layer1 = mapA1.renderingLayers.find((l) => l.key === 'n80');
@@ -49,7 +49,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const second = reduceHandlerAddFeatureKeyToSelections(first, {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-2' },
-		});
+		} as const);
 
 		const selection = second.selections.find((s) => s.key === layer1.selectionKey)!;
 		expect(selection.featureKeys).toEqual(['f-1', 'f-2']);
@@ -59,20 +59,21 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 		it('throws when map is not found', () => {
 			const state = { ...fullAppSharedStateMock };
-			const action = {
-				type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
-				payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'x' },
-			};
+		const action = {
+			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
+			payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'x' },
+		} as const;
 		expect(() => reduceHandlerAddFeatureKeyToSelections(state, action)).toThrow('Map with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_LAYER_ADD_FEATURE_KEY;
-		expect(() => reduceHandlerAddFeatureKeyToSelections(state, action)).toThrow(
-			'No payload provided for adding featureKey'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerAddFeatureKeyToSelections(state, {
+				type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
+			} as const)
+		).toThrow('No payload provided for adding featureKey');
 	});
 
 	it('throws when layer is not found in target map', () => {
@@ -80,7 +81,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const action = {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'does-not-exist', featureKey: 'x' },
-		};
+		} as const;
 		expect(() => reduceHandlerAddFeatureKeyToSelections(state, action)).toThrow('No selectionKey found or generated');
 	});
 });

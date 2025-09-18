@@ -10,10 +10,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		it('creates selection and sets the single featureKey when selectionKey is missing', () => {
 			const state = { ...fullAppSharedStateMock, selections: [] };
 
-			const action = {
-				type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
-				payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'A1' },
-			};
+		const action = {
+			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
+			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'A1' },
+		} as const;
 
 		const result = reduceHandlerSetFeatureKeyInSelections(state, action);
 
@@ -35,7 +35,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const first = reduceHandlerSetFeatureKeyInSelections(initial, {
 			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'A1' },
-		});
+		} as const);
 
 		const mapA1 = first.maps.find((m) => m.key === 'mapA')!;
 		const layer1 = mapA1.renderingLayers.find((l) => l.key === 'n80');
@@ -45,7 +45,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const second = reduceHandlerSetFeatureKeyInSelections(first, {
 			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'B2' },
-		});
+		} as const);
 
 		const selection = second.selections.find((s) => s.key === layer1.selectionKey)!;
 		expect(selection.featureKeys).toEqual(['B2']);
@@ -58,17 +58,18 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const action = {
 			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
 			payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'X' },
-		};
+		} as const;
 		expect(() => reduceHandlerSetFeatureKeyInSelections(state, action)).toThrow('Map with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_LAYER_SET_FEATURE_KEY;
-		expect(() => reduceHandlerSetFeatureKeyInSelections(state, action)).toThrow(
-			'No payload provided for setting featureKey'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerSetFeatureKeyInSelections(state, {
+				type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
+			} as const)
+		).toThrow('No payload provided for setting featureKey');
 	});
 
 	it('throws when layer is not found in target map', () => {
@@ -76,7 +77,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const action = {
 			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'does-not-exist', featureKey: 'X' },
-		};
+		} as const;
 		expect(() => reduceHandlerSetFeatureKeyInSelections(state, action)).toThrow('No selectionKey found or generated');
 	});
 });

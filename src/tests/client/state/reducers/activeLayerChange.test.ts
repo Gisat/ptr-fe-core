@@ -4,9 +4,10 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerActiveLayerChange } from '../../../../client/shared/appState/reducerHandlers/activeLayerChange';
+import { ActionLayerActiveChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-describe('reduceHandlerActiveLayerChange', () => {
+describe('Change active layer', () => {
 	it('activates the specified rendering layer by datasource key', () => {
 		const state = {
 			...fullAppSharedStateMock,
@@ -34,7 +35,7 @@ describe('reduceHandlerActiveLayerChange', () => {
 		const before = state.renderingLayers.find((l) => l.datasource.key === targetKey);
 		expect(before?.isActive).toBe(false);
 
-		const action = {
+		const action: ActionLayerActiveChange = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: targetKey, newValue: true },
 		};
@@ -70,7 +71,7 @@ describe('reduceHandlerActiveLayerChange', () => {
 		const before = state.renderingLayers.find((l) => l.datasource.key === targetKey);
 		expect(before?.isActive).toBe(true);
 
-		const action = {
+		const action: ActionLayerActiveChange = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: targetKey, newValue: false },
 		};
@@ -101,12 +102,18 @@ describe('reduceHandlerActiveLayerChange', () => {
 				},
 			],
 		};
-		const action = {
+		const action: ActionLayerActiveChange = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'non-existent', newValue: true },
 		};
 		expect(() => reduceHandlerActiveLayerChange(state, action)).toThrow(
 			'Shared State: Layer with key non-existent not found'
 		);
+	});
+
+	it('throws error when payload is missing', () => {
+		const state = { ...fullAppSharedStateMock };
+		const invalidAction = { type: StateActionType.LAYER_ACTIVE_CHANGE } as ActionLayerActiveChange;
+		expect(() => reduceHandlerActiveLayerChange(state, invalidAction)).toThrow(/Cannot read properties of undefined/);
 	});
 });

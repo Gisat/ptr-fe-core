@@ -17,7 +17,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 				mode: 'grid',
 			};
 
-			const action = { type: StateActionType.MAP_SET_ADD, payload: newMapSet };
+		const action = { type: StateActionType.MAP_SET_ADD, payload: newMapSet } as const;
 		const result = reduceHandlerMapSetAddMapSet(state, action);
 
 		expect(result).not.toBe(state);
@@ -42,7 +42,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 			const state = { ...fullAppSharedStateMock, mapSets: [existing] };
 
 			const duplicate = { ...existing, view: { zoom: 5 } };
-			const action = { type: StateActionType.MAP_SET_ADD, payload: duplicate };
+		const action = { type: StateActionType.MAP_SET_ADD, payload: duplicate } as const;
 
 		const result = reduceHandlerMapSetAddMapSet(state, action);
 

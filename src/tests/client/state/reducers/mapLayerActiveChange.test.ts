@@ -19,7 +19,7 @@ describe('Reducer test: Map layer active change', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'n80', isActive: false },
-		};
+		} as const;
 
 		const result = reduceHandlerMapLayerActiveChange(state, action);
 
@@ -50,7 +50,7 @@ describe('Reducer test: Map layer active change', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'non-existent-layer', isActive: false },
-		};
+		} as const;
 
 		const result = reduceHandlerMapLayerActiveChange(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -66,16 +66,17 @@ describe('Reducer test: Map layer active change', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'does-not-exist', layerKey: 'n80', isActive: false },
-		};
+		} as const;
 		expect(() => reduceHandlerMapLayerActiveChange(state, action)).toThrow('Map with key does-not-exist not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_LAYER_ACTIVE_CHANGE;
-		expect(() => reduceHandlerMapLayerActiveChange(state, action)).toThrow(
-			'No payload provided for map layer visibility change action'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerMapLayerActiveChange(state, {
+				type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
+			} as const)
+		).toThrow('No payload provided for map layer visibility change action');
 	});
 });

@@ -15,7 +15,7 @@ describe('Reducer test: MapSet mode change', () => {
 		const action = {
 			type: StateActionType.MAP_SET_MODE_CHANGE,
 			payload: { key: targetKey, mode: 'slider' },
-		};
+		} as const;
 
 		const result = reduceHandlerMapSetModeChange(state, action);
 
@@ -41,16 +41,17 @@ describe('Reducer test: MapSet mode change', () => {
 		const action = {
 			type: StateActionType.MAP_SET_MODE_CHANGE,
 			payload: { key: 'missing', mode: 'grid' },
-		};
+		} as const;
 		expect(() => reduceHandlerMapSetModeChange(state, action)).toThrow('MapSet with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_SET_MODE_CHANGE;
-		expect(() => reduceHandlerMapSetModeChange(state, action)).toThrow(
-			'No payload provided for map set mode change action'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerMapSetModeChange(state, {
+				type: StateActionType.MAP_SET_MODE_CHANGE,
+			} as const)
+		).toThrow('No payload provided for map set mode change action');
 	});
 });

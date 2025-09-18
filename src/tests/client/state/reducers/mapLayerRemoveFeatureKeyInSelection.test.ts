@@ -40,7 +40,7 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-2' },
-		};
+		} as const;
 
 		const result = reduceHandlerRemoveFeatureKeyInSelections(state, action);
 
@@ -60,7 +60,7 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-x' },
-		};
+		} as const;
 
 		const result = reduceHandlerRemoveFeatureKeyInSelections(state, action);
 		expect(result.selections).toEqual(state.selections);
@@ -91,26 +91,27 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'z' },
-		};
+		} as const;
 		const result = reduceHandlerRemoveFeatureKeyInSelections(state, action);
 		expect(result.selections).toEqual(state.selections);
 	});
 
 	it('throws when map is not found', () => {
 			const state = { ...fullAppSharedStateMock };
-			const action = {
-				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
-				payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'f-x' },
-			};
+		const action = {
+			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
+			payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'f-x' },
+		} as const;
 		expect(() => reduceHandlerRemoveFeatureKeyInSelections(state, action)).toThrow('Map with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY;
-		expect(() => reduceHandlerRemoveFeatureKeyInSelections(state, action)).toThrow(
-			'No payload provided for removing featureKey'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerRemoveFeatureKeyInSelections(state, {
+				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
+			} as const)
+		).toThrow('No payload provided for removing featureKey');
 	});
 });

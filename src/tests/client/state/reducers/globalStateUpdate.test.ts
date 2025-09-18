@@ -43,10 +43,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 			},
 		};
 
-			const action = {
-				type: StateActionType.GLOBAL_STATE_UPDATE,
-				payload: { maps: [newMap], mapSets: [newMapSet], renderingLayers: [newLayer] },
-			};
+		const action = {
+			type: StateActionType.GLOBAL_STATE_UPDATE,
+			payload: { maps: [newMap], mapSets: [newMapSet], renderingLayers: [newLayer] },
+		} as const;
 
 		const result = reduceHandlerGlobalStateUpdate(state, action);
 		expect(result.maps).toHaveLength(1);
@@ -84,9 +84,9 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 			],
 		};
 
-			const action = {
-				type: StateActionType.GLOBAL_STATE_UPDATE,
-				payload: {
+		const action = {
+			type: StateActionType.GLOBAL_STATE_UPDATE,
+			payload: {
 				maps: [
 					{ key: 'map-1', renderingLayers: [], view: { zoom: 2, latitude: 0, longitude: 0 } },
 					{ key: 'map-2', renderingLayers: [], view: { zoom: 3, latitude: 0, longitude: 0 } },
@@ -130,7 +130,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 					},
 				],
 			},
-		};
+		} as const;
 
 		const result = reduceHandlerGlobalStateUpdate(state, action);
 		expect(result.maps.map((m) => m.key)).toEqual(['map-1', 'map-2']);
@@ -140,8 +140,11 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.GLOBAL_STATE_UPDATE;
-		expect(() => reduceHandlerGlobalStateUpdate(state, action)).toThrow('No payload provided global state update');
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerGlobalStateUpdate(state, {
+				type: StateActionType.GLOBAL_STATE_UPDATE,
+			} as const)
+		).toThrow('No payload provided global state update');
 	});
 });

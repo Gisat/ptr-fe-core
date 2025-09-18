@@ -60,7 +60,7 @@ describe('fetchSourcesUpdate reducer', () => {
 	});
 
 	  it('should initialize rendering layers when none exist', () => {
-			const fakeState = JSON.parse(JSON.stringify(fullAppSharedStateMock));
+			const fakeState = { ...fullAppSharedStateMock };
 			delete fakeState.renderingLayers;
 
 			const action = {

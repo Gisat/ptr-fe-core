@@ -40,10 +40,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 			const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
 			const beforeLen = beforeMapA.renderingLayers.length;
-			const action = {
-				type: StateActionType.MAP_LAYER_REMOVE,
-				payload: { mapKey: 'mapA', layerKey: 'n80' },
-			};
+		const action = {
+			type: StateActionType.MAP_LAYER_REMOVE,
+			payload: { mapKey: 'mapA', layerKey: 'n80' },
+		} as const;
 
 		const result = reduceHandlerMapLayerRemove(state, action);
 
@@ -82,10 +82,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 			};
 			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 			const beforeLen = beforeMapA.renderingLayers.length;
-			const action = {
-				type: StateActionType.MAP_LAYER_REMOVE,
-				payload: { mapKey: 'mapA', layerKey: 'cartoLightNoLabels' },
-			};
+		const action = {
+			type: StateActionType.MAP_LAYER_REMOVE,
+			payload: { mapKey: 'mapA', layerKey: 'cartoLightNoLabels' },
+		} as const;
 
 		const result = reduceHandlerMapLayerRemove(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -97,10 +97,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 	it('keeps layers content equal if layer key not found and preserves selections reference', () => {
 			const state = { ...fullAppSharedStateMock, selections: [] };
 			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
-			const action = {
-				type: StateActionType.MAP_LAYER_REMOVE,
-				payload: { mapKey: 'mapA', layerKey: 'non-existent' },
-			};
+		const action = {
+			type: StateActionType.MAP_LAYER_REMOVE,
+			payload: { mapKey: 'mapA', layerKey: 'non-existent' },
+		} as const;
 
 		const result = reduceHandlerMapLayerRemove(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -115,14 +115,17 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		const action = {
 			type: StateActionType.MAP_LAYER_REMOVE,
 			payload: { mapKey: 'missing', layerKey: 'n80' },
-		};
+		} as const;
 		expect(() => reduceHandlerMapLayerRemove(state, action)).toThrow('Map with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_LAYER_REMOVE;
-		expect(() => reduceHandlerMapLayerRemove(state, action)).toThrow('No payload provided for map layer remove action');
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerMapLayerRemove(state, {
+				type: StateActionType.MAP_LAYER_REMOVE,
+			} as const)
+		).toThrow('No payload provided for map layer remove action');
 	});
 });

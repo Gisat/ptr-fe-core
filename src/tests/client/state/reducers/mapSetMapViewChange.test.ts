@@ -13,7 +13,7 @@ describe('Reducer test: MapSet map view change', () => {
 		const action = {
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: 'mapA', viewChange: { zoom: 7, latitude: 10, longitude: -20 } },
-		};
+		} as const;
 
 		const result = reduceHandlerMapSetMapViewChange(state, action);
 
@@ -55,7 +55,7 @@ describe('Reducer test: MapSet map view change', () => {
 		const action = {
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: 'mapA', viewChange: { zoom: 5, latitude: 42 } },
-		};
+		} as const;
 
 		const result = reduceHandlerMapSetMapViewChange(state, action);
 
@@ -77,11 +77,12 @@ describe('Reducer test: MapSet map view change', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_VIEW_CHANGE;
-		expect(() => reduceHandlerMapSetMapViewChange(state, action)).toThrow(
-			'No payload provided for map view change action'
-		);
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerMapSetMapViewChange(state, {
+				type: StateActionType.MAP_VIEW_CHANGE,
+			} as const)
+		).toThrow('No payload provided for map view change action');
 	});
 
 	it('throws when map is not found', () => {
@@ -89,7 +90,7 @@ describe('Reducer test: MapSet map view change', () => {
 		const action = {
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: 'missing', viewChange: { zoom: 3 } },
-		};
+		} as const;
 		expect(() => reduceHandlerMapSetMapViewChange(state, action)).toThrow('Map with key missing not found');
 	});
 
@@ -105,7 +106,7 @@ describe('Reducer test: MapSet map view change', () => {
 		const action = {
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: 'lonelyMap', viewChange: { zoom: 4 } },
-		};
+		} as const;
 		expect(() => reduceHandlerMapSetMapViewChange(state, action)).toThrow(
 			'Parent MapSet for map with key lonelyMap not found'
 		);

@@ -16,7 +16,7 @@ describe('Reducer test: Map layer add', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: newLayer },
-		};
+		} as const;
 
 		const result = reduceHandlerMapLayerAdd(state, action);
 
@@ -49,7 +49,7 @@ describe('Reducer test: Map layer add', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: replacement, index },
-		};
+		} as const;
 
 		const result = reduceHandlerMapLayerAdd(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -69,7 +69,7 @@ describe('Reducer test: Map layer add', () => {
 		const res1 = reduceHandlerMapLayerAdd(state, {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: layer1, index: len },
-		});
+		} as const);
 		const after1MapA = res1.maps.find((m) => m.key === 'mapA')!;
 		expect(after1MapA.renderingLayers).toHaveLength(len + 1);
 		expect(after1MapA.renderingLayers[len]).toEqual(layer1);
@@ -78,7 +78,7 @@ describe('Reducer test: Map layer add', () => {
 		const res2 = reduceHandlerMapLayerAdd(res1, {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: layer2, index: len + 5 },
-		});
+		} as const);
 		const after2MapA = res2.maps.find((m) => m.key === 'mapA')!;
 		expect(after2MapA.renderingLayers).toHaveLength(len + 2);
 		expect(after2MapA.renderingLayers[len + 1]).toEqual(layer2);
@@ -89,14 +89,17 @@ describe('Reducer test: Map layer add', () => {
 		const action = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'not-there', layer: { key: 'x', isActive: true } },
-		};
+		} as const;
 		expect(() => reduceHandlerMapLayerAdd(state, action)).toThrow('Map with key not-there not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = JSON.parse('{}');
-		action.type = StateActionType.MAP_LAYER_ADD;
-		expect(() => reduceHandlerMapLayerAdd(state, action)).toThrow('No payload provided for map layer add action');
+		// @ts-expect-error runtime check for missing payload
+		expect(() =>
+			reduceHandlerMapLayerAdd(state, {
+				type: StateActionType.MAP_LAYER_ADD,
+			} as const)
+		).toThrow('No payload provided for map layer add action');
 	});
 });
