@@ -5,14 +5,15 @@
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerRemove } from '../../../../client/shared/appState/reducerHandlers/mapLayerRemove';
 import { ActionMapLayerRemove } from '../../../../client/shared/appState/state.models.actions';
+import { Selection } from '../../../../client/shared/models/models.selections';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-	describe('Reducer test: Map layer remove', () => {
-		it('removes the layer and deletes its selection when selectionKey exists', () => {
-			const selections = [
-				{
-					key: 'sel-1',
-					distinctColours: ['#111'],
+describe('Reducer test: Map layer remove', () => {
+	it('removes the layer and deletes its selection when selectionKey exists', () => {
+		const selections: Selection[] = [
+			{
+				key: 'sel-1',
+				distinctColours: ['#111'],
 				distinctItems: true,
 				featureKeys: ['f-1'],
 				featureKeyColourIndexPairs: { 'f-1': 0 },
@@ -23,11 +24,11 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 				distinctItems: true,
 				featureKeys: ['x'],
 				featureKeyColourIndexPairs: { x: 0 },
-				},
-			];
-			const state = {
-				...fullAppSharedStateMock,
-				maps: fullAppSharedStateMock.maps.map((m) =>
+			},
+		];
+		const state = {
+			...fullAppSharedStateMock,
+			maps: fullAppSharedStateMock.maps.map((m) =>
 				m.key === 'mapA'
 					? {
 							...m,
@@ -38,9 +39,9 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 			selections,
 		};
 
-			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
-			const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
-			const beforeLen = beforeMapA.renderingLayers.length;
+		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
+		const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
+		const beforeLen = beforeMapA.renderingLayers.length;
 		const action: ActionMapLayerRemove = {
 			type: StateActionType.MAP_LAYER_REMOVE,
 			payload: { mapKey: 'mapA', layerKey: 'n80' },
@@ -69,20 +70,20 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 	});
 
 	it('removes the layer and preserves selections reference when no selectionKey is present', () => {
-			const state = {
-				...fullAppSharedStateMock,
-				selections: [
-					{
+		const state = {
+			...fullAppSharedStateMock,
+			selections: [
+				{
 					key: 'keep',
 					distinctColours: ['#222'],
 					distinctItems: true,
 					featureKeys: ['x'],
 					featureKeyColourIndexPairs: { x: 0 },
 				},
-				],
-			};
-			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
-			const beforeLen = beforeMapA.renderingLayers.length;
+			],
+		};
+		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
+		const beforeLen = beforeMapA.renderingLayers.length;
 		const action: ActionMapLayerRemove = {
 			type: StateActionType.MAP_LAYER_REMOVE,
 			payload: { mapKey: 'mapA', layerKey: 'cartoLightNoLabels' },
@@ -96,8 +97,8 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 	});
 
 	it('keeps layers content equal if layer key not found and preserves selections reference', () => {
-			const state = { ...fullAppSharedStateMock, selections: [] };
-			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
+		const state = { ...fullAppSharedStateMock, selections: [] as Selection[] };
+		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 		const action: ActionMapLayerRemove = {
 			type: StateActionType.MAP_LAYER_REMOVE,
 			payload: { mapKey: 'mapA', layerKey: 'non-existent' },
@@ -123,6 +124,8 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
 		const invalidAction = { type: StateActionType.MAP_LAYER_REMOVE } as unknown as ActionMapLayerRemove;
-		expect(() => reduceHandlerMapLayerRemove(state, invalidAction)).toThrow('No payload provided for map layer remove action');
+		expect(() => reduceHandlerMapLayerRemove(state, invalidAction)).toThrow(
+			'No payload provided for map layer remove action'
+		);
 	});
 });
