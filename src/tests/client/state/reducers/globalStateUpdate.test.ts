@@ -4,33 +4,34 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerGlobalStateUpdate } from '../../../../client/shared/appState/reducerHandlers/globalStateUpdate';
+import { ActionGlobalStateUpdate } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-	describe('Reducer test: Global state update', () => {
-		it('appends provided maps, mapSets and renderingLayers', () => {
-			const state = {
-				...fullAppSharedStateMock,
-				maps: [],
-				mapSets: [],
-				renderingLayers: [],
-			};
+describe('Global state update', () => {
+	it('appends provided maps, mapSets and renderingLayers', () => {
+		const state = {
+			...fullAppSharedStateMock,
+			maps: [],
+			mapSets: [],
+			renderingLayers: [],
+		};
 
-			const newMap = {
-				key: 'map-new',
-				renderingLayers: [],
-				view: { zoom: 1, latitude: 10, longitude: 10 },
-			};
-			const newMapSet = {
-				key: 'mapSet-new',
-				maps: [],
-				view: {},
-				sync: { zoom: false, center: false },
-			};
-			const newLayer = {
-				key: 'layer-new',
-				isActive: false,
-				level: 0,
-				interaction: null,
+		const newMap = {
+			key: 'map-new',
+			renderingLayers: [],
+			view: { zoom: 1, latitude: 10, longitude: 10 },
+		};
+		const newMapSet = {
+			key: 'mapSet-new',
+			maps: [],
+			view: {},
+			sync: { zoom: false, center: false },
+		};
+		const newLayer = {
+			key: 'layer-new',
+			isActive: false,
+			level: 0,
+			interaction: null,
 			datasource: {
 				key: 'layer-new',
 				labels: ['datasource'],
@@ -43,10 +44,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 			},
 		};
 
-		const action = {
+		const action: ActionGlobalStateUpdate = {
 			type: StateActionType.GLOBAL_STATE_UPDATE,
 			payload: { maps: [newMap], mapSets: [newMapSet], renderingLayers: [newLayer] },
-		} as const;
+		};
 
 		const result = reduceHandlerGlobalStateUpdate(state, action);
 		expect(result.maps).toHaveLength(1);
@@ -57,12 +58,10 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 		expect(result.renderingLayers[0].key).toBe('layer-new');
 	});
 
-		it('deduplicates by key when appending', () => {
-			const state = {
-				...fullAppSharedStateMock,
-				maps: [
-					{ key: 'map-1', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
-			],
+	it('deduplicates by key when appending', () => {
+		const state = {
+			...fullAppSharedStateMock,
+			maps: [{ key: 'map-1', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } }],
 			mapSets: [{ key: 'set-1', maps: [], view: {}, sync: { zoom: false, center: false } }],
 			renderingLayers: [
 				{
@@ -84,7 +83,7 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 			],
 		};
 
-		const action = {
+		const action: ActionGlobalStateUpdate = {
 			type: StateActionType.GLOBAL_STATE_UPDATE,
 			payload: {
 				maps: [
@@ -130,21 +129,19 @@ import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 					},
 				],
 			},
-		} as const;
+		};
 
 		const result = reduceHandlerGlobalStateUpdate(state, action);
 		expect(result.maps.map((m) => m.key)).toEqual(['map-1', 'map-2']);
 		expect(result.mapSets.map((s) => s.key)).toEqual(['set-1', 'set-2']);
 		expect(result.renderingLayers.map((l) => l.key)).toEqual(['layer-1', 'layer-2']);
-		});
+	});
 
-	it('throws when payload is missing', () => {
+	it('throws error when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		// @ts-expect-error runtime check for missing payload
-		expect(() =>
-			reduceHandlerGlobalStateUpdate(state, {
-				type: StateActionType.GLOBAL_STATE_UPDATE,
-			} as const)
-		).toThrow('No payload provided global state update');
+		const invalidAction = { type: StateActionType.GLOBAL_STATE_UPDATE } as unknown as ActionGlobalStateUpdate;
+		expect(() => reduceHandlerGlobalStateUpdate(state, invalidAction)).toThrow(
+			'No payload provided global state update'
+		);
 	});
 });
