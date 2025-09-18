@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetSyncChange } from '../../../../client/shared/appState/reducerHandlers/mapSetSyncChange';
-import { ActionMapSetSyncChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet sync change', () => {
@@ -14,7 +13,7 @@ describe('Reducer test: MapSet sync change', () => {
 		const before = state.mapSets.find((s) => s.key === targetKey)!;
 		expect(before.sync).toEqual({ zoom: true, center: true });
 
-		const action: ActionMapSetSyncChange = {
+		const action = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: targetKey, syncChange: { center: false } },
 		};
@@ -39,7 +38,7 @@ describe('Reducer test: MapSet sync change', () => {
 
 	it('updates both zoom and center flags', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapSetSyncChange = {
+		const action = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: 'mapSetLayersDemo', syncChange: { zoom: false, center: false } },
 		};
@@ -50,7 +49,7 @@ describe('Reducer test: MapSet sync change', () => {
 
 	it('throws when mapSet is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapSetSyncChange = {
+		const action = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: 'missing', syncChange: { zoom: false } },
 		};
@@ -59,10 +58,8 @@ describe('Reducer test: MapSet sync change', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_SET_SYNC_CHANGE,
-			payload: undefined,
-		} as unknown as ActionMapSetSyncChange;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_SET_SYNC_CHANGE;
 		expect(() => reduceHandlerMapSetSyncChange(state, action)).toThrow(
 			'No payload provided for map set sync change action'
 		);

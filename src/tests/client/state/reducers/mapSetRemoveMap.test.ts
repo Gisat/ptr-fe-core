@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetRemoveMap } from '../../../../client/shared/appState/reducerHandlers/mapSetRemoveMap';
-import { ActionMapRemoveFromMapSet } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet remove map', () => {
@@ -16,7 +15,7 @@ describe('Reducer test: MapSet remove map', () => {
 		const beforeSet = state.mapSets.find((s) => s.key === 'mapSetLayersDemo')!;
 		expect(beforeSet.maps).toEqual(['mapA', 'mapB']);
 
-		const action: ActionMapRemoveFromMapSet = {
+		const action = {
 			type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
 			payload: { mapSetKey: 'mapSetLayersDemo', mapKey: 'mapA' },
 		};
@@ -40,7 +39,7 @@ describe('Reducer test: MapSet remove map', () => {
 	it('when map key not in set, returns new arrays with equal content', () => {
 		const state = { ...fullAppSharedStateMock };
 
-		const action: ActionMapRemoveFromMapSet = {
+		const action = {
 			type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
 			payload: { mapSetKey: 'mapSetLayersDemo', mapKey: 'nope' },
 		};
@@ -56,7 +55,7 @@ describe('Reducer test: MapSet remove map', () => {
 
 	it('throws when mapSet is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapRemoveFromMapSet = {
+		const action = {
 			type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
 			payload: { mapSetKey: 'missing', mapKey: 'mapA' },
 		};
@@ -65,10 +64,8 @@ describe('Reducer test: MapSet remove map', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
-			payload: undefined,
-		} as unknown as ActionMapRemoveFromMapSet;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_REMOVE_FROM_MAP_SET;
 		expect(() => reduceHandlerMapSetRemoveMap(state, action)).toThrow(
 			'No payload provided for map remove from map set action'
 		);

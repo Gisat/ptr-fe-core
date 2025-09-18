@@ -4,34 +4,26 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerAddFeatureKeyToSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerAddFeatureKeyToSelections';
-import { ActionMapLayerAddFeatureKey } from '../../../../client/shared/appState/state.models.actions';
-// Local minimal type to keep tests decoupled from production types
-type TestSelection = {
-  key: string;
-  distinctColours: string[];
-  distinctItems: boolean;
-  featureKeys: Array<string | number>;
-  featureKeyColourIndexPairs: Record<string, number>;
-};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-describe('Reducer test: Map layer add feature key to selections', () => {
-	it('creates selection and assigns selectionKey when missing', () => {
-    const state = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
+	describe('Reducer test: Map layer add feature key to selections', () => {
+		it('creates selection and assigns selectionKey when missing', () => {
+			const state = { ...fullAppSharedStateMock, selections: [] };
 
-		const action: ActionMapLayerAddFeatureKey = {
-			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
-			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-1' },
-		};
+			const action = {
+				type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
+				payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-1' },
+			};
 
 		const result = reduceHandlerAddFeatureKeyToSelections(state, action);
 
 		const mapA = result.maps.find((m) => m.key === 'mapA')!;
-		const layer = mapA.renderingLayers.find((l) => l.key === 'n80') as { selectionKey?: string };
-		expect(typeof layer.selectionKey).toBe('string');
-		expect(layer.selectionKey && layer.selectionKey.length).toBeGreaterThan(0);
+		const layer = mapA.renderingLayers.find((l) => l.key === 'n80');
+		expect(layer?.selectionKey).toBeDefined();
+		const selectionKey = layer?.selectionKey;
+		if (!selectionKey) throw new Error('Expected selection key to be created');
 
-		const selection = result.selections.find((s) => s.key === layer.selectionKey)!;
+		const selection = result.selections.find((s) => s.key === selectionKey)!;
 		expect(selection).toBeTruthy();
 		expect(selection.featureKeys).toEqual(['f-1']);
 		expect(selection.featureKeyColourIndexPairs['f-1']).toBe(0);
@@ -40,8 +32,8 @@ describe('Reducer test: Map layer add feature key to selections', () => {
 		expect(selection.distinctColours.length).toBeGreaterThan(0);
 	});
 
-  it('appends featureKey to existing selection and assigns next color index', () => {
-    const initial = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
+	it('appends featureKey to existing selection and assigns next color index', () => {
+			const initial = { ...fullAppSharedStateMock, selections: [] };
 
 		// First add
 		const first = reduceHandlerAddFeatureKeyToSelections(initial, {
@@ -50,7 +42,8 @@ describe('Reducer test: Map layer add feature key to selections', () => {
 		});
 
 		const mapA1 = first.maps.find((m) => m.key === 'mapA')!;
-		const layer1 = mapA1.renderingLayers.find((l) => l.key === 'n80') as { selectionKey?: string };
+		const layer1 = mapA1.renderingLayers.find((l) => l.key === 'n80');
+		if (!layer1?.selectionKey) throw new Error('Expected selection key to be created');
 
 		// Second add for same layer
 		const second = reduceHandlerAddFeatureKeyToSelections(first, {
@@ -64,21 +57,19 @@ describe('Reducer test: Map layer add feature key to selections', () => {
 		expect(selection.featureKeyColourIndexPairs['f-2']).toBe(1);
 	});
 
-	it('throws when map is not found', () => {
-		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerAddFeatureKey = {
-			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
-			payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'x' },
-		};
+		it('throws when map is not found', () => {
+			const state = { ...fullAppSharedStateMock };
+			const action = {
+				type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
+				payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'x' },
+			};
 		expect(() => reduceHandlerAddFeatureKeyToSelections(state, action)).toThrow('Map with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
-			payload: undefined,
-		} as unknown as ActionMapLayerAddFeatureKey;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_LAYER_ADD_FEATURE_KEY;
 		expect(() => reduceHandlerAddFeatureKeyToSelections(state, action)).toThrow(
 			'No payload provided for adding featureKey'
 		);
@@ -86,7 +77,7 @@ describe('Reducer test: Map layer add feature key to selections', () => {
 
 	it('throws when layer is not found in target map', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerAddFeatureKey = {
+		const action = {
 			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'does-not-exist', featureKey: 'x' },
 		};

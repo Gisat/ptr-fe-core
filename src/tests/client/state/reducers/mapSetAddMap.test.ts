@@ -4,34 +4,27 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetAddMap } from '../../../../client/shared/appState/reducerHandlers/mapSetAddMap';
-import { ActionMapAddToMapSet } from '../../../../client/shared/appState/state.models.actions';
-// Local minimal type to decouple tests from production SingleMapModel
-type TestSingleMap = {
-  key: string;
-  renderingLayers: Array<{ key: string; isActive?: boolean }>;
-  view: { zoom: number; latitude: number; longitude: number };
-};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-describe('Reducer test: MapSet add map', () => {
-	it('adds the map and appends its key to the target mapSet', () => {
-		const state = { ...fullAppSharedStateMock };
+	describe('Reducer test: MapSet add map', () => {
+		it('adds the map and appends its key to the target mapSet', () => {
+			const state = { ...fullAppSharedStateMock };
 
-    const newMap: TestSingleMap = {
-			key: 'mapC',
-			renderingLayers: [],
-			view: { zoom: 3, latitude: 0, longitude: 0 },
-		};
+			const newMap = {
+				key: 'mapC',
+				renderingLayers: [],
+				view: { zoom: 3, latitude: 0, longitude: 0 },
+			};
 
 		const beforeMapSets = state.mapSets;
 		const beforeMaps = state.maps;
 		const beforeSet = beforeMapSets.find((s) => s.key === 'mapSetLayersDemo')!;
 		const beforeSetMapsLen = beforeSet.maps.length;
 
-		const action: ActionMapAddToMapSet = {
-			type: StateActionType.MAP_ADD_TO_MAP_SET,
-			payload: { mapSetKey: 'mapSetLayersDemo', map: newMap },
-		};
+			const action = {
+				type: StateActionType.MAP_ADD_TO_MAP_SET,
+				payload: { mapSetKey: 'mapSetLayersDemo', map: newMap },
+			};
 
 		const result = reduceHandlerMapSetAddMap(state, action);
 
@@ -53,20 +46,21 @@ describe('Reducer test: MapSet add map', () => {
 	});
 
 	it('throws when mapSet is not found', () => {
-		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapAddToMapSet = {
-			type: StateActionType.MAP_ADD_TO_MAP_SET,
-			payload: {
-				mapSetKey: 'missing',
-				map: { key: 'X', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
-			},
-		} as ActionMapAddToMapSet;
+			const state = { ...fullAppSharedStateMock };
+			const action = {
+				type: StateActionType.MAP_ADD_TO_MAP_SET,
+				payload: {
+					mapSetKey: 'missing',
+					map: { key: 'X', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
+				},
+			};
 		expect(() => reduceHandlerMapSetAddMap(state, action)).toThrow('MapSet with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = { type: StateActionType.MAP_ADD_TO_MAP_SET, payload: undefined } as unknown as ActionMapAddToMapSet;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_ADD_TO_MAP_SET;
 		expect(() => reduceHandlerMapSetAddMap(state, action)).toThrow('No payload provided for map add to map set action');
 	});
 });

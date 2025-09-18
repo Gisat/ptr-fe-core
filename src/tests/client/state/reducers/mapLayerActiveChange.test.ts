@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerActiveChange } from '../../../../client/shared/appState/reducerHandlers/mapLayerActiveChange';
-import { ActionMapLayerActiveChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer active change', () => {
@@ -17,7 +16,7 @@ describe('Reducer test: Map layer active change', () => {
 		expect(beforeMapA.renderingLayers.find((l) => l.key === 'n80')?.isActive).toBe(true);
 		expect(beforeMapA.renderingLayers.find((l) => l.key === 'cartoLightNoLabels')?.isActive).toBe(true);
 
-		const action: ActionMapLayerActiveChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'n80', isActive: false },
 		};
@@ -48,7 +47,7 @@ describe('Reducer test: Map layer active change', () => {
 		const state = { ...fullAppSharedStateMock };
 		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 
-		const action: ActionMapLayerActiveChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'non-existent-layer', isActive: false },
 		};
@@ -64,7 +63,7 @@ describe('Reducer test: Map layer active change', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerActiveChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'does-not-exist', layerKey: 'n80', isActive: false },
 		};
@@ -73,10 +72,8 @@ describe('Reducer test: Map layer active change', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
-			payload: undefined,
-		} as unknown as ActionMapLayerActiveChange;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_LAYER_ACTIVE_CHANGE;
 		expect(() => reduceHandlerMapLayerActiveChange(state, action)).toThrow(
 			'No payload provided for map layer visibility change action'
 		);

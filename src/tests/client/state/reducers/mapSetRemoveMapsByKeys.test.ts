@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerRemoveMapSetMapsByKeys } from '../../../../client/shared/appState/reducerHandlers/mapSetRemoveMapsByKeys';
-import { ActionMapSetRemoveMapsByKeys } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet remove maps by keys', () => {
@@ -15,7 +14,7 @@ describe('Reducer test: MapSet remove maps by keys', () => {
 		const beforeSet = state.mapSets.find((s) => s.key === 'mapSetLayersDemo')!;
 		expect(beforeSet.maps).toEqual(['mapA', 'mapB']);
 
-		const action: ActionMapSetRemoveMapsByKeys = {
+		const action = {
 			type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS,
 			payload: { mapSetKey: 'mapSetLayersDemo', mapKeys: ['mapA', 'mapB'] },
 		};
@@ -40,7 +39,7 @@ describe('Reducer test: MapSet remove maps by keys', () => {
 	it('when none of the keys match, returns new arrays with equal content', () => {
 		const state = { ...fullAppSharedStateMock };
 
-		const action: ActionMapSetRemoveMapsByKeys = {
+		const action = {
 			type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS,
 			payload: { mapSetKey: 'mapSetLayersDemo', mapKeys: ['nope1', 'nope2'] },
 		};
@@ -54,7 +53,7 @@ describe('Reducer test: MapSet remove maps by keys', () => {
 
 	it('throws when mapSet is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapSetRemoveMapsByKeys = {
+		const action = {
 			type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS,
 			payload: { mapSetKey: 'missing', mapKeys: ['mapA'] },
 		};
@@ -63,10 +62,8 @@ describe('Reducer test: MapSet remove maps by keys', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS,
-			payload: undefined,
-		} as unknown as ActionMapSetRemoveMapsByKeys;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS;
 		expect(() => reduceHandlerRemoveMapSetMapsByKeys(state, action)).toThrow(
 			'No payload provided for remove maps from map set by keys action'
 		);

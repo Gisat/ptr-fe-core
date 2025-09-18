@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerAdd } from '../../../../client/shared/appState/reducerHandlers/mapLayerAdd';
-import { ActionMapLayerAdd } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer add', () => {
@@ -14,7 +13,7 @@ describe('Reducer test: Map layer add', () => {
 		const prevLen = beforeMapA.renderingLayers.length;
 
 		const newLayer = { key: 'layer-new', isActive: true };
-		const action: ActionMapLayerAdd = {
+		const action = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: newLayer },
 		};
@@ -47,7 +46,7 @@ describe('Reducer test: Map layer add', () => {
 
 		const index = 1; // within bounds for mock mapA (2 layers)
 		const replacement = { key: 'layer-replacement', isActive: false };
-		const action: ActionMapLayerAdd = {
+		const action = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'mapA', layer: replacement, index },
 		};
@@ -87,7 +86,7 @@ describe('Reducer test: Map layer add', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerAdd = {
+		const action = {
 			type: StateActionType.MAP_LAYER_ADD,
 			payload: { mapKey: 'not-there', layer: { key: 'x', isActive: true } },
 		};
@@ -96,7 +95,8 @@ describe('Reducer test: Map layer add', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = { type: StateActionType.MAP_LAYER_ADD, payload: undefined } as unknown as ActionMapLayerAdd;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_LAYER_ADD;
 		expect(() => reduceHandlerMapLayerAdd(state, action)).toThrow('No payload provided for map layer add action');
 	});
 });

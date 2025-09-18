@@ -4,14 +4,13 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetMapViewChange } from '../../../../client/shared/appState/reducerHandlers/mapSetMapViewChange';
-import { ActionMapViewChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet map view change', () => {
 	it('applies zoom and center updates to all maps when sync is enabled', () => {
 		const state = { ...fullAppSharedStateMock };
 
-		const action: ActionMapViewChange = {
+		const action = {
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: 'mapA', viewChange: { zoom: 7, latitude: 10, longitude: -20 } },
 		};
@@ -53,7 +52,7 @@ describe('Reducer test: MapSet map view change', () => {
 
 		const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
 
-		const action: ActionMapViewChange = {
+		const action = {
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: 'mapA', viewChange: { zoom: 5, latitude: 42 } },
 		};
@@ -78,7 +77,8 @@ describe('Reducer test: MapSet map view change', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = { type: StateActionType.MAP_VIEW_CHANGE, payload: undefined } as unknown as ActionMapViewChange;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_VIEW_CHANGE;
 		expect(() => reduceHandlerMapSetMapViewChange(state, action)).toThrow(
 			'No payload provided for map view change action'
 		);
@@ -86,7 +86,7 @@ describe('Reducer test: MapSet map view change', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapViewChange = {
+		const action = {
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: 'missing', viewChange: { zoom: 3 } },
 		};
@@ -102,7 +102,7 @@ describe('Reducer test: MapSet map view change', () => {
 				{ key: 'lonelyMap', renderingLayers: [], view: { zoom: 1, latitude: 0, longitude: 0 } },
 			],
 		};
-		const action: ActionMapViewChange = {
+		const action = {
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: 'lonelyMap', viewChange: { zoom: 4 } },
 		};

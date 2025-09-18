@@ -4,40 +4,32 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerSetFeatureKeyInSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerSetFeatureKeyInSelections';
-import { ActionMapLayerSetFeatureKey } from '../../../../client/shared/appState/state.models.actions';
-// Local minimal type to avoid coupling tests to production types
-type TestSelection = {
-  key: string;
-  distinctColours: string[];
-  distinctItems: boolean;
-  featureKeys: Array<string | number>;
-  featureKeyColourIndexPairs: Record<string, number>;
-};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-describe('Reducer test: Map layer set feature key in selections', () => {
-	it('creates selection and sets the single featureKey when selectionKey is missing', () => {
-    const state = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
+	describe('Reducer test: Map layer set feature key in selections', () => {
+		it('creates selection and sets the single featureKey when selectionKey is missing', () => {
+			const state = { ...fullAppSharedStateMock, selections: [] };
 
-		const action: ActionMapLayerSetFeatureKey = {
-			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
-			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'A1' },
-		};
+			const action = {
+				type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
+				payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'A1' },
+			};
 
 		const result = reduceHandlerSetFeatureKeyInSelections(state, action);
 
 		const mapA = result.maps.find((m) => m.key === 'mapA')!;
-		const layer = mapA.renderingLayers.find((l) => l.key === 'n80') as { selectionKey?: string };
-		expect(typeof layer.selectionKey).toBe('string');
-		expect(layer.selectionKey && layer.selectionKey.length).toBeGreaterThan(0);
+		const layer = mapA.renderingLayers.find((l) => l.key === 'n80');
+		expect(layer?.selectionKey).toBeDefined();
+		const selectionKey = layer?.selectionKey;
+		if (!selectionKey) throw new Error('Expected selection key to be created');
 
-		const selection = result.selections.find((s) => s.key === layer.selectionKey)!;
+		const selection = result.selections.find((s) => s.key === selectionKey)!;
 		expect(selection.featureKeys).toEqual(['A1']);
 		expect(selection.featureKeyColourIndexPairs['A1']).toBe(0);
 	});
 
 	it('overwrites existing selection with the new single featureKey', () => {
-    const initial = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
+			const initial = { ...fullAppSharedStateMock, selections: [] };
 
 		// First set to A1
 		const first = reduceHandlerSetFeatureKeyInSelections(initial, {
@@ -46,7 +38,8 @@ describe('Reducer test: Map layer set feature key in selections', () => {
 		});
 
 		const mapA1 = first.maps.find((m) => m.key === 'mapA')!;
-		const layer1 = mapA1.renderingLayers.find((l) => l.key === 'n80') as { selectionKey?: string };
+		const layer1 = mapA1.renderingLayers.find((l) => l.key === 'n80');
+		if (!layer1?.selectionKey) throw new Error('Expected selection key to be created');
 
 		// Then set to B2 (overwrite)
 		const second = reduceHandlerSetFeatureKeyInSelections(first, {
@@ -62,7 +55,7 @@ describe('Reducer test: Map layer set feature key in selections', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerSetFeatureKey = {
+		const action = {
 			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
 			payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'X' },
 		};
@@ -71,10 +64,8 @@ describe('Reducer test: Map layer set feature key in selections', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
-			payload: undefined,
-		} as unknown as ActionMapLayerSetFeatureKey;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_LAYER_SET_FEATURE_KEY;
 		expect(() => reduceHandlerSetFeatureKeyInSelections(state, action)).toThrow(
 			'No payload provided for setting featureKey'
 		);
@@ -82,7 +73,7 @@ describe('Reducer test: Map layer set feature key in selections', () => {
 
 	it('throws when layer is not found in target map', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerSetFeatureKey = {
+		const action = {
 			type: StateActionType.MAP_LAYER_SET_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'does-not-exist', featureKey: 'X' },
 		};

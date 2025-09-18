@@ -4,22 +4,29 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerRemove } from '../../../../client/shared/appState/reducerHandlers/mapLayerRemove';
-import { ActionMapLayerRemove } from '../../../../client/shared/appState/state.models.actions';
-// Local minimal type to avoid coupling tests to production types
-type TestSelection = {
-  key: string;
-  distinctColours: string[];
-  distinctItems: boolean;
-  featureKeys: Array<string | number>;
-  featureKeyColourIndexPairs: Record<string, number>;
-};
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
-describe('Reducer test: Map layer remove', () => {
-	it('removes the layer and deletes its selection when selectionKey exists', () => {
-		const state = {
-			...fullAppSharedStateMock,
-			maps: fullAppSharedStateMock.maps.map((m) =>
+	describe('Reducer test: Map layer remove', () => {
+		it('removes the layer and deletes its selection when selectionKey exists', () => {
+			const selections = [
+				{
+					key: 'sel-1',
+					distinctColours: ['#111'],
+				distinctItems: true,
+				featureKeys: ['f-1'],
+				featureKeyColourIndexPairs: { 'f-1': 0 },
+			},
+			{
+				key: 'keep',
+				distinctColours: ['#222'],
+				distinctItems: true,
+				featureKeys: ['x'],
+				featureKeyColourIndexPairs: { x: 0 },
+				},
+			];
+			const state = {
+				...fullAppSharedStateMock,
+				maps: fullAppSharedStateMock.maps.map((m) =>
 				m.key === 'mapA'
 					? {
 							...m,
@@ -27,31 +34,16 @@ describe('Reducer test: Map layer remove', () => {
 						}
 					: m
 			),
-			selections: [
-				{
-					key: 'sel-1',
-					distinctColours: ['#111'],
-					distinctItems: true,
-					featureKeys: ['f-1'],
-					featureKeyColourIndexPairs: { 'f-1': 0 },
-				},
-				{
-					key: 'keep',
-					distinctColours: ['#222'],
-					distinctItems: true,
-					featureKeys: ['x'],
-					featureKeyColourIndexPairs: { x: 0 },
-				},
-      ] as TestSelection[],
+			selections,
 		};
 
-		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
-		const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
-		const beforeLen = beforeMapA.renderingLayers.length;
-		const action: ActionMapLayerRemove = {
-			type: StateActionType.MAP_LAYER_REMOVE,
-			payload: { mapKey: 'mapA', layerKey: 'n80' },
-		};
+			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
+			const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
+			const beforeLen = beforeMapA.renderingLayers.length;
+			const action = {
+				type: StateActionType.MAP_LAYER_REMOVE,
+				payload: { mapKey: 'mapA', layerKey: 'n80' },
+			};
 
 		const result = reduceHandlerMapLayerRemove(state, action);
 
@@ -76,24 +68,24 @@ describe('Reducer test: Map layer remove', () => {
 	});
 
 	it('removes the layer and preserves selections reference when no selectionKey is present', () => {
-		const state = {
-			...fullAppSharedStateMock,
-			selections: [
-				{
+			const state = {
+				...fullAppSharedStateMock,
+				selections: [
+					{
 					key: 'keep',
 					distinctColours: ['#222'],
 					distinctItems: true,
 					featureKeys: ['x'],
 					featureKeyColourIndexPairs: { x: 0 },
 				},
-      ] as TestSelection[],
-		};
-		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
-		const beforeLen = beforeMapA.renderingLayers.length;
-		const action: ActionMapLayerRemove = {
-			type: StateActionType.MAP_LAYER_REMOVE,
-			payload: { mapKey: 'mapA', layerKey: 'cartoLightNoLabels' },
-		};
+				],
+			};
+			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
+			const beforeLen = beforeMapA.renderingLayers.length;
+			const action = {
+				type: StateActionType.MAP_LAYER_REMOVE,
+				payload: { mapKey: 'mapA', layerKey: 'cartoLightNoLabels' },
+			};
 
 		const result = reduceHandlerMapLayerRemove(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -103,12 +95,12 @@ describe('Reducer test: Map layer remove', () => {
 	});
 
 	it('keeps layers content equal if layer key not found and preserves selections reference', () => {
-		const state = { ...fullAppSharedStateMock, selections: [] as TestSelection[] };
-		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
-		const action: ActionMapLayerRemove = {
-			type: StateActionType.MAP_LAYER_REMOVE,
-			payload: { mapKey: 'mapA', layerKey: 'non-existent' },
-		};
+			const state = { ...fullAppSharedStateMock, selections: [] };
+			const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
+			const action = {
+				type: StateActionType.MAP_LAYER_REMOVE,
+				payload: { mapKey: 'mapA', layerKey: 'non-existent' },
+			};
 
 		const result = reduceHandlerMapLayerRemove(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -120,7 +112,7 @@ describe('Reducer test: Map layer remove', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerRemove = {
+		const action = {
 			type: StateActionType.MAP_LAYER_REMOVE,
 			payload: { mapKey: 'missing', layerKey: 'n80' },
 		};
@@ -129,7 +121,8 @@ describe('Reducer test: Map layer remove', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = { type: StateActionType.MAP_LAYER_REMOVE, payload: undefined } as unknown as ActionMapLayerRemove;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_LAYER_REMOVE;
 		expect(() => reduceHandlerMapLayerRemove(state, action)).toThrow('No payload provided for map layer remove action');
 	});
 });

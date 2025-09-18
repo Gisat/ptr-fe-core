@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetModeChange } from '../../../../client/shared/appState/reducerHandlers/mapSetModeChange';
-import { ActionMapSetModeChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet mode change', () => {
@@ -13,7 +12,7 @@ describe('Reducer test: MapSet mode change', () => {
 		const targetKey = 'mapSetLayersDemo';
 		const before = state.mapSets.find((s) => s.key === targetKey)!;
 
-		const action: ActionMapSetModeChange = {
+		const action = {
 			type: StateActionType.MAP_SET_MODE_CHANGE,
 			payload: { key: targetKey, mode: 'slider' },
 		};
@@ -39,7 +38,7 @@ describe('Reducer test: MapSet mode change', () => {
 
 	it('throws when mapSet is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapSetModeChange = {
+		const action = {
 			type: StateActionType.MAP_SET_MODE_CHANGE,
 			payload: { key: 'missing', mode: 'grid' },
 		};
@@ -48,10 +47,8 @@ describe('Reducer test: MapSet mode change', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_SET_MODE_CHANGE,
-			payload: undefined,
-		} as unknown as ActionMapSetModeChange;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_SET_MODE_CHANGE;
 		expect(() => reduceHandlerMapSetModeChange(state, action)).toThrow(
 			'No payload provided for map set mode change action'
 		);

@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerActiveLayerChange } from '../../../../client/shared/appState/reducerHandlers/activeLayerChange';
-import { ActionLayerActiveChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('reduceHandlerActiveLayerChange', () => {
@@ -35,7 +34,7 @@ describe('reduceHandlerActiveLayerChange', () => {
 		const before = state.renderingLayers.find((l) => l.datasource.key === targetKey);
 		expect(before?.isActive).toBe(false);
 
-		const action: ActionLayerActiveChange = {
+		const action = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: targetKey, newValue: true },
 		};
@@ -71,7 +70,7 @@ describe('reduceHandlerActiveLayerChange', () => {
 		const before = state.renderingLayers.find((l) => l.datasource.key === targetKey);
 		expect(before?.isActive).toBe(true);
 
-		const action: ActionLayerActiveChange = {
+		const action = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: targetKey, newValue: false },
 		};
@@ -102,7 +101,7 @@ describe('reduceHandlerActiveLayerChange', () => {
 				},
 			],
 		};
-		const action: ActionLayerActiveChange = {
+		const action = {
 			type: StateActionType.LAYER_ACTIVE_CHANGE,
 			payload: { key: 'non-existent', newValue: true },
 		};

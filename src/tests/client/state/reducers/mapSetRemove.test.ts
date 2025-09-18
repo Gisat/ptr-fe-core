@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetRemove } from '../../../../client/shared/appState/reducerHandlers/mapSetRemove';
-import { ActionMapSetRemove } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet remove', () => {
@@ -13,7 +12,7 @@ describe('Reducer test: MapSet remove', () => {
 		const targetKey = 'mapSetLayersDemo';
 		const beforeLen = state.mapSets.length;
 
-		const action: ActionMapSetRemove = {
+		const action = {
 			type: StateActionType.MAP_SET_REMOVE,
 			payload: { mapSetKey: targetKey },
 		};
@@ -33,7 +32,7 @@ describe('Reducer test: MapSet remove', () => {
 
 	it('keeps content equal when key not found, but updates array immutably', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapSetRemove = {
+		const action = {
 			type: StateActionType.MAP_SET_REMOVE,
 			payload: { mapSetKey: 'non-existent' },
 		};
@@ -45,12 +44,15 @@ describe('Reducer test: MapSet remove', () => {
 
 	it('throws when payload or key is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action1 = { type: StateActionType.MAP_SET_REMOVE, payload: undefined } as unknown as ActionMapSetRemove;
+		const action1 = JSON.parse('{}');
+		action1.type = StateActionType.MAP_SET_REMOVE;
 		expect(() => reduceHandlerMapSetRemove(state, action1)).toThrow(
 			'No payload or mapSetKey provided for map set remove action'
 		);
 
-		const action2 = { type: StateActionType.MAP_SET_REMOVE, payload: {} } as unknown as ActionMapSetRemove;
+		const action2 = JSON.parse('{}');
+		action2.type = StateActionType.MAP_SET_REMOVE;
+		action2.payload = {};
 		expect(() => reduceHandlerMapSetRemove(state, action2)).toThrow(
 			'No payload or mapSetKey provided for map set remove action'
 		);

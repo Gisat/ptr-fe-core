@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerOpacityChange } from '../../../../client/shared/appState/reducerHandlers/mapLayerOpacityChange';
-import { ActionMapLayerOpacityChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer opacity change', () => {
@@ -14,7 +13,7 @@ describe('Reducer test: Map layer opacity change', () => {
 		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 		const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
 
-		const action: ActionMapLayerOpacityChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_OPACITY_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'n80', opacity: 0.5 },
 		};
@@ -45,7 +44,7 @@ describe('Reducer test: Map layer opacity change', () => {
 		const state = { ...fullAppSharedStateMock };
 		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 
-		const action: ActionMapLayerOpacityChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_OPACITY_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'non-existent', opacity: 0.7 },
 		};
@@ -60,7 +59,7 @@ describe('Reducer test: Map layer opacity change', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerOpacityChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_OPACITY_CHANGE,
 			payload: { mapKey: 'missing', layerKey: 'n80', opacity: 0.2 },
 		};
@@ -69,10 +68,8 @@ describe('Reducer test: Map layer opacity change', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_LAYER_OPACITY_CHANGE,
-			payload: undefined,
-		} as unknown as ActionMapLayerOpacityChange;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_LAYER_OPACITY_CHANGE;
 		expect(() => reduceHandlerMapLayerOpacityChange(state, action)).toThrow(
 			'No payload provided for map layer opacity change action'
 		);

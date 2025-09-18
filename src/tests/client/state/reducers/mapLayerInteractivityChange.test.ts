@@ -4,7 +4,6 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerInteractivityChange } from '../../../../client/shared/appState/reducerHandlers/mapLayerInteractivityChange';
-import { ActionMapLayerInteractivityChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer interactivity change', () => {
@@ -14,7 +13,7 @@ describe('Reducer test: Map layer interactivity change', () => {
 		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 		const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
 
-		const action: ActionMapLayerInteractivityChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'n80', isInteractive: true },
 		};
@@ -46,7 +45,7 @@ describe('Reducer test: Map layer interactivity change', () => {
 		const state = { ...fullAppSharedStateMock };
 		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 
-		const action: ActionMapLayerInteractivityChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'non-existent', isInteractive: true },
 		};
@@ -61,7 +60,7 @@ describe('Reducer test: Map layer interactivity change', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action: ActionMapLayerInteractivityChange = {
+		const action = {
 			type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE,
 			payload: { mapKey: 'nope', layerKey: 'n80', isInteractive: false },
 		};
@@ -70,10 +69,8 @@ describe('Reducer test: Map layer interactivity change', () => {
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
-			type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE,
-			payload: undefined,
-		} as unknown as ActionMapLayerInteractivityChange;
+		const action = JSON.parse('{}');
+		action.type = StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE;
 		expect(() => reduceHandlerMapLayerInteractivityChange(state, action)).toThrow(
 			'No payload provided for map layer interactivity change action'
 		);
