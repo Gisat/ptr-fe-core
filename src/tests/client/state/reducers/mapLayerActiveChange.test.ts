@@ -4,6 +4,7 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerActiveChange } from '../../../../client/shared/appState/reducerHandlers/mapLayerActiveChange';
+import { ActionMapLayerActiveChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer active change', () => {
@@ -16,10 +17,10 @@ describe('Reducer test: Map layer active change', () => {
 		expect(beforeMapA.renderingLayers.find((l) => l.key === 'n80')?.isActive).toBe(true);
 		expect(beforeMapA.renderingLayers.find((l) => l.key === 'cartoLightNoLabels')?.isActive).toBe(true);
 
-		const action = {
+		const action: ActionMapLayerActiveChange = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'n80', isActive: false },
-		} as const;
+		};
 
 		const result = reduceHandlerMapLayerActiveChange(state, action);
 
@@ -47,10 +48,10 @@ describe('Reducer test: Map layer active change', () => {
 		const state = { ...fullAppSharedStateMock };
 		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 
-		const action = {
+		const action: ActionMapLayerActiveChange = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'non-existent-layer', isActive: false },
-		} as const;
+		};
 
 		const result = reduceHandlerMapLayerActiveChange(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -61,22 +62,20 @@ describe('Reducer test: Map layer active change', () => {
 		expect(afterMapA.renderingLayers).toEqual(beforeMapA.renderingLayers);
 	});
 
-	it('throws when map is not found', () => {
+	it('throws error when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
+		const action: ActionMapLayerActiveChange = {
 			type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
 			payload: { mapKey: 'does-not-exist', layerKey: 'n80', isActive: false },
-		} as const;
+		};
 		expect(() => reduceHandlerMapLayerActiveChange(state, action)).toThrow('Map with key does-not-exist not found');
 	});
 
-	it('throws when payload is missing', () => {
+	it('throws error when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		// @ts-expect-error runtime check for missing payload
-		expect(() =>
-			reduceHandlerMapLayerActiveChange(state, {
-				type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
-			} as const)
-		).toThrow('No payload provided for map layer visibility change action');
+		const invalidAction = { type: StateActionType.MAP_LAYER_ACTIVE_CHANGE };
+		expect(() => reduceHandlerMapLayerActiveChange(state, invalidAction)).toThrow(
+			'No payload provided for map layer visibility change action'
+		);
 	});
 });
