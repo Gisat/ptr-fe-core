@@ -4,6 +4,7 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerOpacityChange } from '../../../../client/shared/appState/reducerHandlers/mapLayerOpacityChange';
+import { ActionMapLayerOpacityChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer opacity change', () => {
@@ -13,10 +14,10 @@ describe('Reducer test: Map layer opacity change', () => {
 		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 		const beforeMapB = state.maps.find((m) => m.key === 'mapB')!;
 
-		const action = {
+		const action: ActionMapLayerOpacityChange = {
 			type: StateActionType.MAP_LAYER_OPACITY_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'n80', opacity: 0.5 },
-		} as const;
+		};
 
 		const result = reduceHandlerMapLayerOpacityChange(state, action);
 
@@ -44,10 +45,10 @@ describe('Reducer test: Map layer opacity change', () => {
 		const state = { ...fullAppSharedStateMock };
 		const beforeMapA = state.maps.find((m) => m.key === 'mapA')!;
 
-		const action = {
+		const action: ActionMapLayerOpacityChange = {
 			type: StateActionType.MAP_LAYER_OPACITY_CHANGE,
 			payload: { mapKey: 'mapA', layerKey: 'non-existent', opacity: 0.7 },
-		} as const;
+		};
 
 		const result = reduceHandlerMapLayerOpacityChange(state, action);
 		const afterMapA = result.maps.find((m) => m.key === 'mapA')!;
@@ -59,20 +60,18 @@ describe('Reducer test: Map layer opacity change', () => {
 
 	it('throws when map is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
+		const action: ActionMapLayerOpacityChange = {
 			type: StateActionType.MAP_LAYER_OPACITY_CHANGE,
 			payload: { mapKey: 'missing', layerKey: 'n80', opacity: 0.2 },
-		} as const;
+		};
 		expect(() => reduceHandlerMapLayerOpacityChange(state, action)).toThrow('Map with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		// @ts-expect-error runtime check for missing payload
-		expect(() =>
-			reduceHandlerMapLayerOpacityChange(state, {
-				type: StateActionType.MAP_LAYER_OPACITY_CHANGE,
-			} as const)
-		).toThrow('No payload provided for map layer opacity change action');
+		const invalidAction = { type: StateActionType.MAP_LAYER_OPACITY_CHANGE } as unknown as ActionMapLayerOpacityChange;
+		expect(() => reduceHandlerMapLayerOpacityChange(state, invalidAction)).toThrow(
+			'No payload provided for map layer opacity change action'
+		);
 	});
 });

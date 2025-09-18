@@ -4,6 +4,7 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetSyncChange } from '../../../../client/shared/appState/reducerHandlers/mapSetSyncChange';
+import { ActionMapSetSyncChange } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet sync change', () => {
@@ -13,10 +14,10 @@ describe('Reducer test: MapSet sync change', () => {
 		const before = state.mapSets.find((s) => s.key === targetKey)!;
 		expect(before.sync).toEqual({ zoom: true, center: true });
 
-		const action = {
+		const action: ActionMapSetSyncChange = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: targetKey, syncChange: { center: false } },
-		} as const;
+		};
 
 		const result = reduceHandlerMapSetSyncChange(state, action);
 
@@ -38,10 +39,10 @@ describe('Reducer test: MapSet sync change', () => {
 
 	it('updates both zoom and center flags', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
+		const action: ActionMapSetSyncChange = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: 'mapSetLayersDemo', syncChange: { zoom: false, center: false } },
-		} as const;
+		};
 		const result = reduceHandlerMapSetSyncChange(state, action);
 		const after = result.mapSets.find((s) => s.key === 'mapSetLayersDemo')!;
 		expect(after.sync).toEqual({ zoom: false, center: false });
@@ -49,20 +50,18 @@ describe('Reducer test: MapSet sync change', () => {
 
 	it('throws when mapSet is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
+		const action: ActionMapSetSyncChange = {
 			type: StateActionType.MAP_SET_SYNC_CHANGE,
 			payload: { key: 'missing', syncChange: { zoom: false } },
-		} as const;
+		};
 		expect(() => reduceHandlerMapSetSyncChange(state, action)).toThrow('MapSet with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		// @ts-expect-error runtime check for missing payload
-		expect(() =>
-			reduceHandlerMapSetSyncChange(state, {
-				type: StateActionType.MAP_SET_SYNC_CHANGE,
-			} as const)
-		).toThrow('No payload provided for map set sync change action');
+		const invalidAction = { type: StateActionType.MAP_SET_SYNC_CHANGE } as unknown as ActionMapSetSyncChange;
+		expect(() => reduceHandlerMapSetSyncChange(state, invalidAction)).toThrow(
+			'No payload provided for map set sync change action'
+		);
 	});
 });

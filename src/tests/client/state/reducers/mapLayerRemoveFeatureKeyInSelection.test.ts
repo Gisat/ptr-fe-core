@@ -4,11 +4,13 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerRemoveFeatureKeyInSelections } from '../../../../client/shared/appState/reducerHandlers/mapLayerRemoveFeatureKeyInSelections';
+import { ActionMapLayerRemoveFeatureKey } from '../../../../client/shared/appState/state.models.actions';
+import { Selection } from '../../../../client/shared/models/models.selections';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: Map layer remove feature key in selections', () => {
 		it('removes the featureKey from selection and colour index pairs', () => {
-			const selections = [
+			const selections: Selection[] = [
 				{
 					key: 'sel-1',
 				distinctColours: ['#111'],
@@ -37,10 +39,10 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 			selections,
 		};
 
-		const action = {
+		const action: ActionMapLayerRemoveFeatureKey = {
 			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-2' },
-		} as const;
+		};
 
 		const result = reduceHandlerRemoveFeatureKeyInSelections(state, action);
 
@@ -55,12 +57,12 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 	});
 
 	it('leaves selections unchanged if target layer has no selectionKey', () => {
-		const state = { ...fullAppSharedStateMock, selections: [] };
+		const state = { ...fullAppSharedStateMock, selections: [] as Selection[] };
 
-		const action = {
+		const action: ActionMapLayerRemoveFeatureKey = {
 			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'f-x' },
-		} as const;
+		};
 
 		const result = reduceHandlerRemoveFeatureKeyInSelections(state, action);
 		expect(result.selections).toEqual(state.selections);
@@ -88,30 +90,28 @@ describe('Reducer test: Map layer remove feature key in selections', () => {
 			],
 		};
 
-		const action = {
+		const action: ActionMapLayerRemoveFeatureKey = {
 			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 			payload: { mapKey: 'mapA', layerKey: 'n80', featureKey: 'z' },
-		} as const;
+		};
 		const result = reduceHandlerRemoveFeatureKeyInSelections(state, action);
 		expect(result.selections).toEqual(state.selections);
 	});
 
 	it('throws when map is not found', () => {
 			const state = { ...fullAppSharedStateMock };
-		const action = {
+		const action: ActionMapLayerRemoveFeatureKey = {
 			type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 			payload: { mapKey: 'missing', layerKey: 'n80', featureKey: 'f-x' },
-		} as const;
+		};
 		expect(() => reduceHandlerRemoveFeatureKeyInSelections(state, action)).toThrow('Map with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		// @ts-expect-error runtime check for missing payload
-		expect(() =>
-			reduceHandlerRemoveFeatureKeyInSelections(state, {
-				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
-			} as const)
-		).toThrow('No payload provided for removing featureKey');
+		const invalidAction = { type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY } as unknown as ActionMapLayerRemoveFeatureKey;
+		expect(() => reduceHandlerRemoveFeatureKeyInSelections(state, invalidAction)).toThrow(
+			'No payload provided for removing featureKey'
+		);
 	});
 });

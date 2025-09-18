@@ -4,6 +4,7 @@
 
 import { StateActionType } from '../../../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetRemoveMap } from '../../../../client/shared/appState/reducerHandlers/mapSetRemoveMap';
+import { ActionMapRemoveFromMapSet } from '../../../../client/shared/appState/state.models.actions';
 import { fullAppSharedStateMock } from '../mocks/fullAppSharedState.mock';
 
 describe('Reducer test: MapSet remove map', () => {
@@ -15,10 +16,10 @@ describe('Reducer test: MapSet remove map', () => {
 		const beforeSet = state.mapSets.find((s) => s.key === 'mapSetLayersDemo')!;
 		expect(beforeSet.maps).toEqual(['mapA', 'mapB']);
 
-		const action = {
+		const action: ActionMapRemoveFromMapSet = {
 			type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
 			payload: { mapSetKey: 'mapSetLayersDemo', mapKey: 'mapA' },
-		} as const;
+		};
 
 		const result = reduceHandlerMapSetRemoveMap(state, action);
 
@@ -39,10 +40,10 @@ describe('Reducer test: MapSet remove map', () => {
 	it('when map key not in set, returns new arrays with equal content', () => {
 		const state = { ...fullAppSharedStateMock };
 
-		const action = {
+		const action: ActionMapRemoveFromMapSet = {
 			type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
 			payload: { mapSetKey: 'mapSetLayersDemo', mapKey: 'nope' },
-		} as const;
+		};
 
 		const result = reduceHandlerMapSetRemoveMap(state, action);
 
@@ -55,20 +56,18 @@ describe('Reducer test: MapSet remove map', () => {
 
 	it('throws when mapSet is not found', () => {
 		const state = { ...fullAppSharedStateMock };
-		const action = {
+		const action: ActionMapRemoveFromMapSet = {
 			type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
 			payload: { mapSetKey: 'missing', mapKey: 'mapA' },
-		} as const;
+		};
 		expect(() => reduceHandlerMapSetRemoveMap(state, action)).toThrow('MapSet with key missing not found');
 	});
 
 	it('throws when payload is missing', () => {
 		const state = { ...fullAppSharedStateMock };
-		// @ts-expect-error runtime check for missing payload
-		expect(() =>
-			reduceHandlerMapSetRemoveMap(state, {
-				type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
-			} as const)
-		).toThrow('No payload provided for map remove from map set action');
+		const invalidAction = { type: StateActionType.MAP_REMOVE_FROM_MAP_SET } as unknown as ActionMapRemoveFromMapSet;
+		expect(() => reduceHandlerMapSetRemoveMap(state, invalidAction)).toThrow(
+			'No payload provided for map remove from map set action'
+		);
 	});
 });
