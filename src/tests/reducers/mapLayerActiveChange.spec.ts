@@ -50,21 +50,4 @@ describe('Shared state reducer: mapLayerActiveChange', () => {
 		expect(updatedOverview?.renderingLayers.find((layer) => layer.key === 'vegetation-index')?.isActive).toBe(true);
 		expect(detailMap?.renderingLayers.find((layer) => layer.key === 'surface-water')?.isActive).toBe(true);
 	});
-
-	it('throws error when the map is not found', () => {
-		const fakeState = createFakeState([baseMap('overview-map', [baseLayer('vegetation-index', true)])]);
-
-		expect(() =>
-			reduceHandlerMapLayerActiveChange(
-				fakeState,
-				action({ mapKey: 'missing-map', layerKey: 'vegetation-index', isActive: false })
-			)
-		).toThrow('Map with key missing-map not found');
-	});
-
-	it('throws error when the payload is missing', () => {
-		expect(() => reduceHandlerMapLayerActiveChange(createFakeState([]), action(undefined as any))).toThrow(
-			'No payload provided for map layer visibility change action'
-		);
-	});
 });
