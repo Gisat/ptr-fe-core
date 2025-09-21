@@ -6,6 +6,7 @@ import { RenderingLayer } from '../../client/shared/models/models.layers';
 import { SingleMapModel } from '../../client/shared/models/models.singleMap';
 import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
 
+// Minimal layer stub reused across scenarios
 const mapLayer = (key: string, isActive: boolean): Partial<RenderingLayer> => ({ key, isActive });
 
 const mapModel = (key: string, layers: Partial<RenderingLayer>[]): SingleMapModel => ({
@@ -46,6 +47,7 @@ describe('Shared state reducer: mapLayerAdd', () => {
 		expect(updatedOverview?.renderingLayers).toHaveLength(2);
 		expect(updatedOverview?.renderingLayers[0]).toEqual({ key: 'base-layer', isActive: true });
 		expect(updatedOverview?.renderingLayers[1]).toBe(newLayer);
+		// Ensure unrelated maps are left untouched
 		expect(detailMap?.renderingLayers).toEqual(fakeState.maps[1].renderingLayers);
 	});
 
