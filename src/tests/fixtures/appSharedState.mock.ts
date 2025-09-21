@@ -1,4 +1,4 @@
-import { AppSharedState } from '../../../../client/shared/appState/state.models';
+import { AppSharedState } from '../../client/shared/appState/state.models';
 
 export const fullAppSharedStateMock: AppSharedState = {
 	appNode: {
