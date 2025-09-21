@@ -45,7 +45,7 @@ const cloneRenderingLayer = (layer: RenderingLayer): RenderingLayer => ({
 	datasource: { ...layer.datasource },
 });
 
-const createState = (): AppSharedState => ({
+const createFakeState = (): AppSharedState => ({
 	...fullAppSharedStateMock,
 	renderingLayers: testRenderingLayers.map(cloneRenderingLayer),
 });
@@ -60,7 +60,7 @@ const getLayer = (state: AppSharedState, key: string) => state.renderingLayers.f
 describe('Shared state reducer: activeLayerChange', () => {
 	it('activates the requested rendering layer', () => {
 		// Before
-		const fakeState = createState();
+		const fakeState = createFakeState();
 		expect(getLayer(fakeState, 'urban-footprint')?.isActive).toBe(false);
 
 		// After
@@ -70,7 +70,7 @@ describe('Shared state reducer: activeLayerChange', () => {
 
 	it('deactivates the requested rendering layer', () => {
 		// Before
-		const fakeState = createState();
+		const fakeState = createFakeState();
 		expect(getLayer(fakeState, 'vegetation-index')?.isActive).toBe(true);
 
 		// After
