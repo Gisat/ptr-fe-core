@@ -6,7 +6,7 @@ import { SingleMapModel } from '../../client/shared/models/models.singleMap';
 const MAP_KEY = 'mapA';
 const DEFAULT_VIEW: MapView = { zoom: 5, latitude: 10, longitude: 20 };
 
-const createMap = (view: MapView | undefined): SingleMapModel => ({
+const createMap = (view?: MapView): SingleMapModel => ({
 	key: MAP_KEY,
 	view: view as MapView,
 	renderingLayers: [],
@@ -34,7 +34,7 @@ const createFakeState = (maps?: SingleMapModel[]): AppSharedState => ({
 describe('Shared state selector: getMapViewByKey', () => {
 	it('returns map view when key matches', () => {
 		// Arrange - build fixture with default map
-		const fakeState = createFakeState();
+		const fakeState: AppSharedState = createFakeState();
 
 		// Act - invoke selector
 		const result = getMapViewByKey(fakeState, MAP_KEY);
@@ -45,7 +45,7 @@ describe('Shared state selector: getMapViewByKey', () => {
 
 	it('returns null when map is missing', () => {
 		// Arrange - provide state without maps
-		const fakeState = createFakeState([]);
+		const fakeState: AppSharedState = createFakeState([]);
 
 		// Act
 		const result = getMapViewByKey(fakeState, MAP_KEY);
