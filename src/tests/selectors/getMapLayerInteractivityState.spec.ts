@@ -1,7 +1,7 @@
 import { getMapLayerInteractivityState } from '../../client/shared/appState/selectors/getMapLayerInteractivityState';
 import { AppSharedState } from '../../client/shared/appState/state.models';
 
-const createFakeState = (mapKey = 'mapA', layerKey = 'layerA', isInteractive?: boolean): AppSharedState => ({
+const createFakeState = (mapKey = 'mapA', layerKey = 'layerA', isInteractive?): AppSharedState => ({
 	appNode: {
 		key: 'app',
 		labels: ['application'],
@@ -35,7 +35,7 @@ const createFakeState = (mapKey = 'mapA', layerKey = 'layerA', isInteractive?: b
 describe('Shared state selector: getMapLayerInteractivityState', () => {
 	it('returns layer interactivity flag when map and layer exist', () => {
 		// Arrange
-		const fakeState = createFakeState('mapA', 'layerA', true);
+		const fakeState: AppSharedState = createFakeState('mapA', 'layerA', true);
 
 		// Act
 		const result = getMapLayerInteractivityState(fakeState, 'mapA', 'layerA');
@@ -46,7 +46,7 @@ describe('Shared state selector: getMapLayerInteractivityState', () => {
 
 	it('returns false when layer interactivity flag is explicitly false', () => {
 		// Arrange
-		const fakeState = createFakeState('mapA', 'layerA', false);
+		const fakeState: AppSharedState = createFakeState('mapA', 'layerA', false);
 
 		// Act
 		const result = getMapLayerInteractivityState(fakeState, 'mapA', 'layerA');
@@ -57,7 +57,7 @@ describe('Shared state selector: getMapLayerInteractivityState', () => {
 
 	it('returns undefined when layer is not present on the map', () => {
 		// Arrange
-		const fakeState = createFakeState();
+		const fakeState: AppSharedState = createFakeState();
 
 		// Act
 		const result = getMapLayerInteractivityState(fakeState, 'mapA', 'missing-layer');

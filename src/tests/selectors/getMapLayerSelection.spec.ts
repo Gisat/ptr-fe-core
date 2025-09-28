@@ -1,70 +1,68 @@
 import { getMapLayerSelection } from '../../client/shared/appState/selectors/getMapLayerSelection';
 import { AppSharedState } from '../../client/shared/appState/state.models';
 import { Selection } from '../../client/shared/models/models.selections';
+import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
 
-const MAP_KEY = 'mapA';
-const LAYER_KEY = 'layerA';
+const MAP_KEY = fullAppSharedStateMock.maps[0].key; // "mapA"
+const LAYER_KEY = fullAppSharedStateMock.maps[0].renderingLayers[0].key;
 const SELECTION_KEY = 'selectionA';
 
-const createFakeState = (selectionKey?: string, selections?: Selection[] | null): AppSharedState => {
-	const defaultSelection: Selection = {
-		key: selectionKey ?? SELECTION_KEY,
-		distinctColours: [],
-		distinctItems: false,
-		featureKeyColourIndexPairs: {},
-		featureKeys: [],
-	};
+const createSelection = (key: string): Selection => ({
+	key,
+	distinctColours: [],
+	distinctItems: false,
+	featureKeyColourIndexPairs: {},
+	featureKeys: [],
+});
+
+const createFakeState = (selectionKey?: string, overrideSelections?: Selection[]): AppSharedState => {
+	const maps = fullAppSharedStateMock.maps.map((map) => ({
+		...map,
+		renderingLayers: map.renderingLayers.map((layer) => ({ ...layer })),
+	}));
+
+	if (selectionKey) {
+		maps[0].renderingLayers[0] = {
+			...maps[0].renderingLayers[0],
+			selectionKey,
+		};
+	}
+
+	const selections: Selection[] = (() => {
+		if (overrideSelections !== undefined) {
+			return Array.isArray(overrideSelections)
+				? overrideSelections.map((selection) => ({ ...selection }))
+				: (overrideSelections as unknown as Selection[]);
+		}
+
+		if (!selectionKey) return [];
+
+		return [createSelection(selectionKey)];
+	})();
 
 	return {
-		maps: [
-			{
-				key: MAP_KEY,
-				view: { zoom: 0, latitude: 0, longitude: 0 },
-				renderingLayers: [
-					{
-						key: LAYER_KEY,
-						isActive: true,
-						...(selectionKey ? { selectionKey } : {}),
-					},
-				],
-			},
-		],
-		selections:
-			selections !== undefined ? (selections as unknown as Selection[]) : selectionKey ? [defaultSelection] : [],
-	} as unknown as AppSharedState;
+		...fullAppSharedStateMock,
+		maps,
+		selections,
+	};
 };
 
 describe('Shared state selector: getMapLayerSelection', () => {
 	it('returns selection when layer references selection key', () => {
-		// Arrange
 		const fakeState = createFakeState(SELECTION_KEY);
-
-		// Act
-		const result = getMapLayerSelection(fakeState, MAP_KEY, LAYER_KEY);
-
-		// Assert
+		const result = getMapLayerSelection(fakeState, MAP_KEY, LAYER_KEY as string);
 		expect(result?.key).toBe(SELECTION_KEY);
 	});
 
 	it('returns undefined when layer has no selection key', () => {
-		// Arrange
 		const fakeState = createFakeState();
-
-		// Act
-		const result = getMapLayerSelection(fakeState, MAP_KEY, LAYER_KEY);
-
-		// Assert
+		const result = getMapLayerSelection(fakeState, MAP_KEY, LAYER_KEY as string);
 		expect(result).toBeUndefined();
 	});
 
 	it('returns undefined when selections are not an array', () => {
-		// Arrange
-		const fakeState = createFakeState(SELECTION_KEY, null);
-
-		// Act
-		const result = getMapLayerSelection(fakeState, MAP_KEY, LAYER_KEY);
-
-		// Assert
+		const fakeState = createFakeState(SELECTION_KEY, null as unknown as Selection[]);
+		const result = getMapLayerSelection(fakeState, MAP_KEY, LAYER_KEY as string);
 		expect(result).toBeUndefined();
 	});
 });

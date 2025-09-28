@@ -17,19 +17,13 @@ export const getMapLayerSelection = (
 	mapKey: string,
 	layerKey: string
 ): Selection | undefined => {
-	// Ensure selections is an array
 	if (!Array.isArray(state.selections)) return undefined;
 
-	// Find the map by its key
-	const map = state.maps?.find((m) => m.key === mapKey);
+	const selectionKey = state.maps
+		?.find((map) => map.key === mapKey)
+		?.renderingLayers?.find((renderingLayer) => renderingLayer.key === layerKey)?.selectionKey;
 
-	// Find the rendering layer by its key within the map
-	const layer = map?.renderingLayers?.find((renderingLayer) => renderingLayer.key === layerKey);
-
-	// Get the selectionKey from the layer
-	const selectionKey = layer?.selectionKey;
-	if (!selectionKey) return undefined;
-
-	// Find and return the selection object with the matching key
-	return state.selections.find((selection) => selection && selection.key === selectionKey);
+	return selectionKey
+		? state.selections.find((selection) => selection?.key === selectionKey)
+		: undefined;
 };
