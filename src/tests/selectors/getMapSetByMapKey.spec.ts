@@ -12,7 +12,7 @@ const createMapSet = (maps: string[]): MapSetModel => ({
 	view: {},
 });
 
-const createFakeState = (mapSets?: MapSetModel[] | null): AppSharedState => ({
+const createFakeState = (mapSets?: MapSetModel[]): AppSharedState => ({
 	maps: [],
 	mapSets: mapSets === undefined ? [createMapSet([MAP_KEY])] : (mapSets as MapSetModel[]),
 	layers: [],
@@ -56,7 +56,7 @@ describe('Shared state selector: getMapSetByMapKey', () => {
 
 	it('returns undefined when map sets are missing', () => {
 		// Arrange
-		const fakeState = createFakeState(null);
+		const fakeState = createFakeState(null as unknown as MapSetModel[]);
 
 		// Act
 		const result = getMapSetByMapKey(fakeState, MAP_KEY);
