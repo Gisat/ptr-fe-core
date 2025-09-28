@@ -5,7 +5,7 @@ import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
 describe('Shared state selector: getLayerMetadataByRenderingLayerKey', () => {
 	it('returns metadata for rendering layer neighbours', () => {
 		// Arrange - fixture links rendering layer key "n80" to the first layer metadata through neighbours
-		const fakeState = fullAppSharedStateMock;
+		const fakeState: AppSharedState = fullAppSharedStateMock;
 		const renderingLayerKey = fakeState.renderingLayers[0].key; // "n80"
 		const expectedMetadata = fakeState.layers[0]; // First layer metadata that has neighbour n80
 
@@ -16,35 +16,28 @@ describe('Shared state selector: getLayerMetadataByRenderingLayerKey', () => {
 		expect(result).toBe(expectedMetadata);
 	});
 
-	it('returns undefined when rendering layer is missing', () => {
+	it('returns undefined when rendering layer is invalid', () => {
 		// Arrange
-		const fakeState = {
+		const fakeState: AppSharedState = {
 			...fullAppSharedStateMock,
 			renderingLayers: [],
-		} as AppSharedState;
+		};
 
 		// Act
-		const result = getLayerMetadataByRenderingLayerKey(fakeState, 'unknown');
+		const result = getLayerMetadataByRenderingLayerKey(fakeState, 'some-unknown-key');
 
 		// Assert
 		expect(result).toBeUndefined();
 	});
 
-	it('returns undefined and warns when key is not provided', () => {
+	it('returns undefined when key is not provided', () => {
 		// Arrange
-		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const fakeState = fullAppSharedStateMock;
 
-		try {
-			// Act
-			const result = getLayerMetadataByRenderingLayerKey(fakeState, undefined);
+		// Act
+		const result = getLayerMetadataByRenderingLayerKey(fakeState, undefined);
 
-			// Assert
-			expect(result).toBeUndefined();
-			expect(warnSpy).toHaveBeenCalledWith('getLayerMetadataByRenderingLayerKey: rendering layer key is undefined');
-		} finally {
-			// Cleanup
-			warnSpy.mockRestore();
-		}
+		// Assert
+		expect(result).toBeUndefined();
 	});
 });

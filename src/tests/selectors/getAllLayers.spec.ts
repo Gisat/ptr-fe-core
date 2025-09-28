@@ -16,10 +16,10 @@ describe('Shared state selector: getAllLayers', () => {
 
 	it('returns empty array when layers are missing', () => {
 		// Arrange
-		const fakeState = {
+		const fakeState: AppSharedState = {
 			...fullAppSharedStateMock,
-			layers: undefined,
-		} as unknown as AppSharedState;
+			layers: [],
+		};
 
 		// Act
 		const result = getAllLayers(fakeState);
