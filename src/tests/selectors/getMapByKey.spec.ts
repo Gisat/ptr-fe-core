@@ -28,10 +28,10 @@ describe('Shared state selector: getMapByKey', () => {
 
 	it('returns undefined when maps are missing', () => {
 		// Arrange
-		const fakeState = {
+		const fakeState: AppSharedState = {
 			...fullAppSharedStateMock,
-			maps: undefined,
-		} as unknown as AppSharedState;
+			maps: [],
+		};
 
 		// Act
 		const result = getMapByKey(fakeState, 'mapA');

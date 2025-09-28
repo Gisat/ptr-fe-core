@@ -5,7 +5,7 @@ import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
 describe('Shared state selector: getLayersByMapKey', () => {
 	it('merges rendering layer details with map layers', () => {
 		// Arrange - fixture map "mapA" links to rendering layer metadata for key "n80"
-		const fakeState = fullAppSharedStateMock;
+		const fakeState: AppSharedState = fullAppSharedStateMock;
 		const map = fakeState.maps[0];
 
 		// Act
@@ -34,10 +34,10 @@ describe('Shared state selector: getLayersByMapKey', () => {
 	it('returns undefined when rendering layers are missing', () => {
 		// Arrange
 		const mapKey = fullAppSharedStateMock.maps[0].key;
-		const fakeState = {
+		const fakeState: AppSharedState = {
 			...fullAppSharedStateMock,
 			renderingLayers: [],
-		} as AppSharedState;
+		};
 
 		// Act
 		const result = getLayersByMapKey(fakeState, mapKey);
