@@ -4,24 +4,23 @@ import { MapSetModel } from '../../client/shared/models/models.mapSet';
 import { MapSetSync } from '../../client/shared/models/models.mapSetSync';
 
 const MAP_SET_KEY = 'mapSetA';
-const SYNC: MapSetSync = { zoom: true, center: false };
+const DEFAULT_SYNC: MapSetSync = { zoom: true, center: false };
 
-const createMapSet = (sync: MapSetSync): MapSetModel => ({
-	key: MAP_SET_KEY,
+const createMapSet = (key: string, sync: MapSetSync): MapSetModel => ({
+	key,
 	maps: ['mapA'],
 	sync,
 	view: {},
 });
 
-const createFakeState = (mapSets?: MapSetModel[] | undefined): AppSharedState => ({
-	mapSets: mapSets === undefined ? [createMapSet(SYNC)] : mapSets,
-	maps: [],
-	layers: [],
-	places: [],
-	renderingLayers: [],
-	styles: [],
-	periods: [],
-	selections: [],
+const cloneMapSet = (mapSet: MapSetModel): MapSetModel => ({
+	...mapSet,
+	maps: [...mapSet.maps],
+	sync: { ...mapSet.sync },
+	view: { ...mapSet.view },
+});
+
+const createFakeState = (mapSets: MapSetModel[] = [createMapSet(MAP_SET_KEY, DEFAULT_SYNC)]): AppSharedState => ({
 	appNode: {
 		key: 'app',
 		labels: ['application'],
@@ -30,39 +29,32 @@ const createFakeState = (mapSets?: MapSetModel[] | undefined): AppSharedState =>
 		description: '',
 		lastUpdatedAt: 0,
 	},
+	layers: [],
+	places: [],
+	renderingLayers: [],
+	mapSets: mapSets.map(cloneMapSet),
+	maps: [],
+	styles: [],
+	periods: [],
+	selections: [],
 });
 
 describe('Shared state selector: getMapSetSyncByKey', () => {
 	it('returns sync settings when key matches', () => {
-		// Arrange
 		const fakeState = createFakeState();
-
-		// Act
 		const result = getMapSetSyncByKey(fakeState, MAP_SET_KEY);
-
-		// Assert
-		expect(result).toEqual(SYNC);
+		expect(result).toEqual(fakeState.mapSets[0].sync);
 	});
 
 	it('returns undefined when key is unknown', () => {
-		// Arrange
 		const fakeState = createFakeState();
-
-		// Act
 		const result = getMapSetSyncByKey(fakeState, 'missing-map-set');
-
-		// Assert
 		expect(result).toBeUndefined();
 	});
 
-	it('returns undefined when map sets are missing', () => {
-		// Arrange
+	it('returns undefined when no map sets are present', () => {
 		const fakeState = createFakeState([]);
-
-		// Act
 		const result = getMapSetSyncByKey(fakeState, MAP_SET_KEY);
-
-		// Assert
 		expect(result).toBeUndefined();
 	});
 });
