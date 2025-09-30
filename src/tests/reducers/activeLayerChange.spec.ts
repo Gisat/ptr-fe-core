@@ -2,58 +2,34 @@ import { StateActionType } from '../../client/shared/appState/enum.state.actionT
 import { reduceHandlerActiveLayerChange } from '../../client/shared/appState/reducerHandlers/activeLayerChange';
 import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionLayerActiveChange } from '../../client/shared/appState/state.models.actions';
-import { RenderingLayer } from '../../client/shared/models/models.layers';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildRenderingLayer, cloneRenderingLayer, makeActionFactory } from '../tools/reducer.helpers';
 
-const testRenderingLayers: RenderingLayer[] = [
+const testRenderingLayers = [
 	{
-		key: 'vegetation-index',
-		isActive: true,
-		level: 0,
-		datasource: {
-			key: 'vegetation-index',
-			labels: ['datasource'],
-			nameDisplay: 'Vegetation Index',
-			nameInternal: 'Vegetation Index',
-			description: 'NDVI overview',
-			lastUpdatedAt: 0,
-			url: 'https://example.com/vegetation-index',
-			configuration: '{}',
-		},
-		interaction: null,
+		...buildRenderingLayer('vegetation-index', {
+			isActive: true,
+			datasource: {
+				nameDisplay: 'Vegetation Index',
+				nameInternal: 'Vegetation Index',
+				description: 'NDVI overview',
+				url: 'https://example.com/vegetation-index',
+			},
+		}),
 	},
 	{
-		key: 'urban-footprint',
-		isActive: false,
-		level: 0,
-		datasource: {
-			key: 'urban-footprint',
-			labels: ['datasource'],
-			nameDisplay: 'Urban Footprint',
-			nameInternal: 'Urban Footprint',
-			description: 'Built-up areas',
-			lastUpdatedAt: 0,
-			url: 'https://example.com/urban-footprint',
-			configuration: '{}',
-		},
-		interaction: null,
+		...buildRenderingLayer('urban-footprint', {
+			isActive: false,
+			datasource: {
+				nameDisplay: 'Urban Footprint',
+				nameInternal: 'Urban Footprint',
+				description: 'Built-up areas',
+				url: 'https://example.com/urban-footprint',
+			},
+		}),
 	},
 ];
 
-const cloneRenderingLayer = (layer: RenderingLayer): RenderingLayer => ({
-	...layer,
-	datasource: { ...layer.datasource },
-});
-
-const createFakeState = (): AppSharedState => ({
-	...fullAppSharedStateMock,
-	renderingLayers: testRenderingLayers.map(cloneRenderingLayer),
-});
-
-const createAction = (key: string, newValue: boolean): ActionLayerActiveChange => ({
-	type: StateActionType.LAYER_ACTIVE_CHANGE,
-	payload: { key, newValue },
-});
+const createAction = makeActionFactory<ActionLayerActiveChange>(StateActionType.LAYER_ACTIVE_CHANGE);
 
 const getLayer = (state: AppSharedState, key: string) => state.renderingLayers.find((layer) => layer.key === key);
 
@@ -66,11 +42,11 @@ describe('Shared state reducer: activeLayerChange', () => {
 	 */
 	it('activates the requested rendering layer', () => {
 		// Capture baseline so we know the initial inactive status
-		const fakeState = createFakeState();
+		const fakeState = buildAppState({ renderingLayers: testRenderingLayers.map(cloneRenderingLayer) });
 		expect(getLayer(fakeState, 'urban-footprint')?.isActive).toBe(false);
 
 		// Run reducer requesting activation
-		const result = reduceHandlerActiveLayerChange(fakeState, createAction('urban-footprint', true));
+		const result = reduceHandlerActiveLayerChange(fakeState, createAction({ key: 'urban-footprint', newValue: true }));
 		expect(getLayer(result, 'urban-footprint')?.isActive).toBe(true);
 	});
 
@@ -79,11 +55,14 @@ describe('Shared state reducer: activeLayerChange', () => {
 	 */
 	it('deactivates the requested rendering layer', () => {
 		// Capture baseline so we know the layer starts active
-		const fakeState = createFakeState();
+		const fakeState = buildAppState({ renderingLayers: testRenderingLayers.map(cloneRenderingLayer) });
 		expect(getLayer(fakeState, 'vegetation-index')?.isActive).toBe(true);
 
 		// Run reducer requesting deactivation
-		const result = reduceHandlerActiveLayerChange(fakeState, createAction('vegetation-index', false));
+		const result = reduceHandlerActiveLayerChange(
+			fakeState,
+			createAction({ key: 'vegetation-index', newValue: false })
+		);
 		expect(getLayer(result, 'vegetation-index')?.isActive).toBe(false);
 	});
 });

@@ -1,48 +1,13 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerRemoveFeatureKeyInSelections } from '../../client/shared/appState/reducerHandlers/mapLayerRemoveFeatureKeyInSelections';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapLayerRemoveFeatureKey } from '../../client/shared/appState/state.models.actions';
-import { RenderingLayer } from '../../client/shared/models/models.layers';
 import { Selection } from '../../client/shared/models/models.selections';
-import { SingleMapModel } from '../../client/shared/models/models.singleMap';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
-// Handy layer factory keeps test cases short
-const mapLayer = (key: string, selectionKey?: string): Partial<RenderingLayer> => ({
-	key,
-	isActive: true,
-	...(selectionKey ? { selectionKey } : {}),
-});
+const buildFakeState = (maps: ReturnType<typeof buildMapModel>[], selections: Selection[] = []) =>
+	buildAppState({ maps, selections });
 
-// Local map factory mirrors reducer expectations
-const mapModel = (key: string, layers: Partial<RenderingLayer>[]): SingleMapModel => ({
-	key,
-	view: { latitude: 0, longitude: 0, zoom: 4 },
-	renderingLayers: layers.map((layer) => ({ ...layer })),
-});
-
-// Clone just the bits the reducer touches
-const createFakeState = (maps: SingleMapModel[], selections: Selection[] = []): AppSharedState => ({
-	...fullAppSharedStateMock,
-	renderingLayers: [],
-	mapSets: [],
-	maps: maps.map((map) => ({
-		...map,
-		view: { ...map.view },
-		renderingLayers: map.renderingLayers.map((layer) => ({ ...layer })),
-	})),
-	selections: selections.map((selection) => ({
-		...selection,
-		distinctColours: [...selection.distinctColours],
-		featureKeys: [...selection.featureKeys],
-		featureKeyColourIndexPairs: { ...selection.featureKeyColourIndexPairs },
-	})),
-});
-
-const action = (payload: ActionMapLayerRemoveFeatureKey['payload']): ActionMapLayerRemoveFeatureKey => ({
-	type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
-	payload,
-});
+const action = makeActionFactory<ActionMapLayerRemoveFeatureKey>(StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY);
 
 /**
  * Verifies mapLayerRemoveFeatureKeyInSelections prunes feature keys safely.
@@ -53,8 +18,12 @@ describe('Shared state reducer: mapLayerRemoveFeatureKeyInSelections', () => {
 	 */
 	it('removes the target feature key from the selection', () => {
 		const selectionKey = 'selection-urban';
-		const fakeState = createFakeState(
-			[mapModel('overview-map', [mapLayer('urban-footprint', selectionKey)])],
+		const fakeState = buildFakeState(
+			[
+				buildMapModel('overview-map', {
+					layers: [mapLayerStub({ key: 'urban-footprint', selectionKey, isActive: true })],
+				}),
+			],
 			[
 				{
 					key: selectionKey,
@@ -82,8 +51,12 @@ describe('Shared state reducer: mapLayerRemoveFeatureKeyInSelections', () => {
 	 * Ensures reducer bails out when the layer has no selection key.
 	 */
 	it('ignores unrelated selections when no selectionKey is present', () => {
-		const fakeState = createFakeState(
-			[mapModel('overview-map', [mapLayer('urban-footprint')])],
+		const fakeState = buildFakeState(
+			[
+				buildMapModel('overview-map', {
+					layers: [mapLayerStub({ key: 'urban-footprint', isActive: true })],
+				}),
+			],
 			[
 				{
 					key: 'selection-other',

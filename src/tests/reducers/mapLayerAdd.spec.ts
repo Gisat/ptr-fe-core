@@ -1,35 +1,9 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerAdd } from '../../client/shared/appState/reducerHandlers/mapLayerAdd';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapLayerAdd } from '../../client/shared/appState/state.models.actions';
-import { RenderingLayer } from '../../client/shared/models/models.layers';
-import { SingleMapModel } from '../../client/shared/models/models.singleMap';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
-// Minimal layer stub reused across scenarios
-const mapLayer = (key: string, isActive: boolean): Partial<RenderingLayer> => ({ key, isActive });
-
-const mapModel = (key: string, layers: Partial<RenderingLayer>[]): SingleMapModel => ({
-	key,
-	view: { latitude: 0, longitude: 0, zoom: 4 },
-	renderingLayers: layers.map((layer) => ({ ...layer })),
-});
-
-const createFakeState = (maps: SingleMapModel[]): AppSharedState => ({
-	...fullAppSharedStateMock,
-	renderingLayers: [],
-	mapSets: [],
-	maps: maps.map((map) => ({
-		...map,
-		view: { ...map.view },
-		renderingLayers: map.renderingLayers.map((layer) => ({ ...layer })),
-	})),
-});
-
-const action = (payload: ActionMapLayerAdd['payload']): ActionMapLayerAdd => ({
-	type: StateActionType.MAP_LAYER_ADD,
-	payload,
-});
+const action = makeActionFactory<ActionMapLayerAdd>(StateActionType.MAP_LAYER_ADD);
 
 /**
  * Exercises the mapLayerAdd reducer to ensure it mutates map state correctly.
@@ -40,11 +14,13 @@ describe('Shared state reducer: mapLayerAdd', () => {
 	 */
 	it('appends a new layer to the target map when index is absent', () => {
 		// Seed overview and detail maps with their existing layers
-		const fakeState = createFakeState([
-			mapModel('overview-map', [mapLayer('base-layer', true)]),
-			mapModel('detail-map', [mapLayer('surface-water', true)]),
-		]);
-		const newLayer = mapLayer('vegetation-index', true);
+		const fakeState = buildAppState({
+			maps: [
+				buildMapModel('overview-map', { layers: [mapLayerStub({ key: 'base-layer', isActive: true })] }),
+				buildMapModel('detail-map', { layers: [mapLayerStub({ key: 'surface-water', isActive: true })] }),
+			],
+		});
+		const newLayer = mapLayerStub({ key: 'vegetation-index', isActive: true });
 
 		// Invoke reducer with append semantics (no index provided)
 		const result = reduceHandlerMapLayerAdd(fakeState, action({ mapKey: 'overview-map', layer: newLayer }));
@@ -65,10 +41,17 @@ describe('Shared state reducer: mapLayerAdd', () => {
 	 */
 	it('replaces the layer at the provided index', () => {
 		// Start with two layers so the replacement spot is obvious
-		const fakeState = createFakeState([
-			mapModel('overview-map', [mapLayer('base-layer', true), mapLayer('urban-footprint', false)]),
-		]);
-		const replacement = mapLayer('nightlights', true);
+		const fakeState = buildAppState({
+			maps: [
+				buildMapModel('overview-map', {
+					layers: [
+						mapLayerStub({ key: 'base-layer', isActive: true }),
+						mapLayerStub({ key: 'urban-footprint', isActive: false }),
+					],
+				}),
+			],
+		});
+		const replacement = mapLayerStub({ key: 'nightlights', isActive: true });
 
 		// Run reducer while supplying the explicit index to target
 		const result = reduceHandlerMapLayerAdd(

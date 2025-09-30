@@ -1,26 +1,18 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetSyncChange } from '../../client/shared/appState/reducerHandlers/mapSetSyncChange';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapSetSyncChange } from '../../client/shared/appState/state.models.actions';
-import { MapSetModel } from '../../client/shared/models/models.mapSet';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
-const mapSet = (key: string, sync: { zoom: boolean; center: boolean }): MapSetModel => ({
-	key,
-	maps: ['map-a'],
-	sync: { ...sync },
-	view: { latitude: 0, longitude: 0, zoom: 4 },
-});
+const mapSet = (key: string, sync: { zoom: boolean; center: boolean }) =>
+	buildMapSet(key, {
+		maps: ['map-a'],
+		sync,
+		view: { latitude: 0, longitude: 0, zoom: 4 },
+	});
 
-const createFakeState = (mapSets: MapSetModel[]): AppSharedState => ({
-	...fullAppSharedStateMock,
-	mapSets: mapSets.map((set) => ({ ...set, maps: [...set.maps], sync: { ...set.sync }, view: { ...set.view } })),
-});
+const createFakeState = (mapSets: ReturnType<typeof mapSet>[]) => buildAppState({ mapSets });
 
-const action = (payload: ActionMapSetSyncChange['payload']): ActionMapSetSyncChange => ({
-	type: StateActionType.MAP_SET_SYNC_CHANGE,
-	payload,
-});
+const action = makeActionFactory<ActionMapSetSyncChange>(StateActionType.MAP_SET_SYNC_CHANGE);
 
 /**
  * Validates mapSetSyncChange merges sync flags for the addressed map set.

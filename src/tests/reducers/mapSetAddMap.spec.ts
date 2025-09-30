@@ -1,39 +1,21 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetAddMap } from '../../client/shared/appState/reducerHandlers/mapSetAddMap';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapAddToMapSet } from '../../client/shared/appState/state.models.actions';
-import { MapSetModel } from '../../client/shared/models/models.mapSet';
-import { SingleMapModel } from '../../client/shared/models/models.singleMap';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
-const mapSet = (key: string, maps: string[] = ['map-a']): MapSetModel => ({
-	key,
-	maps: [...maps],
-	sync: { center: false, zoom: false },
-	view: { latitude: 0, longitude: 0, zoom: 4 },
-});
+const mapSet = (key: string, maps: string[] = ['map-a']) =>
+	buildMapSet(key, {
+		maps,
+		sync: { center: false, zoom: false },
+		view: { latitude: 0, longitude: 0, zoom: 4 },
+	});
 
-const mapModel = (key: string): SingleMapModel => ({
-	key,
-	view: { latitude: 0, longitude: 0, zoom: 4 },
-	renderingLayers: [],
-});
+const mapModel = (key: string) => buildMapModel(key);
 
-// Clone only the slices the reducer cares about
-const createFakeState = (mapSets: MapSetModel[], maps: SingleMapModel[] = []): AppSharedState => ({
-	...fullAppSharedStateMock,
-	mapSets: mapSets.map((set) => ({ ...set, maps: [...set.maps], sync: { ...set.sync }, view: { ...set.view } })),
-	maps: maps.map((map) => ({
-		...map,
-		view: { ...map.view },
-		renderingLayers: map.renderingLayers.map((layer) => ({ ...layer })),
-	})),
-});
+const createFakeState = (mapSets: ReturnType<typeof mapSet>[], maps: ReturnType<typeof mapModel>[] = []) =>
+	buildAppState({ mapSets, maps });
 
-const action = (payload: ActionMapAddToMapSet['payload']): ActionMapAddToMapSet => ({
-	type: StateActionType.MAP_ADD_TO_MAP_SET,
-	payload,
-});
+const action = makeActionFactory<ActionMapAddToMapSet>(StateActionType.MAP_ADD_TO_MAP_SET);
 
 /**
  * Checks mapSetAddMap appends map references and stores the map entity.

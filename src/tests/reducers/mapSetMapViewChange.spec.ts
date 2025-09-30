@@ -1,44 +1,22 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetMapViewChange } from '../../client/shared/appState/reducerHandlers/mapSetMapViewChange';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapViewChange } from '../../client/shared/appState/state.models.actions';
-import { MapSetModel } from '../../client/shared/models/models.mapSet';
-import { SingleMapModel } from '../../client/shared/models/models.singleMap';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
-const mapModel = (key: string, view: { zoom: number; latitude: number; longitude: number }): SingleMapModel => ({
-	key,
-	view: { ...view },
-	renderingLayers: [],
-});
+const mapModel = (key: string, view: { zoom: number; latitude: number; longitude: number }) =>
+	buildMapModel(key, { view });
 
 const mapSet = (
 	key: string,
 	maps: string[],
 	sync: { zoom: boolean; center: boolean },
 	view: { zoom?: number; latitude?: number; longitude?: number }
-): MapSetModel => ({
-	key,
-	maps: [...maps],
-	sync: { ...sync },
-	view: { ...view },
-});
+) => buildMapSet(key, { maps, sync, view });
 
-// Clone just the slices the reducer touches
-const createFakeState = (mapSets: MapSetModel[], maps: SingleMapModel[]): AppSharedState => ({
-	...fullAppSharedStateMock,
-	mapSets: mapSets.map((set) => ({ ...set, maps: [...set.maps], sync: { ...set.sync }, view: { ...set.view } })),
-	maps: maps.map((map) => ({
-		...map,
-		view: { ...map.view },
-		renderingLayers: map.renderingLayers.map((layer) => ({ ...layer })),
-	})),
-});
+const createFakeState = (mapSets: ReturnType<typeof mapSet>[], maps: ReturnType<typeof mapModel>[]) =>
+	buildAppState({ mapSets, maps });
 
-const action = (payload: ActionMapViewChange['payload']): ActionMapViewChange => ({
-	type: StateActionType.MAP_VIEW_CHANGE,
-	payload,
-});
+const action = makeActionFactory<ActionMapViewChange>(StateActionType.MAP_VIEW_CHANGE);
 
 /**
  * Exercises mapSetMapViewChange to ensure sync flags drive view propagation.

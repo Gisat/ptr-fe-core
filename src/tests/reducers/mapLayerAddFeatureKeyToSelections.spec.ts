@@ -1,48 +1,14 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerAddFeatureKeyToSelections } from '../../client/shared/appState/reducerHandlers/mapLayerAddFeatureKeyToSelections';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapLayerAddFeatureKey } from '../../client/shared/appState/state.models.actions';
 import { SELECTION_DEFAULT_DISTINCT_COLOURS } from '../../client/shared/constants/colors';
-import { RenderingLayer } from '../../client/shared/models/models.layers';
 import { Selection } from '../../client/shared/models/models.selections';
-import { SingleMapModel } from '../../client/shared/models/models.singleMap';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
-// Tiny layer factory keeps scenarios readable
-const mapLayer = (key: string, isActive: boolean, selectionKey?: string): Partial<RenderingLayer> => ({
-	key,
-	isActive,
-	...(selectionKey ? { selectionKey } : {}),
-});
+const buildFakeState = (maps: ReturnType<typeof buildMapModel>[], selections: Selection[] = []) =>
+	buildAppState({ maps, selections });
 
-const mapModel = (key: string, layers: Partial<RenderingLayer>[]): SingleMapModel => ({
-	key,
-	view: { latitude: 0, longitude: 0, zoom: 4 },
-	renderingLayers: layers.map((layer) => ({ ...layer })),
-});
-
-// Clone just the bits the reducer cares about, ignore the rest of the shared fixture
-const createFakeState = (maps: SingleMapModel[], selections: Selection[] = []): AppSharedState => ({
-	...fullAppSharedStateMock,
-	renderingLayers: [],
-	mapSets: [],
-	maps: maps.map((map) => ({
-		...map,
-		view: { ...map.view },
-		renderingLayers: map.renderingLayers.map((layer) => ({ ...layer })),
-	})),
-	selections: selections.map((selection) => ({
-		...selection,
-		distinctColours: [...selection.distinctColours],
-		featureKeys: [...selection.featureKeys],
-		featureKeyColourIndexPairs: { ...selection.featureKeyColourIndexPairs },
-	})),
-});
-
-const action = (payload: ActionMapLayerAddFeatureKey['payload']): ActionMapLayerAddFeatureKey => ({
-	type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
-	payload,
-});
+const action = makeActionFactory<ActionMapLayerAddFeatureKey>(StateActionType.MAP_LAYER_ADD_FEATURE_KEY);
 
 /**
  * Ensures the mapLayerAddFeatureKeyToSelections reducer manages selection metadata.
@@ -53,9 +19,16 @@ describe('Shared state reducer: mapLayerAddFeatureKeyToSelections', () => {
 	 */
 	it('creates a selection entry when the layer had none', () => {
 		// Seed maps with layers that currently lack a selection key
-		const fakeState = createFakeState([
-			mapModel('overview-map', [mapLayer('urban-footprint', true), mapLayer('surface-water', true)]),
-			mapModel('detail-map', [mapLayer('vegetation-index', true)]),
+		const fakeState = buildFakeState([
+			buildMapModel('overview-map', {
+				layers: [
+					mapLayerStub({ key: 'urban-footprint', isActive: true }),
+					mapLayerStub({ key: 'surface-water', isActive: true }),
+				],
+			}),
+			buildMapModel('detail-map', {
+				layers: [mapLayerStub({ key: 'vegetation-index', isActive: true })],
+			}),
 		]);
 
 		// Add a feature key which should trigger selection creation
@@ -91,8 +64,12 @@ describe('Shared state reducer: mapLayerAddFeatureKeyToSelections', () => {
 	it('reuses existing selection keys and assigns the next colour index', () => {
 		// Prepare state with an existing selection so reducer can append
 		const selectionKey = 'selection-existing';
-		const fakeState = createFakeState(
-			[mapModel('overview-map', [mapLayer('urban-footprint', true, selectionKey)])],
+		const fakeState = buildFakeState(
+			[
+				buildMapModel('overview-map', {
+					layers: [mapLayerStub({ key: 'urban-footprint', isActive: true, selectionKey })],
+				}),
+			],
 			[
 				{
 					key: selectionKey,
@@ -125,7 +102,11 @@ describe('Shared state reducer: mapLayerAddFeatureKeyToSelections', () => {
 	 */
 	it('applies custom selection style overrides', () => {
 		// Build base map requiring a brand-new selection
-		const fakeState = createFakeState([mapModel('overview-map', [mapLayer('urban-footprint', true)])]);
+		const fakeState = buildFakeState([
+			buildMapModel('overview-map', {
+				layers: [mapLayerStub({ key: 'urban-footprint', isActive: true })],
+			}),
+		]);
 
 		const customStyle: Partial<Selection> = {
 			distinctColours: ['#ffffff'],

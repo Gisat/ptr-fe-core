@@ -1,55 +1,30 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerFetchSources } from '../../client/shared/appState/reducerHandlers/fetchSourcesUpdate';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionChangeLayerSources } from '../../client/shared/appState/state.models.actions';
 import { RenderingLayer } from '../../client/shared/models/models.layers';
 import { Datasource } from '../../globals/shared/panther/models.nodes';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildRenderingLayer, cloneRenderingLayer, makeActionFactory } from '../tools/reducer.helpers';
 
 const baseRenderingLayers: RenderingLayer[] = [
-	{
-		key: 'vegetation-index',
+	buildRenderingLayer('vegetation-index', {
 		isActive: false,
-		level: 0,
 		datasource: {
-			key: 'vegetation-index',
-			labels: ['datasource'],
 			nameDisplay: 'Vegetation Index',
 			nameInternal: 'Vegetation Index',
 			description: 'NDVI overview',
-			lastUpdatedAt: 0,
 			url: 'https://example.com/vegetation-index',
-			configuration: '{}',
 		},
-		interaction: null,
-	},
-	{
-		key: 'urban-footprint',
+	}),
+	buildRenderingLayer('urban-footprint', {
 		isActive: false,
-		level: 0,
 		datasource: {
-			key: 'urban-footprint',
-			labels: ['datasource'],
 			nameDisplay: 'Urban Footprint',
 			nameInternal: 'Urban Footprint',
 			description: 'Built-up areas',
-			lastUpdatedAt: 0,
 			url: 'https://example.com/urban-footprint',
-			configuration: '{}',
 		},
-		interaction: null,
-	},
+	}),
 ];
-
-const cloneLayer = (layer: RenderingLayer): RenderingLayer => ({
-	...layer,
-	datasource: { ...layer.datasource },
-});
-
-const createFakeState = (): AppSharedState => ({
-	...fullAppSharedStateMock,
-	renderingLayers: baseRenderingLayers.map(cloneLayer),
-});
 
 const createFakeDatasource = (key: string, overrides: Partial<Datasource> = {}): Datasource => ({
 	key,
@@ -63,10 +38,7 @@ const createFakeDatasource = (key: string, overrides: Partial<Datasource> = {}):
 	...overrides,
 });
 
-const action = (payload: Datasource[]): ActionChangeLayerSources => ({
-	type: StateActionType.FETCH_SOURCES,
-	payload,
-});
+const action = makeActionFactory<ActionChangeLayerSources>(StateActionType.FETCH_SOURCES);
 
 /**
  * Exercises the fetchSourcesUpdate reducer so new datasources become rendering layers.
@@ -77,7 +49,7 @@ describe('Shared state reducer: fetchSourcesUpdate', () => {
 	 */
 	it('adds parsed layers to the existing rendering layers', () => {
 		// Preserve a copy of the seeded layers to compare before/after
-		const fakeState = createFakeState();
+		const fakeState = buildAppState({ renderingLayers: baseRenderingLayers.map(cloneRenderingLayer) });
 		const existingLayers = [...fakeState.renderingLayers];
 		const newSources = [createFakeDatasource('soil-moisture'), createFakeDatasource('precipitation-rate')];
 
@@ -103,10 +75,7 @@ describe('Shared state reducer: fetchSourcesUpdate', () => {
 	 */
 	it('initializes renderingLayers when the state has none', () => {
 		// Strip the baseline state to mimic a scenario with no layers yet
-		const fakeStateWithoutLayers: AppSharedState = {
-			...createFakeState(),
-			renderingLayers: [],
-		};
+		const fakeStateWithoutLayers = buildAppState({ renderingLayers: [] });
 		const newSources = [createFakeDatasource('soil-moisture')];
 
 		// Apply reducer to populate the state

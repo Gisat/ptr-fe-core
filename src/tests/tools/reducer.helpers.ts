@@ -171,8 +171,8 @@ export const cloneRenderingLayer = (layer: RenderingLayer): RenderingLayer => ({
  * Strongly typed action creator helper for reducer test payloads.
  */
 export const makeActionFactory =
-	<TAction extends { type: StateActionType; payload: unknown }>(type: TAction['type']) =>
-	(payload: TAction['payload']): TAction =>
+	<TAction extends { type: StateActionType; payload: unknown }, TPayload = TAction['payload']>(type: TAction['type']) =>
+	(payload: TPayload): TAction =>
 		({
 			type,
 			payload,

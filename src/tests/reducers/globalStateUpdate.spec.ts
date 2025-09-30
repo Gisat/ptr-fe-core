@@ -1,53 +1,36 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerGlobalStateUpdate } from '../../client/shared/appState/reducerHandlers/globalStateUpdate';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionGlobalStateUpdate } from '../../client/shared/appState/state.models.actions';
-import { RenderingLayer } from '../../client/shared/models/models.layers';
-import { MapSetModel } from '../../client/shared/models/models.mapSet';
-import { SingleMapModel } from '../../client/shared/models/models.singleMap';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import {
+	buildAppState,
+	buildMapModel,
+	buildMapSet,
+	buildRenderingLayer,
+	makeActionFactory,
+} from '../tools/reducer.helpers';
 
-const createFakeState = (): AppSharedState => ({
-	...fullAppSharedStateMock,
-	renderingLayers: [],
-	mapSets: [],
-	maps: [],
-});
+const createFakeState = () => buildAppState();
 
-const layer = (key: string): RenderingLayer => ({
-	key,
-	isActive: true,
-	level: 0,
-	interaction: null,
-	datasource: {
-		key,
-		labels: ['datasource'],
-		nameDisplay: key,
-		nameInternal: key,
-		description: `${key} datasource`,
-		lastUpdatedAt: 0,
-		url: `https://example.com/${key}`,
-		configuration: '{}',
-	},
-});
+const layer = (key: string) =>
+	buildRenderingLayer(key, {
+		isActive: true,
+	});
 
-const mapSet = (key: string): MapSetModel => ({
-	key,
-	maps: [],
-	sync: { center: false, zoom: false },
-	view: { latitude: 0, longitude: 0, zoom: 0 },
-});
+const mapSet = (key: string) =>
+	buildMapSet(key, {
+		maps: [],
+		sync: { center: false, zoom: false },
+		view: { latitude: 0, longitude: 0, zoom: 0 },
+	});
 
-const mapModel = (key: string): SingleMapModel => ({
-	key,
-	view: { latitude: 0, longitude: 0, zoom: 0 },
-	renderingLayers: [],
-});
+const mapModel = (key: string) =>
+	buildMapModel(key, {
+		view: { latitude: 0, longitude: 0, zoom: 0 },
+	});
 
-const action = (payload: Partial<ActionGlobalStateUpdate['payload']>): ActionGlobalStateUpdate => ({
-	type: StateActionType.GLOBAL_STATE_UPDATE,
-	payload: payload as ActionGlobalStateUpdate['payload'],
-});
+const action = makeActionFactory<ActionGlobalStateUpdate, Partial<ActionGlobalStateUpdate['payload']>>(
+	StateActionType.GLOBAL_STATE_UPDATE
+);
 
 /**
  * Validates the globalStateUpdate reducer merges and preserves global app slices correctly.

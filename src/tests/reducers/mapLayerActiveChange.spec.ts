@@ -1,34 +1,11 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapLayerActiveChange } from '../../client/shared/appState/reducerHandlers/mapLayerActiveChange';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapLayerActiveChange } from '../../client/shared/appState/state.models.actions';
-import { RenderingLayer } from '../../client/shared/models/models.layers';
-import { SingleMapModel } from '../../client/shared/models/models.singleMap';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
-const baseLayer = (key: string, isActive: boolean): Partial<RenderingLayer> => ({ key, isActive });
+const buildFakeState = (maps) => buildAppState({ maps });
 
-const baseMap = (key: string, layers: Partial<RenderingLayer>[]): SingleMapModel => ({
-	key,
-	view: { latitude: 0, longitude: 0, zoom: 5 },
-	renderingLayers: layers.map((layer) => ({ ...layer })),
-});
-
-const createFakeState = (maps: SingleMapModel[]): AppSharedState => ({
-	...fullAppSharedStateMock,
-	renderingLayers: [],
-	mapSets: [],
-	maps: maps.map((map) => ({
-		...map,
-		view: { ...map.view },
-		renderingLayers: map.renderingLayers.map((layer) => ({ ...layer })),
-	})),
-});
-
-const action = (payload: ActionMapLayerActiveChange['payload']): ActionMapLayerActiveChange => ({
-	type: StateActionType.MAP_LAYER_ACTIVE_CHANGE,
-	payload,
-});
+const action = makeActionFactory<ActionMapLayerActiveChange>(StateActionType.MAP_LAYER_ACTIVE_CHANGE);
 
 /**
  * Checks the mapLayerActiveChange reducer updates layer activity within a map.
@@ -39,9 +16,18 @@ describe('Shared state reducer: mapLayerActiveChange', () => {
 	 */
 	it('updates only the targeted layer on the selected map', () => {
 		// Set up multiple maps to ensure cross-map isolation
-		const fakeState = createFakeState([
-			baseMap('overview-map', [baseLayer('vegetation-index', true), baseLayer('urban-footprint', false)]),
-			baseMap('detail-map', [baseLayer('surface-water', true)]),
+		const fakeState = buildFakeState([
+			buildMapModel('overview-map', {
+				view: { latitude: 0, longitude: 0, zoom: 5 },
+				layers: [
+					mapLayerStub({ key: 'vegetation-index', isActive: true }),
+					mapLayerStub({ key: 'urban-footprint', isActive: false }),
+				],
+			}),
+			buildMapModel('detail-map', {
+				view: { latitude: 0, longitude: 0, zoom: 5 },
+				layers: [mapLayerStub({ key: 'surface-water', isActive: true })],
+			}),
 		]);
 
 		// Change activity for a single layer on the overview map

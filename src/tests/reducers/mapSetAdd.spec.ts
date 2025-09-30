@@ -1,32 +1,18 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetAddMapSet } from '../../client/shared/appState/reducerHandlers/mapSetAdd';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapSetAdd } from '../../client/shared/appState/state.models.actions';
-import { MapSetModel } from '../../client/shared/models/models.mapSet';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
-// Minimal helper to clone the mock and keep tests focused
-const createFakeState = (mapSets: MapSetModel[] = []): AppSharedState => ({
-	...fullAppSharedStateMock,
-	mapSets: mapSets.map((mapSet) => ({
-		...mapSet,
-		maps: [...mapSet.maps],
-		sync: { ...mapSet.sync },
-		view: { ...mapSet.view },
-	})),
-});
+const createFakeState = (mapSets: ReturnType<typeof mapSet>[] = []) => buildAppState({ mapSets });
 
-const mapSet = (key: string): MapSetModel => ({
-	key,
-	maps: ['mapA'],
-	sync: { center: true, zoom: true },
-	view: { latitude: 0, longitude: 0, zoom: 5 },
-});
+const mapSet = (key: string) =>
+	buildMapSet(key, {
+		maps: ['mapA'],
+		sync: { center: true, zoom: true },
+		view: { latitude: 0, longitude: 0, zoom: 5 },
+	});
 
-const action = (payload: MapSetModel): ActionMapSetAdd => ({
-	type: StateActionType.MAP_SET_ADD,
-	payload,
-});
+const action = makeActionFactory<ActionMapSetAdd>(StateActionType.MAP_SET_ADD);
 
 /**
  * Covers mapSetAdd reducer behaviour for adding new map set definitions.

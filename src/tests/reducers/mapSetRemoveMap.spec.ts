@@ -1,38 +1,21 @@
 import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
 import { reduceHandlerMapSetRemoveMap } from '../../client/shared/appState/reducerHandlers/mapSetRemoveMap';
-import { AppSharedState } from '../../client/shared/appState/state.models';
 import { ActionMapRemoveFromMapSet } from '../../client/shared/appState/state.models.actions';
-import { MapSetModel } from '../../client/shared/models/models.mapSet';
-import { SingleMapModel } from '../../client/shared/models/models.singleMap';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
-const mapSet = (key, maps): MapSetModel => ({
-	key,
-	maps: [...maps],
-	sync: { center: false, zoom: false },
-	view: { latitude: 0, longitude: 0, zoom: 4 },
-});
+const mapSet = (key: string, maps: string[]) =>
+	buildMapSet(key, {
+		maps,
+		sync: { center: false, zoom: false },
+		view: { latitude: 0, longitude: 0, zoom: 4 },
+	});
 
-const mapModel = (key): SingleMapModel => ({
-	key,
-	view: { latitude: 0, longitude: 0, zoom: 4 },
-	renderingLayers: [],
-});
+const mapModel = (key: string) => buildMapModel(key);
 
-const createFakeState = (mapSets: MapSetModel[], maps: SingleMapModel[]): AppSharedState => ({
-	...fullAppSharedStateMock,
-	mapSets: mapSets.map((set) => ({ ...set, maps: [...set.maps], sync: { ...set.sync }, view: { ...set.view } })),
-	maps: maps.map((map) => ({
-		...map,
-		view: { ...map.view },
-		renderingLayers: map.renderingLayers.map((layer) => ({ ...layer })),
-	})),
-});
+const createFakeState = (mapSets: ReturnType<typeof mapSet>[], maps: ReturnType<typeof mapModel>[]) =>
+	buildAppState({ mapSets, maps });
 
-const action = (payload: ActionMapRemoveFromMapSet['payload']): ActionMapRemoveFromMapSet => ({
-	type: StateActionType.MAP_REMOVE_FROM_MAP_SET,
-	payload,
-});
+const action = makeActionFactory<ActionMapRemoveFromMapSet>(StateActionType.MAP_REMOVE_FROM_MAP_SET);
 
 /**
  * Validates mapSetRemoveMap detaches a map from its set and removes the entity.
