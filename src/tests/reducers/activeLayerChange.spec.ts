@@ -57,23 +57,32 @@ const createAction = (key: string, newValue: boolean): ActionLayerActiveChange =
 
 const getLayer = (state: AppSharedState, key: string) => state.renderingLayers.find((layer) => layer.key === key);
 
+/**
+ * Verifies that the activeLayerChange reducer toggles a rendering layer's active flag.
+ */
 describe('Shared state reducer: activeLayerChange', () => {
+	/**
+	 * Confirms the reducer can switch an inactive layer to active.
+	 */
 	it('activates the requested rendering layer', () => {
-		// Before
+		// Capture baseline so we know the initial inactive status
 		const fakeState = createFakeState();
 		expect(getLayer(fakeState, 'urban-footprint')?.isActive).toBe(false);
 
-		// After
+		// Run reducer requesting activation
 		const result = reduceHandlerActiveLayerChange(fakeState, createAction('urban-footprint', true));
 		expect(getLayer(result, 'urban-footprint')?.isActive).toBe(true);
 	});
 
+	/**
+	 * Ensures the reducer can deactivate an already active layer.
+	 */
 	it('deactivates the requested rendering layer', () => {
-		// Before
+		// Capture baseline so we know the layer starts active
 		const fakeState = createFakeState();
 		expect(getLayer(fakeState, 'vegetation-index')?.isActive).toBe(true);
 
-		// After
+		// Run reducer requesting deactivation
 		const result = reduceHandlerActiveLayerChange(fakeState, createAction('vegetation-index', false));
 		expect(getLayer(result, 'vegetation-index')?.isActive).toBe(false);
 	});

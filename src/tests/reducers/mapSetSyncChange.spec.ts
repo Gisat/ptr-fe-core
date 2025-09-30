@@ -22,7 +22,13 @@ const action = (payload: ActionMapSetSyncChange['payload']): ActionMapSetSyncCha
 	payload,
 });
 
+/**
+ * Validates mapSetSyncChange merges sync flags for the addressed map set.
+ */
 describe('Shared state reducer: mapSetSyncChange', () => {
+	/**
+	 * Ensures only the target set receives the sync flag updates.
+	 */
 	it('merges sync changes into the targeted map set', () => {
 		const fakeState = createFakeState([
 			mapSet('set-a', { zoom: true, center: true }),
@@ -31,6 +37,7 @@ describe('Shared state reducer: mapSetSyncChange', () => {
 
 		const result = reduceHandlerMapSetSyncChange(fakeState, action({ key: 'set-a', syncChange: { center: false } }));
 
+		// Targeted set should have mixed flags, others stay untouched
 		expect(result.mapSets.find((set) => set.key === 'set-a')?.sync).toEqual({ zoom: true, center: false });
 		expect(result.mapSets.find((set) => set.key === 'set-b')?.sync).toEqual({ zoom: false, center: false });
 	});

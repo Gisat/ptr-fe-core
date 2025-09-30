@@ -35,7 +35,13 @@ const action = (payload: ActionMapAddToMapSet['payload']): ActionMapAddToMapSet 
 	payload,
 });
 
+/**
+ * Checks mapSetAddMap appends map references and stores the map entity.
+ */
 describe('Shared state reducer: mapSetAddMap', () => {
+	/**
+	 * Ensures the map set gains the new key plus the map record itself.
+	 */
 	it('appends a new map reference to the target map set and stores the map', () => {
 		// Before: map set has one map, state knows about map-a only
 		const fakeState = createFakeState([mapSet('regional-overview')], [mapModel('map-a')]);
@@ -44,6 +50,7 @@ describe('Shared state reducer: mapSetAddMap', () => {
 		// After: reducer should add the map key to the set and the map to state.maps
 		const result = reduceHandlerMapSetAddMap(fakeState, action({ mapSetKey: 'regional-overview', map: newMap }));
 
+		// The set should list the new map, and global map store grows by one
 		expect(result.mapSets[0].maps).toEqual(['map-a', 'map-b']);
 		expect(result.maps).toHaveLength(fakeState.maps.length + 1);
 		expect(result.maps.at(-1)).toBe(newMap);

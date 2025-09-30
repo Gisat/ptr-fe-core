@@ -42,7 +42,13 @@ const action = (payload: ActionMapLayerSetFeatureKey['payload']): ActionMapLayer
 	payload,
 });
 
+/**
+ * Validates mapLayerSetFeatureKeyInSelections replaces selection feature sets as requested.
+ */
 describe('Shared state reducer: mapLayerSetFeatureKeyInSelections', () => {
+	/**
+	 * Ensures the defined selection is overwritten with a single new feature.
+	 */
 	it('overwrites existing feature keys for the selection', () => {
 		const selectionKey = 'selection-urban';
 		const fakeState = createFakeState(
@@ -58,19 +64,25 @@ describe('Shared state reducer: mapLayerSetFeatureKeyInSelections', () => {
 			]
 		);
 
+		// Replace feature keys and colour mapping with the new entry
 		const result = reduceHandlerSetFeatureKeyInSelections(
 			fakeState,
 			action({ mapKey: 'overview-map', layerKey: 'urban-footprint', featureKey: 'parcel-3' })
 		);
 
+		// Old keys should be dropped in favour of the latest selection
 		const updatedSelection = result.selections.find((selection) => selection.key === selectionKey);
 		expect(updatedSelection?.featureKeys).toEqual(['parcel-3']);
 		expect(updatedSelection?.featureKeyColourIndexPairs).toEqual({ 'parcel-3': 0 });
 	});
 
+	/**
+	 * Confirms the reducer synthesizes a selection if absent.
+	 */
 	it('creates a new selection when none existed', () => {
 		const fakeState = createFakeState([mapModel('overview-map', [mapLayer('urban-footprint')])]);
 
+		// Creating a selection on the fly should seed defaults
 		const result = reduceHandlerSetFeatureKeyInSelections(
 			fakeState,
 			action({ mapKey: 'overview-map', layerKey: 'urban-footprint', featureKey: 'parcel-1' })
@@ -81,9 +93,13 @@ describe('Shared state reducer: mapLayerSetFeatureKeyInSelections', () => {
 		expect(createdSelection.featureKeyColourIndexPairs).toEqual({ 'parcel-1': 0 });
 	});
 
+	/**
+	 * Verifies optional style overrides flow into the new selection record.
+	 */
 	it('applies custom selection style overrides', () => {
 		const fakeState = createFakeState([mapModel('overview-map', [mapLayer('urban-footprint')])]);
 
+		// Provide custom styling when setting the feature key
 		const result = reduceHandlerSetFeatureKeyInSelections(
 			fakeState,
 			action({
@@ -97,6 +113,7 @@ describe('Shared state reducer: mapLayerSetFeatureKeyInSelections', () => {
 			})
 		);
 
+		// The generated selection should honour custom settings and new feature key
 		const createdSelection = result.selections[0];
 		expect(createdSelection.distinctColours).toEqual(['#ffffff']);
 		expect(createdSelection.distinctItems).toBe(false);

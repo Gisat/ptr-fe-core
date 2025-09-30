@@ -44,7 +44,13 @@ const action = (payload: ActionMapLayerRemove['payload']): ActionMapLayerRemove 
 	payload,
 });
 
+/**
+ * Validates mapLayerRemove drops layers and cleans up associated selections.
+ */
 describe('Shared state reducer: mapLayerRemove', () => {
+	/**
+	 * Confirms both layer and linked selection disappear after removal.
+	 */
 	it('removes the targeted layer and its selection', () => {
 		const selectionKey = 'selection-urban';
 		const fakeState = createFakeState(
@@ -63,19 +69,25 @@ describe('Shared state reducer: mapLayerRemove', () => {
 			]
 		);
 
+		// Invoke reducer to remove the selected layer and tidy references
 		const result = reduceHandlerMapLayerRemove(
 			fakeState,
 			action({ mapKey: 'overview-map', layerKey: 'urban-footprint' })
 		);
 
+		// Remaining layers should exclude the removed target and selection should vanish
 		const overviewLayers = result.maps.find((map) => map.key === 'overview-map')?.renderingLayers;
 		expect(overviewLayers?.map((layer) => layer.key)).toEqual(['surface-water']);
 		expect(result.selections).toHaveLength(0);
 
+		// Other maps must be unaffected
 		const detailMap = result.maps.find((map) => map.key === 'detail-map');
 		expect(detailMap).toEqual(fakeState.maps[1]);
 	});
 
+	/**
+	 * Ensures unrelated selections remain when the removed layer had no link.
+	 */
 	it('keeps selections untouched when the layer had none', () => {
 		const fakeState = createFakeState(
 			[mapModel('overview-map', [mapLayer('urban-footprint', true)])],
@@ -90,11 +102,13 @@ describe('Shared state reducer: mapLayerRemove', () => {
 			]
 		);
 
+		// Remove the layer and expect the orphan selection to survive
 		const result = reduceHandlerMapLayerRemove(
 			fakeState,
 			action({ mapKey: 'overview-map', layerKey: 'urban-footprint' })
 		);
 
+		// Map loses the layer but selection bundle remains untouched
 		expect(result.maps[0].renderingLayers).toHaveLength(0);
 		expect(result.selections).toHaveLength(1);
 		expect(result.selections[0].key).toBe('selection-other');

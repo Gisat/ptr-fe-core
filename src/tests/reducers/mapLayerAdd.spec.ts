@@ -31,16 +31,25 @@ const action = (payload: ActionMapLayerAdd['payload']): ActionMapLayerAdd => ({
 	payload,
 });
 
+/**
+ * Exercises the mapLayerAdd reducer to ensure it mutates map state correctly.
+ */
 describe('Shared state reducer: mapLayerAdd', () => {
+	/**
+	 * Validates that a missing index triggers a simple append to the target map layers.
+	 */
 	it('appends a new layer to the target map when index is absent', () => {
+		// Seed overview and detail maps with their existing layers
 		const fakeState = createFakeState([
 			mapModel('overview-map', [mapLayer('base-layer', true)]),
 			mapModel('detail-map', [mapLayer('surface-water', true)]),
 		]);
 		const newLayer = mapLayer('vegetation-index', true);
 
+		// Invoke reducer with append semantics (no index provided)
 		const result = reduceHandlerMapLayerAdd(fakeState, action({ mapKey: 'overview-map', layer: newLayer }));
 
+		// Pull out the affected and unaffected maps for follow-up checks
 		const updatedOverview = result.maps.find((map) => map.key === 'overview-map');
 		const detailMap = result.maps.find((map) => map.key === 'detail-map');
 
@@ -51,17 +60,23 @@ describe('Shared state reducer: mapLayerAdd', () => {
 		expect(detailMap?.renderingLayers).toEqual(fakeState.maps[1].renderingLayers);
 	});
 
+	/**
+	 * Ensures an explicit index replaces the existing layer rather than appending.
+	 */
 	it('replaces the layer at the provided index', () => {
+		// Start with two layers so the replacement spot is obvious
 		const fakeState = createFakeState([
 			mapModel('overview-map', [mapLayer('base-layer', true), mapLayer('urban-footprint', false)]),
 		]);
 		const replacement = mapLayer('nightlights', true);
 
+		// Run reducer while supplying the explicit index to target
 		const result = reduceHandlerMapLayerAdd(
 			fakeState,
 			action({ mapKey: 'overview-map', layer: replacement, index: 1 })
 		);
 
+		// Capture map state so expectations read clearly
 		const updatedOverview = result.maps.find((map) => map.key === 'overview-map');
 
 		expect(updatedOverview?.renderingLayers).toHaveLength(2);

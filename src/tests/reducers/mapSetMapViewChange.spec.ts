@@ -40,7 +40,13 @@ const action = (payload: ActionMapViewChange['payload']): ActionMapViewChange =>
 	payload,
 });
 
+/**
+ * Exercises mapSetMapViewChange to ensure sync flags drive view propagation.
+ */
 describe('Shared state reducer: mapSetMapViewChange', () => {
+	/**
+	 * Confirms zoom/center propagate to sibling maps when sync is true.
+	 */
 	it('syncs zoom and center across the map set when enabled', () => {
 		const fakeState = createFakeState(
 			[
@@ -67,16 +73,21 @@ describe('Shared state reducer: mapSetMapViewChange', () => {
 		expect(updatedSet?.view.zoom).toBe(7);
 		expect(updatedSet?.view.latitude).toBe(20);
 
+		// Sibling map tied to sync should receive propagated zoom and partial center
 		const masterView = result.maps.find((map) => map.key === 'map-master')?.view;
 		expect(masterView).toEqual({ zoom: 7, latitude: 20, longitude: 0 });
 
 		const peerView = result.maps.find((map) => map.key === 'map-peer')?.view;
 		expect(peerView).toEqual({ zoom: 7, latitude: 20, longitude: 10 });
 
+		// Unrelated map outside the set remains unchanged
 		const otherView = result.maps.find((map) => map.key === 'map-other')?.view;
 		expect(otherView).toEqual({ zoom: 3, latitude: -5, longitude: -5 });
 	});
 
+	/**
+	 * Ensures only the initiating map updates when sync is disabled.
+	 */
 	it('only updates the triggering map when sync flags are disabled', () => {
 		const fakeState = createFakeState(
 			[
@@ -98,12 +109,14 @@ describe('Shared state reducer: mapSetMapViewChange', () => {
 			action({ key: 'map-master', viewChange: { zoom: 8, longitude: 50 } })
 		);
 
+		// Only the initiating map should reflect the new zoom/longitude values
 		const masterView = result.maps.find((map) => map.key === 'map-master')?.view;
 		expect(masterView).toEqual({ zoom: 8, latitude: 0, longitude: 50 });
 
 		const peerView = result.maps.find((map) => map.key === 'map-peer')?.view;
 		expect(peerView).toEqual({ zoom: 3, latitude: 0, longitude: 0 });
 
+		// Sync-disabled map set retains its stored view snapshot
 		const setView = result.mapSets.find((set) => set.key === 'set-b')?.view;
 		expect(setView).toEqual({ zoom: 3, latitude: 0, longitude: 0 });
 	});

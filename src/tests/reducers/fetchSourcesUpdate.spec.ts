@@ -68,14 +68,23 @@ const action = (payload: Datasource[]): ActionChangeLayerSources => ({
 	payload,
 });
 
+/**
+ * Exercises the fetchSourcesUpdate reducer so new datasources become rendering layers.
+ */
 describe('Shared state reducer: fetchSourcesUpdate', () => {
+	/**
+	 * Confirms that fetching sources appends equivalent rendering layers to the set.
+	 */
 	it('adds parsed layers to the existing rendering layers', () => {
+		// Preserve a copy of the seeded layers to compare before/after
 		const fakeState = createFakeState();
 		const existingLayers = [...fakeState.renderingLayers];
 		const newSources = [createFakeDatasource('soil-moisture'), createFakeDatasource('precipitation-rate')];
 
+		// Apply reducer with new datasource payload
 		const result = reduceHandlerFetchSources(fakeState, action(newSources));
 
+		// Ensure originals are unchanged and new layers were added to the tail
 		expect(result.renderingLayers).toHaveLength(existingLayers.length + newSources.length);
 		expect(result.renderingLayers[0]).toBe(existingLayers[0]);
 		expect(result.renderingLayers[1]).toBe(existingLayers[1]);
@@ -89,18 +98,23 @@ describe('Shared state reducer: fetchSourcesUpdate', () => {
 		});
 	});
 
+	/**
+	 * Validates that an empty state seeds renderingLayers from the fetched sources.
+	 */
 	it('initializes renderingLayers when the state has none', () => {
+		// Strip the baseline state to mimic a scenario with no layers yet
 		const fakeStateWithoutLayers: AppSharedState = {
 			...createFakeState(),
 			renderingLayers: [],
 		};
 		const newSources = [createFakeDatasource('soil-moisture')];
 
+		// Apply reducer to populate the state
 		const result = reduceHandlerFetchSources(fakeStateWithoutLayers, action(newSources));
 
+		// Validate the single synthesized layer mirrors the datasource defaults
 		expect(result.renderingLayers).toHaveLength(1);
 
-		// Check the properties of the newly created layer
 		const [layer] = result.renderingLayers;
 		expect(layer.key).toBe('soil-moisture');
 		expect(layer.isActive).toBe(false);

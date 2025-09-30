@@ -49,8 +49,15 @@ const action = (payload: Partial<ActionGlobalStateUpdate['payload']>): ActionGlo
 	payload: payload as ActionGlobalStateUpdate['payload'],
 });
 
+/**
+ * Validates the globalStateUpdate reducer merges and preserves global app slices correctly.
+ */
 describe('Shared state reducer: globalStateUpdate', () => {
+	/**
+	 * Confirms incoming payload sections add new entities and deduplicate by key.
+	 */
 	it('appends state sections and removes duplicates by key', () => {
+		// Seed state with initial entities to test duplicate handling
 		const fakeState = {
 			...createFakeState(),
 			renderingLayers: [layer('vegetation-index')],
@@ -58,6 +65,7 @@ describe('Shared state reducer: globalStateUpdate', () => {
 			maps: [mapModel('overview-map')],
 		};
 
+		// Apply reducer with payload containing duplicates + new keys
 		const result = reduceHandlerGlobalStateUpdate(
 			fakeState,
 			action({
@@ -67,12 +75,17 @@ describe('Shared state reducer: globalStateUpdate', () => {
 			})
 		);
 
+		// Ensure only unique keys remain per slice
 		expect(result.renderingLayers.map((l) => l.key)).toEqual(['vegetation-index', 'urban-footprint']);
 		expect(result.mapSets.map((set) => set.key)).toEqual(['regional-overview', 'urban-detail']);
 		expect(result.maps.map((map) => map.key)).toEqual(['overview-map', 'detail-map']);
 	});
 
+	/**
+	 * Ensures untouched slices are carried by reference when not provided in payload.
+	 */
 	it('returns original state slices when no payload section provided', () => {
+		// Seed state with identifiable references to validate immutability
 		const state = {
 			...createFakeState(),
 			renderingLayers: [layer('surface-water')],
@@ -80,8 +93,10 @@ describe('Shared state reducer: globalStateUpdate', () => {
 			maps: [mapModel('water-map')],
 		};
 
+		// Run reducer omitting map updates to check reference equality
 		const result = reduceHandlerGlobalStateUpdate(state, action({ maps: undefined }));
 
+		// The pre-existing references should pass straight through
 		expect(result.renderingLayers).toBe(state.renderingLayers);
 		expect(result.mapSets).toBe(state.mapSets);
 		expect(result.maps).toBe(state.maps);

@@ -36,7 +36,13 @@ const action = (payload: ActionMapLayerInteractivityChange['payload']): ActionMa
 	payload,
 });
 
+/**
+ * Exercises the mapLayerInteractivityChange reducer to flip interaction flags.
+ */
 describe('Shared state reducer: mapLayerInteractivityChange', () => {
+	/**
+	 * Checks that only the addressed layer switches to interactive=true.
+	 */
 	it('sets the target layer to interactive', () => {
 		// Before: overview map has an interactive=false layer we want to toggle
 		const fakeState = createFakeState([
@@ -50,6 +56,7 @@ describe('Shared state reducer: mapLayerInteractivityChange', () => {
 			action({ mapKey: 'overview-map', layerKey: 'urban-footprint', isInteractive: true })
 		);
 
+		// Confirm targeted layer flips while siblings stay unchanged
 		expect(
 			result.maps
 				.find((map) => map.key === 'overview-map')

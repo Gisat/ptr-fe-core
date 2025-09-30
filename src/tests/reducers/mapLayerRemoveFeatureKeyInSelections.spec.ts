@@ -44,7 +44,13 @@ const action = (payload: ActionMapLayerRemoveFeatureKey['payload']): ActionMapLa
 	payload,
 });
 
+/**
+ * Verifies mapLayerRemoveFeatureKeyInSelections prunes feature keys safely.
+ */
 describe('Shared state reducer: mapLayerRemoveFeatureKeyInSelections', () => {
+	/**
+	 * Confirms the addressed feature key is removed and colour mapping shifts.
+	 */
 	it('removes the target feature key from the selection', () => {
 		const selectionKey = 'selection-urban';
 		const fakeState = createFakeState(
@@ -60,16 +66,21 @@ describe('Shared state reducer: mapLayerRemoveFeatureKeyInSelections', () => {
 			]
 		);
 
+		// Run reducer to drop one feature key from the selection
 		const result = reduceHandlerRemoveFeatureKeyInSelections(
 			fakeState,
 			action({ mapKey: 'overview-map', layerKey: 'urban-footprint', featureKey: 'parcel-2' })
 		);
 
+		// Remaining selection should only reference the surviving feature key
 		const updatedSelection = result.selections.find((selection) => selection.key === selectionKey);
 		expect(updatedSelection?.featureKeys).toEqual(['parcel-1']);
 		expect(updatedSelection?.featureKeyColourIndexPairs).toEqual({ 'parcel-1': 0 });
 	});
 
+	/**
+	 * Ensures reducer bails out when the layer has no selection key.
+	 */
 	it('ignores unrelated selections when no selectionKey is present', () => {
 		const fakeState = createFakeState(
 			[mapModel('overview-map', [mapLayer('urban-footprint')])],
@@ -84,6 +95,7 @@ describe('Shared state reducer: mapLayerRemoveFeatureKeyInSelections', () => {
 			]
 		);
 
+		// Attempt to remove without a selection link should leave state as-is
 		const result = reduceHandlerRemoveFeatureKeyInSelections(
 			fakeState,
 			action({ mapKey: 'overview-map', layerKey: 'urban-footprint', featureKey: 'parcel-2' })

@@ -36,7 +36,13 @@ const action = (payload: ActionMapLayerOpacityChange['payload']): ActionMapLayer
 	payload,
 });
 
+/**
+ * Validates mapLayerOpacityChange updates layer opacity while leaving others alone.
+ */
 describe('Shared state reducer: mapLayerOpacityChange', () => {
+	/**
+	 * Checks only the addressed layer receives the new opacity value.
+	 */
 	it('updates opacity for the targeted layer', () => {
 		// Before: overview map has a 0.5 opacity layer we want at 0.75
 		const fakeState = createFakeState([
@@ -50,6 +56,7 @@ describe('Shared state reducer: mapLayerOpacityChange', () => {
 			action({ mapKey: 'overview-map', layerKey: 'urban-footprint', opacity: 0.75 })
 		);
 
+		// Confirm opacity changed for the target and not for neighbouring layers
 		expect(
 			result.maps
 				.find((map) => map.key === 'overview-map')

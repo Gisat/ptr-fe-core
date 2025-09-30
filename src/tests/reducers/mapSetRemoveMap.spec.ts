@@ -34,7 +34,13 @@ const action = (payload: ActionMapRemoveFromMapSet['payload']): ActionMapRemoveF
 	payload,
 });
 
+/**
+ * Validates mapSetRemoveMap detaches a map from its set and removes the entity.
+ */
 describe('Shared state reducer: mapSetRemoveMap', () => {
+	/**
+	 * Ensures both the map set list and global map store drop the targeted map.
+	 */
 	it('removes the map key from the map set and deletes the map', () => {
 		const fakeState = createFakeState(
 			[mapSet('set-a', ['map-master', 'map-peer'])],
@@ -43,6 +49,7 @@ describe('Shared state reducer: mapSetRemoveMap', () => {
 
 		const result = reduceHandlerMapSetRemoveMap(fakeState, action({ mapSetKey: 'set-a', mapKey: 'map-peer' }));
 
+		// Remaining map set should only include the surviving key and map store reflect removal
 		expect(result.mapSets[0].maps).toEqual(['map-master']);
 		expect(result.maps.map((map) => map.key)).toEqual(['map-master', 'map-other']);
 	});
