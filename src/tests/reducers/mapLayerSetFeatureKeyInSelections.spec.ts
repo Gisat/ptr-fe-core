@@ -4,15 +4,18 @@ import { ActionMapLayerSetFeatureKey } from '../../client/shared/appState/state.
 import { Selection } from '../../client/shared/models/models.selections';
 import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
+// Helper: composes fake state from passed maps and optional selections.
 const buildFakeState = (maps: ReturnType<typeof buildMapModel>[], selections: Selection[] = []) =>
 	buildAppState({ maps, selections });
 
+// Action factory for MAP_LAYER_SET_FEATURE_KEY with typed payload.
 const action = makeActionFactory<ActionMapLayerSetFeatureKey>(StateActionType.MAP_LAYER_SET_FEATURE_KEY);
 
 /**
  * Validates mapLayerSetFeatureKeyInSelections replaces selection feature sets as requested.
  */
 describe('Shared state reducer: mapLayerSetFeatureKeyInSelections', () => {
+	// Scenario: fake state has selection link; setting new feature should overwrite keys and colour map.
 	/**
 	 * Ensures the defined selection is overwritten with a single new feature.
 	 */
@@ -47,6 +50,7 @@ describe('Shared state reducer: mapLayerSetFeatureKeyInSelections', () => {
 		expect(updatedSelection?.featureKeyColourIndexPairs).toEqual({ 'parcel-3': 0 });
 	});
 
+	// Scenario: fake state lacks selection; reducer must create one with defaults.
 	/**
 	 * Confirms the reducer synthesizes a selection if absent.
 	 */
@@ -68,6 +72,7 @@ describe('Shared state reducer: mapLayerSetFeatureKeyInSelections', () => {
 		expect(createdSelection.featureKeyColourIndexPairs).toEqual({ 'parcel-1': 0 });
 	});
 
+	// Scenario: fake state needs new selection but with custom style overrides applied.
 	/**
 	 * Verifies optional style overrides flow into the new selection record.
 	 */

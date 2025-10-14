@@ -5,15 +5,18 @@ import { SELECTION_DEFAULT_DISTINCT_COLOURS } from '../../client/shared/constant
 import { Selection } from '../../client/shared/models/models.selections';
 import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
+// Helper: composes fake app state with provided maps and optional selections slice.
 const buildFakeState = (maps: ReturnType<typeof buildMapModel>[], selections: Selection[] = []) =>
 	buildAppState({ maps, selections });
 
+// Action factory for MAP_LAYER_ADD_FEATURE_KEY with typed payload.
 const action = makeActionFactory<ActionMapLayerAddFeatureKey>(StateActionType.MAP_LAYER_ADD_FEATURE_KEY);
 
 /**
  * Ensures the mapLayerAddFeatureKeyToSelections reducer manages selection metadata.
  */
 describe('Shared state reducer: mapLayerAddFeatureKeyToSelections', () => {
+	// Scenario: fake state has overview/detail maps without selection keys; expect new selection creation.
 	/**
 	 * Confirms a selection record is created when the layer lacks one.
 	 */
@@ -58,6 +61,7 @@ describe('Shared state reducer: mapLayerAddFeatureKeyToSelections', () => {
 		expect(detailMap).toEqual(fakeState.maps[1]);
 	});
 
+	// Scenario: fake state starts with existing selection for the target layer; expect reuse with appended colour index.
 	/**
 	 * Ensures existing selections reuse their key and choose the next colour index.
 	 */
@@ -97,6 +101,7 @@ describe('Shared state reducer: mapLayerAddFeatureKeyToSelections', () => {
 		expect(updatedLayer?.selectionKey).toBe(selectionKey);
 	});
 
+	// Scenario: fake state requires new selection but with custom style overrides from the action payload.
 	/**
 	 * Validates optional selection style overrides flow into the created record.
 	 */

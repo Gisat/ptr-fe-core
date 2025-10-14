@@ -3,6 +3,7 @@ import { reduceHandlerMapSetModeChange } from '../../client/shared/appState/redu
 import { ActionMapSetModeChange } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
+// Helper: produces map set with configurable visual mode for testing toggles.
 const mapSet = (key: string, mode: 'slider' | 'grid' = 'grid') =>
 	buildMapSet(key, {
 		maps: ['map-a'],
@@ -11,14 +12,17 @@ const mapSet = (key: string, mode: 'slider' | 'grid' = 'grid') =>
 		mode,
 	});
 
+// Helper: assembles fake state containing provided map sets.
 const createFakeState = (mapSets: ReturnType<typeof mapSet>[]) => buildAppState({ mapSets });
 
+// Action factory for MAP_SET_MODE_CHANGE with typed payload.
 const action = makeActionFactory<ActionMapSetModeChange>(StateActionType.MAP_SET_MODE_CHANGE);
 
 /**
  * Ensures mapSetModeChange toggles display mode per map set key.
  */
 describe('Shared state reducer: mapSetModeChange', () => {
+	// Scenario: fake state includes two map sets; we switch set-a to slider.
 	/**
 	 * Confirms the targeted set adopts the requested mode value.
 	 */
@@ -32,6 +36,7 @@ describe('Shared state reducer: mapSetModeChange', () => {
 		expect(result.mapSets.find((set) => set.key === 'set-b')?.mode).toBe('slider');
 	});
 
+	// Scenario: ensure other map sets remain untouched when toggling a different key.
 	/**
 	 * Checks non-targeted map sets remain unchanged.
 	 */

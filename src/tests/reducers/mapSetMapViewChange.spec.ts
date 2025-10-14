@@ -3,9 +3,11 @@ import { reduceHandlerMapSetMapViewChange } from '../../client/shared/appState/r
 import { ActionMapViewChange } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
+// Helper: builds map model with specified view to mimic stored map positions.
 const mapModel = (key: string, view: { zoom: number; latitude: number; longitude: number }) =>
 	buildMapModel(key, { view });
 
+// Helper: configures map set with sync flags and stored view snapshot.
 const mapSet = (
 	key: string,
 	maps: string[],
@@ -13,15 +15,18 @@ const mapSet = (
 	view: { zoom?: number; latitude?: number; longitude?: number }
 ) => buildMapSet(key, { maps, sync, view });
 
+// Helper: assembles fake state with predetermined map sets and map collections.
 const createFakeState = (mapSets: ReturnType<typeof mapSet>[], maps: ReturnType<typeof mapModel>[]) =>
 	buildAppState({ mapSets, maps });
 
+// Action factory for MAP_VIEW_CHANGE with typed payload.
 const action = makeActionFactory<ActionMapViewChange>(StateActionType.MAP_VIEW_CHANGE);
 
 /**
  * Exercises mapSetMapViewChange to ensure sync flags drive view propagation.
  */
 describe('Shared state reducer: mapSetMapViewChange', () => {
+	// Scenario: sync-enabled set should propagate zoom/center to sibling map and update stored snapshot.
 	/**
 	 * Confirms zoom/center propagate to sibling maps when sync is true.
 	 */
@@ -63,6 +68,7 @@ describe('Shared state reducer: mapSetMapViewChange', () => {
 		expect(otherView).toEqual({ zoom: 3, latitude: -5, longitude: -5 });
 	});
 
+	// Scenario: sync-disabled set should only change the triggering map and leave snapshot intact.
 	/**
 	 * Ensures only the initiating map updates when sync is disabled.
 	 */

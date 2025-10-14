@@ -4,15 +4,18 @@ import { ActionMapLayerRemoveFeatureKey } from '../../client/shared/appState/sta
 import { Selection } from '../../client/shared/models/models.selections';
 import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
+// Helper: fabricates app state with supplied maps and optional selections list.
 const buildFakeState = (maps: ReturnType<typeof buildMapModel>[], selections: Selection[] = []) =>
 	buildAppState({ maps, selections });
 
+// Action factory for MAP_LAYER_REMOVE_FEATURE_KEY with typed payload.
 const action = makeActionFactory<ActionMapLayerRemoveFeatureKey>(StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY);
 
 /**
  * Verifies mapLayerRemoveFeatureKeyInSelections prunes feature keys safely.
  */
 describe('Shared state reducer: mapLayerRemoveFeatureKeyInSelections', () => {
+	// Scenario: fake state ties selection to urban layer; removing feature should collapse keys/colour map.
 	/**
 	 * Confirms the addressed feature key is removed and colour mapping shifts.
 	 */
@@ -47,6 +50,7 @@ describe('Shared state reducer: mapLayerRemoveFeatureKeyInSelections', () => {
 		expect(updatedSelection?.featureKeyColourIndexPairs).toEqual({ 'parcel-1': 0 });
 	});
 
+	// Scenario: fake state has no selection key on layer, so reducer should leave selections untouched.
 	/**
 	 * Ensures reducer bails out when the layer has no selection key.
 	 */

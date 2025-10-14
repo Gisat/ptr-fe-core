@@ -9,13 +9,16 @@ import {
 	makeActionFactory,
 } from '../tools/reducer.helpers';
 
+// Helper: baseline app state mock with defaults for slices not under test.
 const createFakeState = () => buildAppState();
 
+// Helper: active rendering layer fixture representing an existing dataset.
 const layer = (key: string) =>
 	buildRenderingLayer(key, {
 		isActive: true,
 	});
 
+// Helper: map set fixture with neutral sync/view values for dedupe checks.
 const mapSet = (key: string) =>
 	buildMapSet(key, {
 		maps: [],
@@ -23,11 +26,13 @@ const mapSet = (key: string) =>
 		view: { latitude: 0, longitude: 0, zoom: 0 },
 	});
 
+// Helper: map model fixture providing identifiable keys and default view.
 const mapModel = (key: string) =>
 	buildMapModel(key, {
 		view: { latitude: 0, longitude: 0, zoom: 0 },
 	});
 
+// Action factory: creates GLOBAL_STATE_UPDATE actions with partial payload overrides.
 const action = makeActionFactory<ActionGlobalStateUpdate, Partial<ActionGlobalStateUpdate['payload']>>(
 	StateActionType.GLOBAL_STATE_UPDATE
 );
@@ -36,6 +41,7 @@ const action = makeActionFactory<ActionGlobalStateUpdate, Partial<ActionGlobalSt
  * Validates the globalStateUpdate reducer merges and preserves global app slices correctly.
  */
 describe('Shared state reducer: globalStateUpdate', () => {
+	// Scenario: fake state starts with one layer, map set, and map so we can observe deduplication when new payload arrives.
 	/**
 	 * Confirms incoming payload sections add new entities and deduplicate by key.
 	 */
@@ -64,6 +70,7 @@ describe('Shared state reducer: globalStateUpdate', () => {
 		expect(result.maps.map((map) => map.key)).toEqual(['overview-map', 'detail-map']);
 	});
 
+	// Scenario: fake state seeds references to ensure unchanged slices are returned verbatim when payload omits them.
 	/**
 	 * Ensures untouched slices are carried by reference when not provided in payload.
 	 */

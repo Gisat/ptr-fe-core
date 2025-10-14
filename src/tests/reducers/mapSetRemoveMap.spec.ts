@@ -3,6 +3,7 @@ import { reduceHandlerMapSetRemoveMap } from '../../client/shared/appState/reduc
 import { ActionMapRemoveFromMapSet } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
+// Helper: builds map set fixture with provided map keys for removal scenarios.
 const mapSet = (key: string, maps: string[]) =>
 	buildMapSet(key, {
 		maps,
@@ -10,17 +11,21 @@ const mapSet = (key: string, maps: string[]) =>
 		view: { latitude: 0, longitude: 0, zoom: 4 },
 	});
 
+// Helper: produces map model with default configuration for inclusion in state.
 const mapModel = (key: string) => buildMapModel(key);
 
+// Helper: composes fake state using given map sets and registered map models.
 const createFakeState = (mapSets: ReturnType<typeof mapSet>[], maps: ReturnType<typeof mapModel>[]) =>
 	buildAppState({ mapSets, maps });
 
+// Action factory for MAP_REMOVE_FROM_MAP_SET with typed payload.
 const action = makeActionFactory<ActionMapRemoveFromMapSet>(StateActionType.MAP_REMOVE_FROM_MAP_SET);
 
 /**
  * Validates mapSetRemoveMap detaches a map from its set and removes the entity.
  */
 describe('Shared state reducer: mapSetRemoveMap', () => {
+	// Scenario: fake state contains map-set with two maps and global registry; removing one should prune both lists.
 	/**
 	 * Ensures both the map set list and global map store drop the targeted map.
 	 */

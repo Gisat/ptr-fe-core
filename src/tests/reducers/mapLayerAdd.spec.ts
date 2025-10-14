@@ -3,17 +3,19 @@ import { reduceHandlerMapLayerAdd } from '../../client/shared/appState/reducerHa
 import { ActionMapLayerAdd } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
+// Action factory for MAP_LAYER_ADD with typed payload.
 const action = makeActionFactory<ActionMapLayerAdd>(StateActionType.MAP_LAYER_ADD);
 
 /**
  * Exercises the mapLayerAdd reducer to ensure it mutates map state correctly.
  */
 describe('Shared state reducer: mapLayerAdd', () => {
+	// Scenario: fake state features overview and detail maps; we append a new layer to overview.
 	/**
 	 * Validates that a missing index triggers a simple append to the target map layers.
 	 */
 	it('appends a new layer to the target map when index is absent', () => {
-		// Seed overview and detail maps with their existing layers
+		// Fake state: overview map with base layer, detail map with surface layer.
 		const fakeState = buildAppState({
 			maps: [
 				buildMapModel('overview-map', { layers: [mapLayerStub({ key: 'base-layer', isActive: true })] }),
@@ -40,7 +42,7 @@ describe('Shared state reducer: mapLayerAdd', () => {
 	 * Ensures an explicit index replaces the existing layer rather than appending.
 	 */
 	it('replaces the layer at the provided index', () => {
-		// Start with two layers so the replacement spot is obvious
+		// Fake state: overview map with base layer at index 0 and urban footprint at index 1.
 		const fakeState = buildAppState({
 			maps: [
 				buildMapModel('overview-map', {

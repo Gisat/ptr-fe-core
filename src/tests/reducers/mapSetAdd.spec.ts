@@ -3,6 +3,7 @@ import { reduceHandlerMapSetAddMapSet } from '../../client/shared/appState/reduc
 import { ActionMapSetAdd } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
+// Helper: builds fake state populated with the provided map sets.
 const createFakeState = (mapSets: ReturnType<typeof mapSet>[] = []) => buildAppState({ mapSets });
 
 const mapSet = (key: string) =>
@@ -12,12 +13,14 @@ const mapSet = (key: string) =>
 		view: { latitude: 0, longitude: 0, zoom: 5 },
 	});
 
+// Action factory for MAP_SET_ADD with typed payload.
 const action = makeActionFactory<ActionMapSetAdd>(StateActionType.MAP_SET_ADD);
 
 /**
  * Covers mapSetAdd reducer behaviour for adding new map set definitions.
  */
 describe('Shared state reducer: mapSetAdd', () => {
+	// Scenario: fake state starts with one regional map set; expect new urban set appended.
 	/**
 	 * Verifies a unique map set payload is appended to state.
 	 */
@@ -35,6 +38,7 @@ describe('Shared state reducer: mapSetAdd', () => {
 		expect(result.mapSets[1]).toBe(newMapSet);
 	});
 
+	// Scenario: fake state already contains the map set; reducer should short-circuit to original references.
 	/**
 	 * Ensures duplicates short-circuit to the original state reference.
 	 */

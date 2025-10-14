@@ -3,19 +3,22 @@ import { reduceHandlerMapLayerActiveChange } from '../../client/shared/appState/
 import { ActionMapLayerActiveChange } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
+// Helper: wraps map fixtures into app state with supplied map collection.
 const buildFakeState = (maps) => buildAppState({ maps });
 
+// Action factory for MAP_LAYER_ACTIVE_CHANGE with typed payload.
 const action = makeActionFactory<ActionMapLayerActiveChange>(StateActionType.MAP_LAYER_ACTIVE_CHANGE);
 
 /**
  * Checks the mapLayerActiveChange reducer updates layer activity within a map.
  */
 describe('Shared state reducer: mapLayerActiveChange', () => {
+	// Scenario: fake state models two maps—overview with two layers and detail with one—to verify only one layer flips.
 	/**
 	 * Ensures only the targeted layer on the selected map flips state.
 	 */
 	it('updates only the targeted layer on the selected map', () => {
-		// Set up multiple maps to ensure cross-map isolation
+		// Fake state: overview map with mixed layer activity and detail map with active surface layer.
 		const fakeState = buildFakeState([
 			buildMapModel('overview-map', {
 				view: { latitude: 0, longitude: 0, zoom: 5 },

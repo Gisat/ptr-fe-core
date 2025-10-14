@@ -3,6 +3,7 @@ import { reduceHandlerMapAdd } from '../../client/shared/appState/reducerHandler
 import { ActionMapAdd } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapModel, buildRenderingLayer, makeActionFactory } from '../tools/reducer.helpers';
 
+// Helper: constructs a map model seeded with a single active base layer.
 const baseMap = (key: string) =>
 	buildMapModel(key, {
 		layers: [
@@ -13,14 +14,17 @@ const baseMap = (key: string) =>
 		],
 	});
 
+// Helper: fabricates app state containing the provided maps (defaults to one overview map).
 const createFakeState = (maps = [baseMap('overview-map')]) => buildAppState({ maps });
 
+// Action factory for MAP_ADD reducer with typed payload.
 const action = makeActionFactory<ActionMapAdd>(StateActionType.MAP_ADD);
 
 /**
  * Covers the mapAdd reducer behaviour for adding new maps safely.
  */
 describe('Shared state reducer: mapAdd', () => {
+	// Scenario: fake state begins with single overview map; we append a brand-new detail map.
 	/**
 	 * Verifies a unique map is appended to the collection.
 	 */
@@ -38,6 +42,7 @@ describe('Shared state reducer: mapAdd', () => {
 		expect(result.maps.slice(0, -1)).toEqual(fakeState.maps);
 	});
 
+	// Scenario: state already holds overview map; we send duplicate payload and expect a no-op result.
 	/**
 	 * Ensures the reducer is a no-op when a duplicate key is supplied.
 	 */
@@ -53,6 +58,7 @@ describe('Shared state reducer: mapAdd', () => {
 		expect(result.maps).toBe(fakeState.maps);
 	});
 
+	// Scenario: adding a new map should produce a new array reference even though contents share base layer.
 	/**
 	 * Confirms the reducer returns a fresh array even when adding succeeds.
 	 */

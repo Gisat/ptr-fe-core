@@ -3,6 +3,7 @@ import { reduceHandlerMapSetRemove } from '../../client/shared/appState/reducerH
 import { ActionMapSetRemove } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
+// Helper: produces basic map set fixture used for removal scenarios.
 const mapSet = (key: string) =>
 	buildMapSet(key, {
 		maps: ['map-a'],
@@ -10,14 +11,17 @@ const mapSet = (key: string) =>
 		view: { latitude: 0, longitude: 0, zoom: 4 },
 	});
 
+// Helper: assembles fake state containing the supplied map set list.
 const createFakeState = (mapSets: ReturnType<typeof mapSet>[]) => buildAppState({ mapSets });
 
+// Action factory for MAP_SET_REMOVE with typed payload.
 const action = makeActionFactory<ActionMapSetRemove>(StateActionType.MAP_SET_REMOVE);
 
 /**
  * Validates mapSetRemove drops map sets without impacting others.
  */
 describe('Shared state reducer: mapSetRemove', () => {
+	// Scenario: fake state with two map sets; removing set-a should leave only set-b.
 	/**
 	 * Ensures the specified map set key is removed from state.
 	 */
@@ -30,6 +34,7 @@ describe('Shared state reducer: mapSetRemove', () => {
 		expect(result.mapSets.map((set) => set.key)).toEqual(['set-b']);
 	});
 
+	// Scenario: when removing set-b, ensure set-a reference is unchanged.
 	/**
 	 * Confirms the remaining map sets preserve their references.
 	 */

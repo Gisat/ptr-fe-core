@@ -3,6 +3,7 @@ import { reduceHandlerMapSetAddMap } from '../../client/shared/appState/reducerH
 import { ActionMapAddToMapSet } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
+// Helper: constructs map set fixture with optional map keys to simulate existing membership.
 const mapSet = (key: string, maps: string[] = ['map-a']) =>
 	buildMapSet(key, {
 		maps,
@@ -10,17 +11,21 @@ const mapSet = (key: string, maps: string[] = ['map-a']) =>
 		view: { latitude: 0, longitude: 0, zoom: 4 },
 	});
 
+// Helper: produces map model with default view/settings for inclusion in state.
 const mapModel = (key: string) => buildMapModel(key);
 
+// Helper: assembles fake app state with specified map sets and registered map instances.
 const createFakeState = (mapSets: ReturnType<typeof mapSet>[], maps: ReturnType<typeof mapModel>[] = []) =>
 	buildAppState({ mapSets, maps });
 
+// Action factory for MAP_ADD_TO_MAP_SET with typed payload.
 const action = makeActionFactory<ActionMapAddToMapSet>(StateActionType.MAP_ADD_TO_MAP_SET);
 
 /**
  * Checks mapSetAddMap appends map references and stores the map entity.
  */
 describe('Shared state reducer: mapSetAddMap', () => {
+	// Scenario: fake state has map set with one member and only that map registered; expect new map appended + stored.
 	/**
 	 * Ensures the map set gains the new key plus the map record itself.
 	 */

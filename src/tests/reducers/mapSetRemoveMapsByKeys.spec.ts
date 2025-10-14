@@ -3,6 +3,7 @@ import { reduceHandlerRemoveMapSetMapsByKeys } from '../../client/shared/appStat
 import { ActionMapSetRemoveMapsByKeys } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
 
+// Helper: creates map set fixture seeded with specific map keys.
 const mapSet = (key: string, maps: string[]) =>
 	buildMapSet(key, {
 		maps,
@@ -10,17 +11,21 @@ const mapSet = (key: string, maps: string[]) =>
 		view: { latitude: 0, longitude: 0, zoom: 4 },
 	});
 
+// Helper: builds map model stub for inclusion in map registry.
 const mapModel = (key: string) => buildMapModel(key);
 
+// Helper: assembles fake app state with given map sets and map models.
 const createFakeState = (mapSets: ReturnType<typeof mapSet>[], maps: ReturnType<typeof mapModel>[]) =>
 	buildAppState({ mapSets, maps });
 
+// Action factory for MAP_SET_REMOVE_MAPS_BY_KEYS with typed payload.
 const action = makeActionFactory<ActionMapSetRemoveMapsByKeys>(StateActionType.MAP_SET_REMOVE_MAPS_BY_KEYS);
 
 /**
  * Verifies mapSetRemoveMapsByKeys prunes maps from a set and global store.
  */
 describe('Shared state reducer: mapSetRemoveMapsByKeys', () => {
+	// Scenario: fake state has multi-map set; removing subset should prune from both set and registry.
 	/**
 	 * Ensures specified map keys disappear from both the set and shared map list.
 	 */

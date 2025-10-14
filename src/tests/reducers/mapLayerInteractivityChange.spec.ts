@@ -3,12 +3,14 @@ import { reduceHandlerMapLayerInteractivityChange } from '../../client/shared/ap
 import { ActionMapLayerInteractivityChange } from '../../client/shared/appState/state.models.actions';
 import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
+// Action factory for MAP_LAYER_INTERACTIVITY_CHANGE with typed payload.
 const action = makeActionFactory<ActionMapLayerInteractivityChange>(StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE);
 
 /**
  * Exercises the mapLayerInteractivityChange reducer to flip interaction flags.
  */
 describe('Shared state reducer: mapLayerInteractivityChange', () => {
+	// Scenario: fake state has non-interactive urban layer among other interactive layers; expect only target flips.
 	/**
 	 * Checks that only the addressed layer switches to interactive=true.
 	 */

@@ -4,15 +4,18 @@ import { ActionMapLayerRemove } from '../../client/shared/appState/state.models.
 import { Selection } from '../../client/shared/models/models.selections';
 import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
 
+// Helper: composes fake state from provided maps and optional selection entries.
 const buildFakeState = (maps: ReturnType<typeof buildMapModel>[], selections: Selection[] = []) =>
 	buildAppState({ maps, selections });
 
+// Action factory for MAP_LAYER_REMOVE with typed payload.
 const action = makeActionFactory<ActionMapLayerRemove>(StateActionType.MAP_LAYER_REMOVE);
 
 /**
  * Validates mapLayerRemove drops layers and cleans up associated selections.
  */
 describe('Shared state reducer: mapLayerRemove', () => {
+	// Scenario: fake state includes overview map with selection-linked layer and detail map unaffected.
 	/**
 	 * Confirms both layer and linked selection disappear after removal.
 	 */
@@ -57,6 +60,7 @@ describe('Shared state reducer: mapLayerRemove', () => {
 		expect(detailMap).toEqual(fakeState.maps[1]);
 	});
 
+	// Scenario: fake state has unrelated selections that must survive when removing a layer without selection key.
 	/**
 	 * Ensures unrelated selections remain when the removed layer had no link.
 	 */
