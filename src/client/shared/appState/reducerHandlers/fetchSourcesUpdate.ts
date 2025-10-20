@@ -17,15 +17,18 @@ import { ActionChangeLayerSources } from '../state.models.actions';
  * @returns The updated application state with the new rendering layers included.
  */
 export const reduceHandlerFetchSources = <T extends AppSharedState = AppSharedState>(
-    state: T,
-    action: ActionChangeLayerSources
+	state: T,
+	action: ActionChangeLayerSources
 ): T => {
-    return {
-        ...state, renderingLayers: state.renderingLayers
-            ? [
-                ...state.renderingLayers,
-                ...parseDatasourcesToRenderingLayers(action.payload as any[], state.appNode), 
-            ]
-            : parseDatasourcesToRenderingLayers(action.payload as any[], state.appNode),
-    };
+	return {
+		...state,
+		renderingLayers: state.renderingLayers
+			? [
+					...state.renderingLayers,
+					// TODO: Remove "any[]"
+					...parseDatasourcesToRenderingLayers(action.payload as any[], state.appNode),
+				]
+			: // TODO: Remove "any[]"
+				parseDatasourcesToRenderingLayers(action.payload as any[], state.appNode),
+	};
 };
