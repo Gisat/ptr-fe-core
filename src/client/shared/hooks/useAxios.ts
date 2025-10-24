@@ -39,16 +39,17 @@ export interface UseAxiosReturn<T> {
  * @returns {UseAxiosReturn<T>} - An object containing the response data, error, loading state, and validation state.
  *
  * @example
- * const { data, error, isLoading, isValidating } = useAxios(
+ *  const { data, error, isLoading, isValidating } = useAxios(
  *   { fetchUrl: '/api/data' },
- *   { key: 'value' },
- *   { method: 'POST', axiosConfig: { headers: { 'Content-Type': 'application/json' } } }
- * );
+ *   undefined,
+ *   { method: 'POST', axiosConfig: { headers: { 'Content-Type': 'application/json' } } },
+ *   { key: 'value' }
+ *  );
  */
 export function useAxios<T = unknown>(
     url: { fetchUrl: string },
     fetcher?: (url: string) => Promise<T>,
-    payload?: any,
+    payload?: unknown,
     options: UseAxiosOptions = {}
 ): UseAxiosReturn<T> {
     const [data, setData] = useState<T | null>(null);
@@ -90,5 +91,5 @@ export function useAxios<T = unknown>(
         })();
     }, [url.fetchUrl, fetcher, payload, options.method, options.axiosConfig]);
 
-    return { data, error, isLoading, isValidating };
+    return {data, error, isLoading, isValidating};
 }
