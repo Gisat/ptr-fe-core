@@ -74,12 +74,10 @@ export function useAxios<T = unknown>(
                     if (fetcher) {
                         responseData = await fetcher(url.fetchUrl);
                     } else {
-                        const res = await axios.get<T>(url.fetchUrl, options.axiosConfig);
-                        responseData = res.data;
+                        responseData = (await axios.get<T>(url.fetchUrl, options.axiosConfig)).data;
                     }
                 } else {
-                    const res = await axios.post<T>(url.fetchUrl, payload, options.axiosConfig);
-                    responseData = res.data;
+                    responseData = (await axios.post<T>(url.fetchUrl, payload, options.axiosConfig)).data;
                 }
 
                 setData(responseData);
@@ -90,7 +88,7 @@ export function useAxios<T = unknown>(
                 setIsLoading(false);
             }
         })();
-    }, []); // Empty dependency array ensures the effect runs only once.
+    }, [url.fetchUrl, fetcher, payload, options.method, options.axiosConfig]);
 
     return { data, error, isLoading, isValidating };
 }
