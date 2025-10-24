@@ -72,7 +72,6 @@ export function useAxios<T = unknown>(
                 let responseData: T;
                 if (method === 'GET') {
                     if (fetcher) {
-                        // fetcher vrací rovnou T
                         responseData = await fetcher(url.fetchUrl);
                     } else {
                         const res = await axios.get<T>(url.fetchUrl, options.axiosConfig);
