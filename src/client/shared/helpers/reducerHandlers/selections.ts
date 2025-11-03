@@ -56,7 +56,7 @@ export function updateRenderingLayers(
 export function updateSelections(
 	selections: Selection[],
 	selectionKey: string,
-	featureKey: string,
+	featureKey: string | number,
 	customSelectionStyle: Partial<Selection> | undefined,
 	overwrite: boolean = false
 ): Selection[] {

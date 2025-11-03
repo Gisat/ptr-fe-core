@@ -119,7 +119,7 @@ export interface ActionMapLayerSetFeatureKey extends AppSpecificAction {
 	payload: {
 		mapKey: string;
 		layerKey: string;
-		featureKey: string;
+		featureKey: string | number;
 		customSelectionStyle?: Partial<Selection>;
 	};
 }
@@ -130,7 +130,7 @@ export interface ActionMapLayerAddFeatureKey extends AppSpecificAction {
 	payload: {
 		mapKey: string;
 		layerKey: string;
-		featureKey: string;
+		featureKey: string | number;
 		customSelectionStyle?: Partial<Selection>;
 	};
 }
@@ -138,7 +138,7 @@ export interface ActionMapLayerAddFeatureKey extends AppSpecificAction {
 /** Remove feature key from map layer selections */
 export interface ActionMapLayerRemoveFeatureKey extends AppSpecificAction {
 	type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY;
-	payload: { mapKey: string; layerKey: string; featureKey: string };
+	payload: { mapKey: string; layerKey: string; featureKey: string | number };
 }
 
 /**
@@ -170,7 +170,12 @@ export interface ActionMapSetRemoveMapsByKeys extends AppSpecificAction {
  */
 export interface ActionGlobalStateUpdate extends AppSpecificAction {
 	type: StateActionType.GLOBAL_STATE_UPDATE;
-	payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
+	payload: {
+		mapSets: MapSetModel[];
+		maps: SingleMapModel[];
+		renderingLayers: RenderingLayer[];
+		selections: Selection[];
+	};
 }
 
 /**

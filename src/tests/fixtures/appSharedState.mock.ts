@@ -1,5 +1,9 @@
 import { AppSharedState } from '../../client/shared/appState/state.models';
 
+/**
+ * Comprehensive shared-state fixture that mirrors a fully-hydrated application snapshot.
+ * Used by integration-style reducer tests that require consistent cross-entity relationships.
+ */
 export const fullAppSharedStateMock: AppSharedState = {
 	appNode: {
 		labels: ['application'],
@@ -9,6 +13,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 		description: '',
 		lastUpdatedAt: 1750426411072,
 	},
+	// Rendering layers available to the UI; each entry links back to datasource metadata.
 	renderingLayers: [
 		{
 			datasource: {
@@ -219,6 +224,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			},
 		},
 	],
+	// Abstract layer definitions used to describe thematic datasets.
 	layers: [
 		{
 			labels: ['layer'],
@@ -250,6 +256,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			neighbours: ['n0', 'n20', 'n22'],
 		},
 	],
+	// Geographic places referenced by map navigation helpers.
 	places: [
 		{
 			labels: ['place'],
@@ -282,6 +289,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			lastUpdatedAt: 1754919714681,
 		},
 	],
+	// Map-set definitions controlling grouped map behaviour.
 	mapSets: [
 		{
 			key: 'mapSetLayersDemo',
@@ -297,6 +305,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			},
 		},
 	],
+	// Individual map instances, including their active rendering layers.
 	maps: [
 		{
 			key: 'mapA',
@@ -335,6 +344,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			],
 		},
 	],
+	// Styling presets tied to thematic layers.
 	styles: [
 		{
 			labels: ['style'],
@@ -384,6 +394,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			},
 		},
 	],
+	// Time periods associated with datasets, enabling temporal filtering.
 	periods: [
 		{
 			labels: ['period'],
@@ -408,5 +419,6 @@ export const fullAppSharedStateMock: AppSharedState = {
 			validTo: 1575154800000,
 		},
 	],
+	// No selections are active in the base fixture; left empty for tests to populate.
 	selections: [],
 };
