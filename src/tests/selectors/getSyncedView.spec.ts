@@ -1,59 +1,80 @@
 import { getSyncedView } from '../../client/shared/appState/selectors/getSyncedView';
 import { AppSharedState } from '../../client/shared/appState/state.models';
 import { MapSetModel } from '../../client/shared/models/models.mapSet';
-import { MapSetSync } from '../../client/shared/models/models.mapSetSync';
+import { buildAppState, buildMapSet } from '../tools/reducer.helpers';
 
-const MAP_SET_KEY = 'mapSetA';
+/**
+ * Map-set key reused across scenarios.
+ */
+const MAP_SET_KEY = 'map-set-1';
 
-const createMapSet = (sync: MapSetSync, view: MapSetModel['view']): MapSetModel => ({
-	key: MAP_SET_KEY,
-	maps: [],
-	sync,
-	view,
-});
+/**
+ * Default view values merged into each map-set fixture.
+ */
+const DEFAULT_VIEW = {
+	zoom: 6,
+	latitude: 12,
+	longitude: 34,
+};
 
-const createFakeState = (mapSet?: MapSetModel): AppSharedState => ({
-	mapSets: mapSet ? [mapSet] : [],
-	maps: [],
-	layers: [],
-	places: [],
-	styles: [],
-	periods: [],
-	selections: [],
-	renderingLayers: [],
-	appNode: {
-		key: 'app',
-		labels: ['application'],
-		nameDisplay: 'app',
-		nameInternal: 'app',
-		description: '',
-		lastUpdatedAt: 0,
-	},
-});
+type MapSetOverrides = Parameters<typeof buildMapSet>[1];
+
+/**
+ * Builds a map-set tailored for synced-view testing.
+ */
+const createMapSet = (overrides: MapSetOverrides = {}): MapSetModel =>
+	buildMapSet(MAP_SET_KEY, {
+		sync: { zoom: false, center: false, ...overrides.sync },
+		view: { ...DEFAULT_VIEW, ...overrides.view },
+		...overrides,
+	});
+
+/**
+ * Produces app state with the provided map-sets.
+ */
+const createState = (mapSets: MapSetModel[] = [createMapSet()]): AppSharedState => buildAppState({ mapSets });
 
 describe('Shared state selector: getSyncedView', () => {
 	it('returns zoom and center when both are synced', () => {
-		// Arrange - map set syncs zoom and center
-		const mapSet = createMapSet({ zoom: true, center: true }, { zoom: 5, latitude: 10, longitude: 20 });
-		const fakeState = createFakeState(mapSet);
+		// Step 1: Seed state with a map-set syncing both zoom and center.
+		const fakeState = createState([
+			createMapSet({
+				sync: { zoom: true, center: true },
+				view: { zoom: 5, latitude: 10, longitude: 20 },
+			}),
+		]);
 
-		// Act - compute synced view
+		// Step 2: Resolve the synced view for the configured map-set.
 		const result = getSyncedView(fakeState, MAP_SET_KEY);
 
-		// Assert - expect all synced parts
+		// Step 3: Confirm both zoom and center are returned.
 		expect(result).toEqual({ zoom: 5, latitude: 10, longitude: 20 });
 	});
 
 	it('returns only zoom when center is not synced', () => {
-		const mapSet = createMapSet({ zoom: true, center: false }, { zoom: 7 });
-		const fakeState = createFakeState(mapSet);
+		// Step 1: Create state with zoom syncing enabled, center disabled.
+		const fakeState = createState([
+			createMapSet({
+				sync: { zoom: true, center: false },
+				view: { zoom: 8, latitude: 1, longitude: 2 },
+			}),
+		]);
+
+		// Step 2: Ask the selector for the synced view.
 		const result = getSyncedView(fakeState, MAP_SET_KEY);
-		expect(result).toEqual({ zoom: 7 });
+
+		// Step 3: Expect only the zoom value to be surfaced.
+		expect(result).toEqual({ zoom: 8 });
 	});
 
 	it('returns empty object when map set not found', () => {
-		const fakeState = createFakeState();
+		// Step 1: Provide state without the target map-set.
+		const fakeState = createState([]);
+
+		// Step 2: Query the selector using the missing key.
 		const result = getSyncedView(fakeState, MAP_SET_KEY);
+
+		// Step 3: Validate that no synced values are returned.
 		expect(result).toEqual({});
 	});
 });
