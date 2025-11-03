@@ -1,48 +1,105 @@
 import { getLayersByMapKey } from '../../client/shared/appState/selectors/getLayersByMapKey';
 import { AppSharedState } from '../../client/shared/appState/state.models';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { RenderingLayer } from '../../client/shared/models/models.layers';
+import { buildAppState, buildMapModel, buildRenderingLayer } from '../tools/reducer.helpers';
+
+/**
+ * Produces a reusable rendering layer fixture with optional overrides.
+ */
+const createRenderingLayer = (key: string, overrides: Parameters<typeof buildRenderingLayer>[1] = {}): RenderingLayer =>
+	buildRenderingLayer(key, overrides);
+
+type MapLayerStub = Partial<RenderingLayer> & { key: string };
+
+/**
+ * Creates the rendering-layer stub that lives inside a map model.
+ * These partials override properties on top-level rendering layers.
+ */
+const createMapLayer = (key: string, overrides: Partial<RenderingLayer> = {}): MapLayerStub => ({
+	key,
+	isActive: true,
+	level: 0,
+	interaction: null,
+	...overrides,
+});
+
+/**
+ * Builds a single-map model seeded with the provided rendering-layer stubs.
+ */
+const createMap = (key: string, layers: MapLayerStub[] = [createMapLayer('rendering-layer')]) =>
+	buildMapModel(key, { layers });
+
+type CreateFakeStateInput = {
+	maps?: ReturnType<typeof createMap>[];
+	renderingLayers?: RenderingLayer[];
+};
+
+/**
+ * Returns a cloned shared state instance tailored for selector testing.
+ */
+const createFakeState = ({ maps, renderingLayers }: CreateFakeStateInput = {}): AppSharedState => {
+	const resolvedRenderingLayers = renderingLayers ?? [createRenderingLayer('rendering-layer')];
+	const resolvedMaps = maps ?? [
+		createMap('map-1', [createMapLayer(resolvedRenderingLayers[0]?.key ?? 'rendering-layer')]),
+	];
+
+	const state = buildAppState({
+		maps: resolvedMaps,
+		renderingLayers: resolvedRenderingLayers,
+	});
+
+	return {
+		...state,
+		maps: state.maps,
+		renderingLayers: state.renderingLayers,
+	};
+};
 
 describe('Shared state selector: getLayersByMapKey', () => {
-	it('merges rendering layer details with map layers', () => {
-		// Arrange - fixture map "mapA" links to rendering layer metadata for key "n80"
-		const fakeState: AppSharedState = fullAppSharedStateMock;
-		const map = fakeState.maps[0];
+	it('merges rendering-layer metadata into map-layer overrides', () => {
+		const globalLayer = createRenderingLayer('layer-1', {
+			level: 5,
+			opacity: 0.4,
+		});
+		const mapLayer = createMapLayer(globalLayer.key, {
+			isActive: false,
+			level: 2,
+		});
+		const map = createMap('map-1', [mapLayer]);
+		const fakeState = createFakeState({
+			renderingLayers: [globalLayer],
+			maps: [map],
+		});
 
-		// Act
 		const result = getLayersByMapKey(fakeState, map.key);
 
-		// Assert
-		expect(result).toBeDefined();
-		expect(result).toHaveLength(map.renderingLayers.length);
-		const mergedLayer = result?.find((layer) => layer.key === 'n80');
-		expect(mergedLayer?.datasource?.key).toBe('n80');
-		expect(mergedLayer?.isActive).toBe(true);
-		expect(mergedLayer?.level).toBe(0);
+		expect(result).toHaveLength(1);
+		const [mergedLayer] = result ?? [];
+		expect(mergedLayer).not.toBe(globalLayer);
+		expect(mergedLayer.key).toBe(globalLayer.key);
+		expect(mergedLayer.isActive).toBe(mapLayer.isActive);
+		expect(mergedLayer.level).toBe(mapLayer.level);
+		expect(mergedLayer.opacity).toBe(globalLayer.opacity);
+		expect(mergedLayer.datasource).toEqual(globalLayer.datasource);
 	});
 
 	it('returns undefined when map key is unknown', () => {
-		// Arrange
-		const fakeState = fullAppSharedStateMock;
+		const fakeState = createFakeState();
 
-		// Act
-		const result = getLayersByMapKey(fakeState, 'unknown-map');
+		const result = getLayersByMapKey(fakeState, 'missing-map');
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 
 	it('returns undefined when rendering layers are missing', () => {
-		// Arrange
-		const mapKey = fullAppSharedStateMock.maps[0].key;
-		const fakeState: AppSharedState = {
-			...fullAppSharedStateMock,
+		const map = createMap('map-1', [createMapLayer('layer-without-metadata')]);
+		const fakeState = createFakeState({
 			renderingLayers: [],
-		};
+			maps: [map],
+		});
 
-		// Act
-		const result = getLayersByMapKey(fakeState, mapKey);
+		const result = getLayersByMapKey(fakeState, map.key);
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 });

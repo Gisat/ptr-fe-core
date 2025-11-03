@@ -1,68 +1,51 @@
 import { getMapSetByKey } from '../../client/shared/appState/selectors/getMapSetByKey';
 import { AppSharedState } from '../../client/shared/appState/state.models';
 import { MapSetModel } from '../../client/shared/models/models.mapSet';
+import { buildAppState, buildMapSet } from '../tools/reducer.helpers';
 
-const MAP_SET_KEY = 'mapSetA';
+const MAP_SET_KEY = 'map-set-1';
 
-const defaultMapSet: MapSetModel = {
-	key: MAP_SET_KEY,
-	maps: ['mapA'],
-	sync: { zoom: true, center: true },
-	view: {},
-};
-
-const createFakeState = (override?: Partial<AppSharedState>): AppSharedState =>
-	({
-		appNode: {
-			key: 'app',
-			labels: ['application'],
-			nameDisplay: 'app',
-			nameInternal: 'app',
-			description: '',
-			lastUpdatedAt: 0,
-		},
-		layers: [],
-		places: [],
-		renderingLayers: [],
-		mapSets: [defaultMapSet],
-		maps: [],
-		styles: [],
-		periods: [],
-		selections: [],
-		...override,
-	}) as AppSharedState;
-
-describe('Shared state selector: getMapSetByKey', () => {
-	it('returns map set when key matches', () => {
-		// Arrange
-		const fakeState = createFakeState();
-
-		// Act
-		const result = getMapSetByKey(fakeState, MAP_SET_KEY);
-
-		// Assert
-		expect(result).toBe(defaultMapSet);
+/**
+ * Builds a map set fixture suitable for selector testing.
+ */
+const createMapSet = (key: string = MAP_SET_KEY): MapSetModel =>
+	buildMapSet(key, {
+		maps: ['map-1'],
+		sync: { center: false, zoom: true },
+		view: {},
 	});
 
-	it('returns undefined when key is unknown', () => {
-		// Arrange
+/**
+ * Returns a cloned shared state containing the supplied map sets.
+ */
+const createFakeState = (mapSets: MapSetModel[] = [createMapSet()]): AppSharedState => ({
+	...buildAppState({ mapSets }),
+	mapSets,
+});
+
+describe('Shared state selector: getMapSetByKey', () => {
+	it('returns the map set matching the provided key', () => {
+		const expectedMapSet = createMapSet();
+		const fakeState = createFakeState([expectedMapSet]);
+
+		const result = getMapSetByKey(fakeState, MAP_SET_KEY);
+
+		expect(result).toBe(expectedMapSet);
+	});
+
+	it('returns undefined when key does not match any map set', () => {
 		const fakeState = createFakeState();
 
-		// Act
 		const result = getMapSetByKey(fakeState, 'missing-map-set');
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 
-	it('returns undefined when map sets are missing', () => {
-		// Arrange
-		const fakeState = createFakeState({ mapSets: undefined as unknown as MapSetModel[] });
+	it('returns undefined when map sets slice is empty', () => {
+		const fakeState = createFakeState([]);
 
-		// Act
 		const result = getMapSetByKey(fakeState, MAP_SET_KEY);
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 });

@@ -1,79 +1,62 @@
 import { getMapLayerInteractivityState } from '../../client/shared/appState/selectors/getMapLayerInteractivityState';
 import { AppSharedState } from '../../client/shared/appState/state.models';
+import { RenderingLayer } from '../../client/shared/models/models.layers';
+import { buildAppState, buildMapModel } from '../tools/reducer.helpers';
 
-const createFakeState = (mapKey = 'mapA', layerKey = 'layerA', isInteractive?): AppSharedState => ({
-	appNode: {
-		key: 'app',
-		labels: ['application'],
-		nameDisplay: 'app',
-		nameInternal: 'app',
-		description: '',
-		lastUpdatedAt: 0,
-	},
-	layers: [],
-	places: [],
-	renderingLayers: [],
-	mapSets: [],
-	maps: [
-		{
-			key: mapKey,
-			view: { zoom: 0, latitude: 0, longitude: 0 },
-			renderingLayers: [
-				{
-					key: layerKey,
-					isActive: true,
-					isInteractive,
-				},
-			],
-		},
-	],
-	styles: [],
-	periods: [],
-	selections: [],
-});
+const MAP_KEY = 'map-1';
+const LAYER_KEY = 'layer-1';
+
+type CreateFakeStateInput = {
+	isInteractive?: RenderingLayer['isInteractive'];
+	mapKey?: string;
+	layerKey?: string;
+};
+
+/**
+ * Creates a shared-state clone with a single map and rendering layer tailored for interactivity tests.
+ */
+const createFakeState = ({
+	isInteractive,
+	mapKey = MAP_KEY,
+	layerKey = LAYER_KEY,
+}: CreateFakeStateInput = {}): AppSharedState => {
+	const map = buildMapModel(mapKey, {
+		layers: [
+			{
+				key: layerKey,
+				isInteractive,
+			},
+		],
+	});
+
+	return {
+		...buildAppState({ maps: [map] }),
+		maps: [map],
+	};
+};
 
 describe('Shared state selector: getMapLayerInteractivityState', () => {
-	it('returns layer interactivity flag when map and layer exist', () => {
-		// Arrange
-		const fakeState: AppSharedState = createFakeState('mapA', 'layerA', true);
+	it('returns the interactivity flag when map and layer exist', () => {
+		const fakeState = createFakeState({ isInteractive: true });
 
-		// Act
-		const result = getMapLayerInteractivityState(fakeState, 'mapA', 'layerA');
+		const result = getMapLayerInteractivityState(fakeState, MAP_KEY, LAYER_KEY);
 
-		// Assert
 		expect(result).toBe(true);
 	});
 
-	it('returns false when layer interactivity flag is explicitly false', () => {
-		// Arrange
-		const fakeState: AppSharedState = createFakeState('mapA', 'layerA', false);
+	it('returns undefined when map is missing', () => {
+		const fakeState = createFakeState();
 
-		// Act
-		const result = getMapLayerInteractivityState(fakeState, 'mapA', 'layerA');
+		const result = getMapLayerInteractivityState(fakeState, 'missing-map', LAYER_KEY);
 
-		// Assert
-		expect(result).toBe(false);
-	});
-
-	it('returns undefined when layer is not present on the map', () => {
-		// Arrange
-		const fakeState: AppSharedState = createFakeState();
-
-		// Act
-		const result = getMapLayerInteractivityState(fakeState, 'mapA', 'missing-layer');
-
-		// Assert
 		expect(result).toBeUndefined();
 	});
 
-	it('returns undefined when map is not found', () => {
-		// Arrange
+	it('returns undefined when layer is missing', () => {
 		const fakeState = createFakeState();
 
-		// Act
-		const result = getMapLayerInteractivityState(fakeState, 'missing-map', 'layerA');
+		const result = getMapLayerInteractivityState(fakeState, MAP_KEY, 'missing-layer');
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 });

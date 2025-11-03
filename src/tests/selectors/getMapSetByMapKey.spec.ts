@@ -1,67 +1,56 @@
 import { getMapSetByMapKey } from '../../client/shared/appState/selectors/getMapSetByMapKey';
 import { AppSharedState } from '../../client/shared/appState/state.models';
 import { MapSetModel } from '../../client/shared/models/models.mapSet';
+import { buildAppState, buildMapSet } from '../tools/reducer.helpers';
 
-const MAP_KEY = 'mapA';
-const MAP_SET_KEY = 'mapSetA';
+const MAP_KEY = 'map-1';
+const MAP_SET_KEY = 'map-set-1';
 
-const createMapSet = (maps: string[]): MapSetModel => ({
-	key: MAP_SET_KEY,
-	maps,
-	sync: { zoom: true, center: true },
-	view: {},
-});
+/**
+ * Creates a map set fixture populated with the provided map keys.
+ */
+const createMapSet = (maps: string[] = [MAP_KEY]): MapSetModel =>
+	buildMapSet(MAP_SET_KEY, {
+		maps,
+		sync: { center: false, zoom: true },
+		view: {},
+	});
 
-const createFakeState = (mapSets?: MapSetModel[]): AppSharedState => ({
-	maps: [],
-	mapSets: mapSets === undefined ? [createMapSet([MAP_KEY])] : (mapSets as MapSetModel[]),
-	layers: [],
-	places: [],
-	renderingLayers: [],
-	styles: [],
-	periods: [],
-	selections: [],
-	appNode: {
-		key: 'app',
-		labels: ['application'],
-		nameDisplay: 'app',
-		nameInternal: 'app',
-		description: '',
-		lastUpdatedAt: 0,
-	},
+/**
+ * Returns a cloned shared state containing the supplied map sets.
+ */
+const createFakeState = (mapSets: MapSetModel[] = [createMapSet()]): AppSharedState => ({
+	...buildAppState({ mapSets }),
+	mapSets,
 });
 
 describe('Shared state selector: getMapSetByMapKey', () => {
-	it('returns map set containing the map key', () => {
-		// Arrange
-		const fakeState = createFakeState();
+	it('returns the map set containing the map key', () => {
+		const expectedMapSet = createMapSet();
+		const fakeState = createFakeState([expectedMapSet]);
 
-		// Act
 		const result = getMapSetByMapKey(fakeState, MAP_KEY);
 
-		// Assert
-		expect(result?.key).toBe(MAP_SET_KEY);
+		expect(result).toBe(expectedMapSet);
 	});
 
-	it('returns undefined when no map set contains the map key', () => {
-		// Arrange
-		const fakeState = createFakeState([createMapSet(['mapB'])]);
+	it('returns undefined when map key is not part of any map set', () => {
+		const fakeState = createFakeState([createMapSet(['other-map'])]);
 
-		// Act
 		const result = getMapSetByMapKey(fakeState, MAP_KEY);
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 
-	it('returns undefined when map sets are missing', () => {
-		// Arrange
-		const fakeState = createFakeState(null as unknown as MapSetModel[]);
+	it('returns undefined when map sets slice is not an array', () => {
+		const baseState = createFakeState();
+		const fakeState: AppSharedState = {
+			...baseState,
+			mapSets: null as unknown as AppSharedState['mapSets'],
+		};
 
-		// Act
 		const result = getMapSetByMapKey(fakeState, MAP_KEY);
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 });

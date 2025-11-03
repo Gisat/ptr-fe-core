@@ -1,43 +1,76 @@
 import { getLayerMetadataByRenderingLayerKey } from '../../client/shared/appState/selectors/getLayerMetadataByRenderingLayerKey';
 import { AppSharedState } from '../../client/shared/appState/state.models';
-import { fullAppSharedStateMock } from '../fixtures/appSharedState.mock';
+import { buildAppState, buildRenderingLayer } from '../tools/reducer.helpers';
+
+/**
+ * Produces a lightweight layer metadata stub for selector testing.
+ */
+const createLayer = (key: string): AppSharedState['layers'][number] => ({
+	labels: ['layer'],
+	key,
+	nameDisplay: key,
+	nameInternal: key,
+	description: null,
+	lastUpdatedAt: 0,
+});
+
+/**
+ * Builds a rendering layer whose datasource neighbours point to provided layer keys.
+ */
+const createRenderingLayer = (key: string, neighbours: string[]): AppSharedState['renderingLayers'][number] =>
+	buildRenderingLayer(key, {
+		datasource: { neighbours },
+	});
+
+type CreateFakeStateInput = {
+	layers?: AppSharedState['layers'];
+	renderingLayers?: AppSharedState['renderingLayers'];
+};
+
+/**
+ * Creates a cloned app state seeded with the supplied layer and rendering-layer fixtures.
+ */
+const createFakeState = ({ layers, renderingLayers }: CreateFakeStateInput = {}): AppSharedState => {
+	const resolvedLayers = layers ?? [createLayer('layer-metadata')];
+	const defaultNeighbourKey = resolvedLayers[0]?.key;
+	const resolvedRenderingLayers = renderingLayers ?? [
+		createRenderingLayer('rendering-layer', defaultNeighbourKey ? [defaultNeighbourKey] : []),
+	];
+
+	return {
+		...buildAppState({ renderingLayers: resolvedRenderingLayers }),
+		layers: resolvedLayers,
+		renderingLayers: resolvedRenderingLayers,
+	};
+};
 
 describe('Shared state selector: getLayerMetadataByRenderingLayerKey', () => {
 	it('returns metadata for rendering layer neighbours', () => {
-		// Arrange - fixture links rendering layer key "n80" to the first layer metadata through neighbours
-		const fakeState: AppSharedState = fullAppSharedStateMock;
-		const renderingLayerKey = fakeState.renderingLayers[0].key; // "n80"
-		const expectedMetadata = fakeState.layers[0]; // First layer metadata that has neighbour n80
+		const layer = createLayer('layer-1');
+		const renderingLayer = createRenderingLayer('rendering-layer-1', [layer.key]);
+		const fakeState = createFakeState({
+			layers: [layer],
+			renderingLayers: [renderingLayer],
+		});
 
-		// Act
-		const result = getLayerMetadataByRenderingLayerKey(fakeState, renderingLayerKey);
+		const result = getLayerMetadataByRenderingLayerKey(fakeState, renderingLayer.key);
 
-		// Assert
-		expect(result).toBe(expectedMetadata);
+		expect(result).toBe(layer);
 	});
 
 	it('returns undefined when rendering layer is invalid', () => {
-		// Arrange
-		const fakeState: AppSharedState = {
-			...fullAppSharedStateMock,
-			renderingLayers: [],
-		};
+		const fakeState = createFakeState({ renderingLayers: [] });
 
-		// Act
 		const result = getLayerMetadataByRenderingLayerKey(fakeState, 'some-unknown-key');
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 
 	it('returns undefined when key is not provided', () => {
-		// Arrange
-		const fakeState = fullAppSharedStateMock;
+		const fakeState = createFakeState();
 
-		// Act
 		const result = getLayerMetadataByRenderingLayerKey(fakeState, undefined);
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 });

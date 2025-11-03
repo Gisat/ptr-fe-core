@@ -1,61 +1,44 @@
 import { getMapSetMaps } from '../../client/shared/appState/selectors/getMapSetMaps';
 import { AppSharedState } from '../../client/shared/appState/state.models';
 import { MapSetModel } from '../../client/shared/models/models.mapSet';
+import { buildAppState, buildMapSet } from '../tools/reducer.helpers';
 
-const MAP_SET_KEY = 'mapSetA';
-const MAP_KEYS = ['mapA', 'mapB'];
+const MAP_SET_KEY = 'map-set-1';
+const MAP_KEYS = ['map-1', 'map-2'];
 
-const createMapSet = (maps: MapSetModel['maps']): MapSetModel => ({
-	key: MAP_SET_KEY,
-	maps,
-	sync: { zoom: true, center: true },
-	view: {},
-});
+/**
+ * Builds a map set tailored for selector testing.
+ */
+const createMapSet = (key: string = MAP_SET_KEY, maps: string[] = MAP_KEYS): MapSetModel =>
+	buildMapSet(key, {
+		maps,
+		sync: { center: false, zoom: true },
+		view: {},
+	});
 
-const createFakeState = (mapSets?: MapSetModel[] | null): AppSharedState => ({
-	mapSets:
-		mapSets === undefined
-			? []
-			: mapSets === null
-				? []
-				: mapSets.map((mapSet) => ({ ...mapSet, maps: [...mapSet.maps] })),
-	maps: [],
-	layers: [],
-	places: [],
-	renderingLayers: [],
-	styles: [],
-	periods: [],
-	selections: [],
-	appNode: {
-		key: 'app',
-		labels: ['application'],
-		nameDisplay: 'app',
-		nameInternal: 'app',
-		description: '',
-		lastUpdatedAt: 0,
-	},
+/**
+ * Returns a cloned shared state containing the supplied map sets.
+ */
+const createFakeState = (mapSets: MapSetModel[] = [createMapSet()]): AppSharedState => ({
+	...buildAppState({ mapSets }),
+	mapSets,
 });
 
 describe('Shared state selector: getMapSetMaps', () => {
-	it('returns map list for the map set', () => {
-		// Arrange
-		const fakeState = createFakeState([createMapSet(MAP_KEYS)]);
+	it('returns map keys for the specified map set', () => {
+		const expectedMapSet = createMapSet();
+		const fakeState = createFakeState([expectedMapSet]);
 
-		// Act
 		const result = getMapSetMaps(fakeState, MAP_SET_KEY);
 
-		// Assert
-		expect(result).toEqual(MAP_KEYS);
+		expect(result).toEqual(expectedMapSet.maps);
 	});
 
-	it('returns undefined when map set is missing', () => {
-		// Arrange
-		const fakeState: AppSharedState = createFakeState(null);
+	it('returns undefined when the map set is missing', () => {
+		const fakeState = createFakeState([]);
 
-		// Act
 		const result = getMapSetMaps(fakeState, MAP_SET_KEY);
 
-		// Assert
 		expect(result).toBeUndefined();
 	});
 });
