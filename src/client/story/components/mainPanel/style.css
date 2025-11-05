@@ -3,7 +3,7 @@
 .ptr-StoryMainPanel {
 	width: var(--StoryMainPanelWidth);
 	height: 100%;
-	overflow: hidden;
+	overflow: auto;
 	order: 2;
 }
 
@@ -85,6 +85,10 @@
 		position: relative;
 		width: 100%;
 		height: 100%;
+}
+
+.ptr-StoryMainPanel--no-scroll {
+    overflow: hidden;
 }
 
 .ptr-StoryMainPanel-content-wrapper {

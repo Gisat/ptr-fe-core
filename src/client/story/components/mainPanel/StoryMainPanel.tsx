@@ -23,8 +23,6 @@ export const StoryMainPanel = ({
 	panelLayout = 'horizontal',
 	noSidePanel = false,
 }) => {
-	const classes = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className);
-
 	// Adjust children if sidePanelRef is present and out of sync
 	let adjustedChildren: ReactNode[] = children;
 	if (sidePanelRef?.current) {
@@ -41,6 +39,10 @@ export const StoryMainPanel = ({
 	const [direction, setDirection] = useState<'up' | 'down'>('down');
 	const [wrapperStyle, setWrapperStyle] = useState({});
 	const animationDuration = 700;
+
+	const panelClasses = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className, {
+		'ptr-StoryMainPanel--no-scroll': phase !== 'idle',
+	});
 
 	// Start transition on step change
 	useEffect(() => {
@@ -97,7 +99,7 @@ export const StoryMainPanel = ({
 	}, [phase]);
 
 	return (
-		<div className={classes} style={noSidePanel ? { width: '100%' } : {}}>
+		<div className={panelClasses} style={noSidePanel ? { width: '100%' } : {}}>
 			<div className="ptr-StoryMainPanel-content-wrapper" style={wrapperStyle}>
 				<div className="ptr-StoryMainPanel-content">
 					{cloneElement(adjustedChildren[displayedStep] as React.ReactElement<any>, {
