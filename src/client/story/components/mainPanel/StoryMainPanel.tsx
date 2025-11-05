@@ -1,35 +1,8 @@
-import React, { ReactNode, cloneElement } from 'react';
+import React, { ReactNode, cloneElement, useEffect, useState } from 'react';
 import classnames from 'classnames';
 import './style.css';
 
-/**
- * Props for the StoryMainPanel component.
- */
-interface StoryMainPanelProps {
-	/** Additional class names for styling */
-	className?: string;
-	/** Child components to render inside the main panel */
-	children?: ReactNode[];
-	/** Currently active section */
-	activeStep?: number;
-	/** Reference to the side panel */
-	sidePanelRef?: React.RefObject<HTMLDivElement>;
-	/** Layout of the panel (e.g., "vertical" or "horizontal") */
-	panelLayout?: string;
-	/** Whether the side panel is disabled */
-	noSidePanel?: boolean;
-}
-
-/**
- * StoryMainPanel Component
- *
- * This component renders the main panel of a story layout. It dynamically adjusts its children
- * based on the active step and the side panel's content.
- *
- * @param {StoryMainPanelProps} props - The props for the component.
- * @returns {JSX.Element} The rendered StoryMainPanel component.
- */
-export const StoryMainPanel: React.FC<StoryMainPanelProps> = ({
+export const StoryMainPanel = ({
 	className,
 	children = [],
 	activeStep = 0,
@@ -37,26 +10,108 @@ export const StoryMainPanel: React.FC<StoryMainPanelProps> = ({
 	panelLayout = 'horizontal',
 	noSidePanel = false,
 }) => {
-	// Generate dynamic class names
 	const classes = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className);
 
-	// Adjust children based on the side panel nodes
 	let adjustedChildren = children;
 	if (sidePanelRef?.current) {
 		const sidePanelNodes = Array.from(sidePanelRef.current.childNodes);
 		if (sidePanelNodes.length !== children.length) {
-			// If the number of showcases in the main panel is different from the side panel
 			adjustedChildren = sidePanelNodes.map((_, index) =>
 				children[index] ? children[index] : <div key={index}></div>
 			);
 		}
 	}
 
+	const [displayedStep, setDisplayedStep] = useState(activeStep);
+	const [pendingStep, setPendingStep] = useState<number | null>(null);
+	const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
+	const [direction, setDirection] = useState<'up' | 'down'>('down');
+	const [enteringAnimating, setEnteringAnimating] = useState(false);
+
+	// When activeStep changes, start transition
+	useEffect(() => {
+		if (activeStep !== displayedStep && phase === 'idle') {
+			setDirection(activeStep > displayedStep ? 'down' : 'up');
+			setPendingStep(activeStep);
+			setPhase('out');
+		}
+	}, [activeStep, displayedStep, phase]);
+
+	// Handle transition phases
+	useEffect(() => {
+		if (phase === 'out') {
+			const timeout = setTimeout(() => setPhase('in'), 700); // match CSS duration
+			return () => clearTimeout(timeout);
+		}
+		if (phase === 'in') {
+			setEnteringAnimating(false);
+			const timeout = setTimeout(() => {
+				setPhase('idle');
+				if (pendingStep !== null) {
+					setDisplayedStep(pendingStep);
+					setPendingStep(null);
+				}
+			}, 700);
+			return () => clearTimeout(timeout);
+		}
+	}, [phase, pendingStep]);
+
+	// Animate entering screen
+	useEffect(() => {
+		if (phase === 'in') {
+			setEnteringAnimating(false);
+			const id = setTimeout(() => setEnteringAnimating(true), 10);
+			return () => clearTimeout(id);
+		}
+	}, [phase, pendingStep]);
+
+	// Only render the two relevant children during transition, or just one when idle
+	let content = null;
+	if (phase === 'out' && displayedStep !== null) {
+		content = (
+			<div
+				key={`out-${displayedStep}`}
+				className={classnames(
+					'ptr-StoryMainPanel-content',
+					direction === 'down' ? 'ptr-StoryMainPanel-slide-out-up' : 'ptr-StoryMainPanel-slide-out-down'
+				)}
+			>
+				{cloneElement(adjustedChildren[displayedStep] as React.ReactElement<any>, {
+					sidePanelRef,
+					activeStep: displayedStep,
+				})}
+			</div>
+		);
+	} else if (phase === 'in' && pendingStep !== null) {
+		content = (
+			<div
+				key={`in-${pendingStep}`}
+				className={classnames(
+					'ptr-StoryMainPanel-content',
+					direction === 'down' ? 'ptr-StoryMainPanel-slide-in-up' : 'ptr-StoryMainPanel-slide-in-down',
+					{ animating: enteringAnimating }
+				)}
+			>
+				{cloneElement(adjustedChildren[pendingStep] as React.ReactElement<any>, {
+					sidePanelRef,
+					activeStep: pendingStep,
+				})}
+			</div>
+		);
+	} else if (phase === 'idle') {
+		content = (
+			<div className="ptr-StoryMainPanel-content" key={`idle-${displayedStep}`}>
+				{cloneElement(adjustedChildren[displayedStep] as React.ReactElement<any>, {
+					sidePanelRef,
+					activeStep: displayedStep,
+				})}
+			</div>
+		);
+	}
+
 	return (
 		<div className={classes} style={noSidePanel ? { width: '100%' } : {}}>
-			{adjustedChildren[activeStep]
-				? cloneElement(adjustedChildren[activeStep] as React.ReactElement<any>, { sidePanelRef, activeStep })
-				: null}
+			<div className="ptr-StoryMainPanel-content-wrapper">{content}</div>
 		</div>
 	);
 };

@@ -47,6 +47,9 @@ export const Story: React.FC<StoryProps> = ({
 	const [contentSize, setContentSize] = useState<[number, number] | undefined>(undefined); // Size of the content area
 	const [panelLayout, setPanelLayout] = useState<string>('horizontal'); // Layout of the panel
 
+	const [pendingStep, setPendingStep] = useState<number>(defaultStep); // Side panel
+	const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
+
 	// Generate dynamic class names
 	const classes = classnames('ptr-Story', {}, `is-${panelLayout}-layout`, className);
 
@@ -71,6 +74,7 @@ export const Story: React.FC<StoryProps> = ({
 	 * Handles scrolling within the side panel and updates the active section.
 	 * @param {React.UIEvent<HTMLDivElement>} event - The scroll event.
 	 */
+
 	const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
 		if (!sidePanelRef?.current) return;
 
@@ -86,17 +90,21 @@ export const Story: React.FC<StoryProps> = ({
 			if (userReachedSection) {
 				if (jumpSection === null) {
 					// User is scrolling
-					if (userReachedBottom) {
-						setActiveStep(sidePanelNodes.length - 1);
-						onStepChange?.(sidePanelNodes.length - 1);
-					} else {
-						setActiveStep(index);
-						onStepChange?.(index);
-					}
+					const step = userReachedBottom ? sidePanelNodes.length - 1 : index;
+					setPendingStep(step); // Side panel updates immediately
+					// Debounce main panel update
+					if (scrollTimeout) clearTimeout(scrollTimeout);
+					const timeout = setTimeout(() => {
+						setActiveStep(step);
+						onStepChange?.(step);
+					}, 200);
+					setScrollTimeout(timeout);
 				} else {
-					// User used navigation
+					// Jump from navigation: update both immediately
+					setPendingStep(jumpSection);
 					setActiveStep(jumpSection);
 					onStepChange?.(jumpSection);
+
 					const userJumpedToBottom = jumpSection === sidePanelNodes.length - 1;
 					const userReachedJumpedSection =
 						sidePanelNodes[jumpSection].offsetTop > event.currentTarget.scrollTop - 5 &&
@@ -111,7 +119,6 @@ export const Story: React.FC<StoryProps> = ({
 			}
 		});
 	};
-
 	/**
 	 * Determines if the side panel is present.
 	 * @returns {boolean} True if the side panel exists, false otherwise.
@@ -128,19 +135,17 @@ export const Story: React.FC<StoryProps> = ({
 	const renderChild = (child: React.ReactNode) => {
 		if (React.isValidElement(child)) {
 			if (child.type === StorySidePanel) {
-				// Handle StorySidePanel children
 				return cloneElement(child as React.ReactElement<any>, {
 					onScroll,
 					setSidePanelRef,
 					panelLayout,
-					activeStep,
+					activeStep: pendingStep, // Side panel highlights immediately
 					setJumpSection,
 					contentSize,
 				});
 			} else if (sidePanelRef !== undefined || noSidePanel) {
-				// Handle other children when sidePanelRef is defined or noSidePanel is true
 				return cloneElement(child as React.ReactElement<any>, {
-					activeStep,
+					activeStep, // Main panel animates after debounce
 					setJumpSection,
 					sidePanelRef,
 					panelLayout,
@@ -148,9 +153,8 @@ export const Story: React.FC<StoryProps> = ({
 				});
 			}
 		}
-		return null; // Return null for invalid elements
+		return null;
 	};
-
 	return (
 		<div className={classes} ref={ref}>
 			{Children.map(children, renderChild)}
