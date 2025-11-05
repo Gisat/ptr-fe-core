@@ -38,7 +38,8 @@ export const StoryMainPanel = ({
 	const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
 	const [direction, setDirection] = useState<'up' | 'down'>('down');
 	const [wrapperStyle, setWrapperStyle] = useState({});
-	const animationDuration = 700;
+	const animationDuration = 400;
+	const pauseBetweenSlides = 700;
 
 	const panelClasses = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className, {
 		'ptr-StoryMainPanel--no-scroll': phase !== 'idle',
@@ -70,7 +71,7 @@ export const StoryMainPanel = ({
 					opacity: 0.7,
 				});
 				setDisplayedStep(activeStep); // Swap to new child
-			}, animationDuration);
+			}, pauseBetweenSlides);
 			return () => clearTimeout(timeout);
 		}
 	}, [phase, direction, activeStep, animationDuration]);
