@@ -54,7 +54,9 @@ export const StoryMainPanel: React.FC<StoryMainPanelProps> = ({
 
 	return (
 		<div className={classes} style={noSidePanel ? { width: '100%' } : {}}>
-			{adjustedChildren[activeStep] ? cloneElement(adjustedChildren[activeStep] as React.ReactElement<any>) : null}
+			{adjustedChildren[activeStep]
+				? cloneElement(adjustedChildren[activeStep] as React.ReactElement<any>, { sidePanelRef, activeStep })
+				: null}
 		</div>
 	);
 };
