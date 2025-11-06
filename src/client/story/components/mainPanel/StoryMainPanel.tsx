@@ -14,6 +14,8 @@ import './style.css';
  * @param {React.RefObject<HTMLDivElement>} [props.sidePanelRef] - Ref to the side panel (for layout sync).
  * @param {string} [props.panelLayout='horizontal'] - Layout mode.
  * @param {boolean} [props.noSidePanel=false] - If true, disables side panel layout.
+ * @param {number} [props.animationDuration=400] - Duration of the slide animation in ms.
+ * @param {number} [props.pauseBetweenSlides=0] - Pause duration between slide transitions in ms.
  */
 export const StoryMainPanel = ({
 	className,
@@ -22,81 +24,75 @@ export const StoryMainPanel = ({
 	sidePanelRef,
 	panelLayout = 'horizontal',
 	noSidePanel = false,
+	animationDuration = 400,
+	pauseBetweenSlides = 0,
 }) => {
-	// Adjust children if sidePanelRef is present and out of sync
-	let adjustedChildren: ReactNode[] = children;
-	if (sidePanelRef?.current) {
-		const sidePanelNodes = Array.from(sidePanelRef.current.childNodes);
-		if (sidePanelNodes.length !== children.length) {
-			adjustedChildren = sidePanelNodes.map((_, index) =>
-				children[index] ? children[index] : <div key={index}></div>
-			);
-		}
-	}
+	// Ensure children match sidePanelRef nodes if present
+	const adjustedChildren = sidePanelRef?.current
+		? Array.from(sidePanelRef.current.childNodes).map((_, i) => children[i] ?? <div key={i}></div>)
+		: children;
 
 	const [displayedStep, setDisplayedStep] = useState(activeStep);
 	const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
 	const [direction, setDirection] = useState<'up' | 'down'>('down');
 	const [wrapperStyle, setWrapperStyle] = useState({});
-	const animationDuration = 400;
-	const pauseBetweenSlides = 700;
 
 	const panelClasses = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className, {
 		'ptr-StoryMainPanel--no-scroll': phase !== 'idle',
 	});
 
-	// Start transition on step change
+	// Handle step change and direction
 	useEffect(() => {
 		if (activeStep !== displayedStep && phase === 'idle') {
 			setDirection(activeStep > displayedStep ? 'down' : 'up');
 			setPhase('out');
-			setWrapperStyle({}); // Reset style before animating out
+			setWrapperStyle({});
 		}
 	}, [activeStep, displayedStep, phase]);
 
-	// Animate out: slide current screen away
+	// Animate out: slide/fade current screen away
 	useEffect(() => {
 		if (phase === 'out') {
 			setWrapperStyle({
 				transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
 				transform: direction === 'down' ? 'translateY(-100%)' : 'translateY(100%)',
-				opacity: 0.7,
+				opacity: 0,
 			});
 			const timeout = setTimeout(() => {
 				setPhase('in');
-				// Instantly jump to opposite side, no transition
 				setWrapperStyle({
 					transition: 'none',
 					transform: direction === 'down' ? 'translateY(100%)' : 'translateY(-100%)',
-					opacity: 0.7,
+					opacity: 0,
 				});
-				setDisplayedStep(activeStep); // Swap to new child
-			}, pauseBetweenSlides);
+				setDisplayedStep(activeStep);
+			}, animationDuration + pauseBetweenSlides);
 			return () => clearTimeout(timeout);
 		}
-	}, [phase, direction, activeStep, animationDuration]);
+	}, [phase, direction, activeStep, animationDuration, pauseBetweenSlides]);
 
-	// Animate in: slide new screen into view
+	// Animate in: slide/fade new screen in
 	useEffect(() => {
 		if (phase === 'in') {
-			const timeout = setTimeout(() => {
+			// Use requestAnimationFrame for smoother start
+			const raf = requestAnimationFrame(() => {
 				setWrapperStyle({
 					transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
 					transform: 'translateY(0)',
 					opacity: 1,
 				});
-				// After animation, set to idle
-				setTimeout(() => setPhase('idle'), animationDuration);
-			}, 20); // Allow DOM to apply transform before animating in
-			return () => clearTimeout(timeout);
+			});
+			const timeout = setTimeout(() => setPhase('idle'), animationDuration);
+			return () => {
+				cancelAnimationFrame(raf);
+				clearTimeout(timeout);
+			};
 		}
 	}, [phase, animationDuration]);
 
 	// Reset style when idle
 	useEffect(() => {
-		if (phase === 'idle') {
-			setWrapperStyle({});
-		}
+		if (phase === 'idle') setWrapperStyle({});
 	}, [phase]);
 
 	return (
