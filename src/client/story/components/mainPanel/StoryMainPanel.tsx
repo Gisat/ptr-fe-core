@@ -1,5 +1,7 @@
-import React, { ReactNode, cloneElement, useEffect, useState } from 'react';
+import React, { cloneElement, useEffect, useState } from 'react';
 import classnames from 'classnames';
+import { StoryPhaseType } from '../../enum.story.phaseType';
+import { StoryActionType } from '../../enum.story.actionType';
 import './style.css';
 
 /**
@@ -27,54 +29,69 @@ export const StoryMainPanel = ({
 	animationDuration = 400,
 	pauseBetweenSlides = 0,
 }) => {
-	// Ensure children match sidePanelRef nodes if present
+	// If sidePanelRef is present, ensure children match its nodes for layout sync
 	const adjustedChildren = sidePanelRef?.current
 		? Array.from(sidePanelRef.current.childNodes).map((_, i) => children[i] ?? <div key={i}></div>)
 		: children;
 
+	// State for currently displayed step, animation phase, direction, and wrapper style
 	const [displayedStep, setDisplayedStep] = useState(activeStep);
-	const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
-	const [direction, setDirection] = useState<'up' | 'down'>('down');
+	const [phase, setPhase] = useState<StoryPhaseType>(StoryPhaseType.IDLE);
+	const [direction, setDirection] = useState<StoryActionType>(StoryActionType.DOWN);
 	const [wrapperStyle, setWrapperStyle] = useState({});
 
+	// Panel CSS classes, including layout and scroll lock during animation
 	const panelClasses = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className, {
-		'ptr-StoryMainPanel--no-scroll': phase !== 'idle',
+		'ptr-StoryMainPanel--no-scroll': phase !== StoryPhaseType.IDLE,
 	});
 
-	// Handle step change and direction
+	/**
+	 * Handle step change and set animation direction.
+	 * When activeStep changes, start the "out" phase and reset wrapper style.
+	 */
 	useEffect(() => {
-		if (activeStep !== displayedStep && phase === 'idle') {
-			setDirection(activeStep > displayedStep ? 'down' : 'up');
-			setPhase('out');
+		if (activeStep !== displayedStep && phase === StoryPhaseType.IDLE) {
+			setDirection(activeStep > displayedStep ? StoryActionType.DOWN : StoryActionType.UP);
+			setPhase(StoryPhaseType.OUT);
 			setWrapperStyle({});
 		}
 	}, [activeStep, displayedStep, phase]);
 
-	// Animate out: slide/fade current screen away
+	/**
+	 * Animate out: slide/fade current screen away.
+	 * After animationDuration, optionally pause, then mount the next child and start "in" phase.
+	 */
 	useEffect(() => {
-		if (phase === 'out') {
+		if (phase === StoryPhaseType.OUT) {
 			setWrapperStyle({
 				transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
-				transform: direction === 'down' ? 'translateY(-100%)' : 'translateY(100%)',
+				transform: direction === StoryActionType.DOWN ? 'translateY(-100%)' : 'translateY(100%)',
 				opacity: 0,
 			});
 			const timeout = setTimeout(() => {
-				setPhase('in');
-				setWrapperStyle({
-					transition: 'none',
-					transform: direction === 'down' ? 'translateY(100%)' : 'translateY(-100%)',
-					opacity: 0,
-				});
-				setDisplayedStep(activeStep);
-			}, animationDuration + pauseBetweenSlides);
+				// Optional pause before mounting next child
+				const pauseTimeout = setTimeout(() => {
+					setPhase(StoryPhaseType.IN);
+					setWrapperStyle({
+						transition: 'none',
+						transform: direction === StoryActionType.DOWN ? 'translateY(100%)' : 'translateY(-100%)',
+						opacity: 0,
+					});
+					setDisplayedStep(activeStep);
+				}, pauseBetweenSlides);
+				return () => clearTimeout(pauseTimeout);
+			}, animationDuration);
 			return () => clearTimeout(timeout);
 		}
 	}, [phase, direction, activeStep, animationDuration, pauseBetweenSlides]);
 
-	// Animate in: slide/fade new screen in
+	/**
+	 * Animate in: slide/fade new screen in.
+	 * Uses requestAnimationFrame for smoother start.
+	 * After animationDuration, set phase to idle.
+	 */
 	useEffect(() => {
-		if (phase === 'in') {
-			// Use requestAnimationFrame for smoother start
+		if (phase === StoryPhaseType.IN) {
 			const raf = requestAnimationFrame(() => {
 				setWrapperStyle({
 					transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
@@ -82,7 +99,7 @@ export const StoryMainPanel = ({
 					opacity: 1,
 				});
 			});
-			const timeout = setTimeout(() => setPhase('idle'), animationDuration);
+			const timeout = setTimeout(() => setPhase(StoryPhaseType.IDLE), animationDuration);
 			return () => {
 				cancelAnimationFrame(raf);
 				clearTimeout(timeout);
@@ -90,14 +107,16 @@ export const StoryMainPanel = ({
 		}
 	}, [phase, animationDuration]);
 
-	// Reset style when idle
+	/**
+	 * Reset wrapper style when idle (no animation).
+	 */
 	useEffect(() => {
-		if (phase === 'idle') setWrapperStyle({});
+		if (phase === StoryPhaseType.IDLE) setWrapperStyle({});
 	}, [phase]);
 
 	return (
 		<div className={panelClasses} style={noSidePanel ? { width: '100%' } : {}}>
-			<div className="ptr-StoryMainPanel-content-wrapper" style={wrapperStyle}>
+			<div className="ptr-StoryMainPanel-contentWrapper" style={wrapperStyle}>
 				<div className="ptr-StoryMainPanel-content">
 					{cloneElement(adjustedChildren[displayedStep] as React.ReactElement<any>, {
 						sidePanelRef,
