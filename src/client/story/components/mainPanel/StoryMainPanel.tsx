@@ -8,16 +8,6 @@ import './style.css';
  * StoryMainPanel
  * Handles animated transitions between steps/screens in the story.
  * Only one child is rendered at a time, and transitions are handled via wrapper transforms.
- *
- * @param {object} props
- * @param {string} [props.className] - Additional class names.
- * @param {ReactNode[]} [props.children] - The step components.
- * @param {number} [props.activeStep=0] - The current step index.
- * @param {React.RefObject<HTMLDivElement>} [props.sidePanelRef] - Ref to the side panel (for layout sync).
- * @param {string} [props.panelLayout='horizontal'] - Layout mode.
- * @param {boolean} [props.noSidePanel=false] - If true, disables side panel layout.
- * @param {number} [props.animationDuration=400] - Duration of the slide animation in ms.
- * @param {number} [props.pauseBetweenSlides=0] - Pause duration between slide transitions in ms.
  */
 export const StoryMainPanel = ({
 	className,
@@ -28,27 +18,23 @@ export const StoryMainPanel = ({
 	noSidePanel = false,
 	animationDuration = 400,
 	pauseBetweenSlides = 0,
+	isSmallScreen,
 }) => {
-	// If sidePanelRef is present, ensure children match its nodes for layout sync
 	const adjustedChildren = sidePanelRef?.current
 		? Array.from(sidePanelRef.current.childNodes).map((_, i) => children[i] ?? <div key={i}></div>)
 		: children;
 
-	// State for currently displayed step, animation phase, direction, and wrapper style
 	const [displayedStep, setDisplayedStep] = useState(activeStep);
 	const [phase, setPhase] = useState<StoryPhaseType>(StoryPhaseType.IDLE);
 	const [direction, setDirection] = useState<StoryActionType>(StoryActionType.DOWN);
 	const [wrapperStyle, setWrapperStyle] = useState({});
 
-	// Panel CSS classes, including layout and scroll lock during animation
 	const panelClasses = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className, {
 		'ptr-StoryMainPanel--no-scroll': phase !== StoryPhaseType.IDLE,
+		'is-small-screen': isSmallScreen,
 	});
 
-	/**
-	 * Handle step change and set animation direction.
-	 * When activeStep changes, start the "out" phase and reset wrapper style.
-	 */
+	// Handle step change and set animation direction.
 	useEffect(() => {
 		if (activeStep !== displayedStep && phase === StoryPhaseType.IDLE) {
 			setDirection(activeStep > displayedStep ? StoryActionType.DOWN : StoryActionType.UP);
@@ -57,24 +43,35 @@ export const StoryMainPanel = ({
 		}
 	}, [activeStep, displayedStep, phase]);
 
-	/**
-	 * Animate out: slide/fade current screen away.
-	 * After animationDuration, optionally pause, then mount the next child and start "in" phase.
-	 */
+	// Animate out: slide/fade current screen away.
 	useEffect(() => {
 		if (phase === StoryPhaseType.OUT) {
+			let transform;
+			if (isSmallScreen) {
+				// Slide left/right for small screens
+				transform = direction === StoryActionType.DOWN ? 'translateX(-100%)' : 'translateX(100%)';
+			} else {
+				// Slide up/down for large screens
+				transform = direction === StoryActionType.DOWN ? 'translateY(-100%)' : 'translateY(100%)';
+			}
 			setWrapperStyle({
 				transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
-				transform: direction === StoryActionType.DOWN ? 'translateY(-100%)' : 'translateY(100%)',
+				transform,
 				opacity: 0,
 			});
 			const timeout = setTimeout(() => {
 				// Optional pause before mounting next child
 				const pauseTimeout = setTimeout(() => {
 					setPhase(StoryPhaseType.IN);
+					let inTransform;
+					if (isSmallScreen) {
+						inTransform = direction === StoryActionType.DOWN ? 'translateX(100%)' : 'translateX(-100%)';
+					} else {
+						inTransform = direction === StoryActionType.DOWN ? 'translateY(100%)' : 'translateY(-100%)';
+					}
 					setWrapperStyle({
 						transition: 'none',
-						transform: direction === StoryActionType.DOWN ? 'translateY(100%)' : 'translateY(-100%)',
+						transform: inTransform,
 						opacity: 0,
 					});
 					setDisplayedStep(activeStep);
@@ -83,19 +80,15 @@ export const StoryMainPanel = ({
 			}, animationDuration);
 			return () => clearTimeout(timeout);
 		}
-	}, [phase, direction, activeStep, animationDuration, pauseBetweenSlides]);
+	}, [phase, direction, activeStep, animationDuration, pauseBetweenSlides, isSmallScreen]);
 
-	/**
-	 * Animate in: slide/fade new screen in.
-	 * Uses requestAnimationFrame for smoother start.
-	 * After animationDuration, set phase to idle.
-	 */
+	// Animate in: slide/fade new screen in.
 	useEffect(() => {
 		if (phase === StoryPhaseType.IN) {
 			const raf = requestAnimationFrame(() => {
 				setWrapperStyle({
 					transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
-					transform: 'translateY(0)',
+					transform: 'translateX(0)',
 					opacity: 1,
 				});
 			});
@@ -105,11 +98,9 @@ export const StoryMainPanel = ({
 				clearTimeout(timeout);
 			};
 		}
-	}, [phase, animationDuration]);
+	}, [phase, animationDuration, isSmallScreen]);
 
-	/**
-	 * Reset wrapper style when idle (no animation).
-	 */
+	// Reset wrapper style when idle (no animation).
 	useEffect(() => {
 		if (phase === StoryPhaseType.IDLE) setWrapperStyle({});
 	}, [phase]);

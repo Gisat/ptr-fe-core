@@ -24,6 +24,8 @@ interface StoryNavPanelProps {
 		case?: React.ReactNode;
 		footer?: React.ReactNode;
 	};
+	/** Whether to show full navigation */
+	fullNavigation?: boolean;
 }
 
 /**
@@ -39,11 +41,14 @@ interface StoryNavPanelProps {
 export const StoryNavPanel: React.FC<StoryNavPanelProps> = ({
 	className,
 	activeStep,
+	setActiveStep,
 	setJumpSection,
 	sidePanelRef,
 	layout,
 	contentSize,
 	navigationIcons,
+	fullNavigation,
+	isSmallScreen,
 }) => {
 	// Generate dynamic class names
 	const classes = classnames('ptr-StoryNavPanel', {}, layout, className);
@@ -53,10 +58,13 @@ export const StoryNavPanel: React.FC<StoryNavPanelProps> = ({
 			<StoryNavPanelContainer
 				className={className}
 				activeStep={activeStep}
+				setActiveStep={setActiveStep}
 				setJumpSection={setJumpSection}
 				sidePanelRef={sidePanelRef}
 				contentSize={contentSize}
 				navigationIcons={navigationIcons}
+				fullNavigation={fullNavigation}
+				isSmallScreen={isSmallScreen}
 			/>
 		</div>
 	);

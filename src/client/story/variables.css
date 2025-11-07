@@ -53,6 +53,57 @@ This file defines layout dimensions, typography, and responsive design variables
 		max-height: 4.5rem;
 		overflow: hidden;
 	}
+
+	.ptr-Story {
+	}
+
+	.ptr-StorySidePanel.is-vertical-layout {
+		width: 100%;
+	}
+
+	.ptr-StoryMainPanel.is-vertical-layout {
+		height: calc(100% - 5rem) !important;
+		/* position: absolute;
+		top: 0;
+		left: 0; */
+	}
+
+	.ptr-StorySidePanel-container.is-vertical-layout {
+		flex-flow: column;
+		height: calc(100%) !important;
+	}
+
+	.ptr-StorySidePanel-container.is-vertical-layout.is-hidden {
+		height: 5rem !important;
+	}
+
+	.ptr-StorySidePanel.is-vertical-layout {
+		height: calc(100% - 5rem) !important;
+	}
+
+	.ptr-StorySidePanel-container.is-vertical-layout.is-main-visible {
+		height: 5rem !important;
+	}
+
+	.ptr-StoryNavPanel {
+		position: absolute;
+		width: 100%;
+		bottom: .5rem;
+		height: fit-content;
+		/* order: 2; */
+	}
+
+	.ptr-StoryNavPanelContainer, .ptr-StoryNavPanelCases {
+		flex-direction: row;
+	}
+
+	.ptr-StoryNavPanelIcon.arrow-up {
+		transform: rotate(-90deg);
+	}
+
+	.ptr-StoryNavPanelIcon.arrow-down {
+		transform: rotate(-90deg);
+	}
 }
 
 /* Large Screens (min-width: 1599.98px) */

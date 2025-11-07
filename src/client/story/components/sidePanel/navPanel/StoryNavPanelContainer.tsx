@@ -36,6 +36,8 @@ interface StoryNavPanelContainerProps {
 		case?: React.ReactNode;
 		footer?: React.ReactNode;
 	};
+	/** Whether to show full navigation */
+	fullNavigation?: boolean;
 }
 
 /**
@@ -51,10 +53,13 @@ interface StoryNavPanelContainerProps {
 export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	className,
 	activeStep,
+	setActiveStep,
 	setJumpSection,
 	sidePanelRef,
 	contentSize,
 	navigationIcons,
+	fullNavigation,
+	isSmallScreen,
 }) => {
 	const [isOverflown, setIsOverflown] = useState(false);
 	const [lastSidePanelHeight, setLastSidePanelHeight] = useState<number | undefined>();
@@ -96,13 +101,22 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 
 		switch (type) {
 			case StoryActionType.SECTION:
-				handleSectionScroll(e, sidePanelNodes, navPanelCasesNodes, activeStep, sidePanelRef, setJumpSection);
+				handleSectionScroll(
+					e,
+					sidePanelNodes,
+					navPanelCasesNodes,
+					activeStep,
+					sidePanelRef,
+					setJumpSection,
+					isSmallScreen,
+					setActiveStep
+				);
 				break;
 			case StoryActionType.UP:
-				handleScrollUp(sidePanelNodes, activeStep, sidePanelRef);
+				handleScrollUp(sidePanelNodes, activeStep, sidePanelRef, isSmallScreen, setActiveStep);
 				break;
 			case StoryActionType.DOWN:
-				handleScrollDown(sidePanelNodes, activeStep, sidePanelRef);
+				handleScrollDown(sidePanelNodes, activeStep, sidePanelRef, isSmallScreen, setActiveStep);
 				break;
 			default:
 				break;
@@ -158,15 +172,27 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 
 	return (
 		<div className={classes(['ptr-StoryNavPanelContainer'])} ref={navPanel}>
-			<IconChevronUp className={classes(['ptr-StoryNavPanelIcon'])} onClick={(e) => scrollToSection(e, StoryActionType.UP)} />
-			<div
-				className="ptr-StoryNavPanelCases"
-				ref={navPanelCasesRef}
-				style={isOverflown ? { height: '0rem', overflow: 'hidden' } : { height: 'fit-content', overflow: 'visible' }}
-			>
-				{sectionNavigationIcons}
-			</div>
-			<IconChevronDown className={classes(['ptr-StoryNavPanelIcon'])} onClick={(e) => scrollToSection(e, StoryActionType.DOWN)} />
+			<IconChevronUp
+				className={classes(['ptr-StoryNavPanelIcon', 'arrow-up'])}
+				onClick={(e) => scrollToSection(e, StoryActionType.UP)}
+			/>
+			{fullNavigation && (
+				<div
+					className="ptr-StoryNavPanelCases"
+					ref={navPanelCasesRef}
+					style={
+						isOverflown && !isSmallScreen
+							? { height: '0rem', overflow: 'hidden' }
+							: { height: 'fit-content', overflow: 'visible' }
+					}
+				>
+					{sectionNavigationIcons}
+				</div>
+			)}
+			<IconChevronDown
+				className={classes(['ptr-StoryNavPanelIcon', 'arrow-down'])}
+				onClick={(e) => scrollToSection(e, StoryActionType.DOWN)}
+			/>
 		</div>
 	);
 };

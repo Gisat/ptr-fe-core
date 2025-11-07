@@ -8,3 +8,38 @@
 .ptr-Story.is-vertical-layout {
 	flex-flow: column;
 }
+
+.ptr-StoryPanelToggle {
+    position: fixed;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    /* background: rgba(255,255,255,0.9); */
+    /* padding: 8px; */
+    /* border-radius: 0 0 0 8px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* min-width: 120px; */
+}
+
+.ptr-StoryPanelToggle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ptr-StoryPanelToggle-segmented {
+    width: 100%;
+    /* background: transparent; */
+    /* box-shadow: none; */
+}
+
+.ptr-StoryPanelToggle-label {
+    padding: 0 8px;
+}
+
+.ptr-StoryPanelToggle-active {
+    background: #e0e0e0;
+}

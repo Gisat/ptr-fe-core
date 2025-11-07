@@ -7,14 +7,20 @@
 export const handleScrollDown = (
 	sidePanelNodes: HTMLElement[],
 	activeStep: number | undefined,
-	sidePanelRef: React.RefObject<HTMLDivElement>
+	sidePanelRef: React.RefObject<HTMLDivElement>,
+	isSmallScreen?: boolean,
+	setActiveStep?: (step: number) => void
 ) => {
 	for (const [index, node] of sidePanelNodes.entries()) {
-			if (node === sidePanelNodes[activeStep!] && activeStep! < sidePanelNodes.length - 1) {
-					sidePanelRef?.current?.scrollTo({
-							top: sidePanelNodes[index + 1].offsetTop,
-					});
-					break;
+		if (node === sidePanelNodes[activeStep!] && activeStep! < sidePanelNodes.length - 1) {
+			if (!isSmallScreen) {
+				sidePanelRef?.current?.scrollTo({
+					top: sidePanelNodes[index + 1].offsetTop,
+				});
 			}
+			break;
+		} else if (setActiveStep) {
+			setActiveStep(activeStep! + 1);
+		}
 	}
 };

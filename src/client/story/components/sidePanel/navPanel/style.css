@@ -13,7 +13,7 @@
 	flex-flow: column;
 	align-items: center;
 	justify-content: center;
-	gap: .6rem;
+	gap: .4rem;
 }
 
 .ptr-StoryNavPanelCases {
@@ -21,14 +21,13 @@
 	justify-content: center;
 	flex-direction: column;
 	align-items: center;
-	gap: 0.4rem;
+	gap: .4rem;
 }
 
 .ptr-StoryNavPanelIcon {
 	background-color: transparent;
 	color: var(--base950);
 	cursor: pointer;
-	width: 1rem;
 }
 
 .ptr-StoryNavPanelIcon:hover {
@@ -37,6 +36,11 @@
 
 .ptr-StoryNavPanelIcon.is-active {
 	color: var(--accent300);
+}
+
+.ptr-StoryNavPanelIcon.arrow-up,
+.ptr-StoryNavPanelIcon.arrow-down {
+	width: 1.5rem;
 }
 
 .ptr-StoryNavPanelIcon.default-home {

@@ -13,15 +13,21 @@ export const handleSectionScroll = (
 	navPanelCasesNodes: HTMLElement[],
 	activeStep: number | undefined,
 	sidePanelRef: React.RefObject<HTMLDivElement>,
-	setJumpSection?: (section: number) => void
+	setJumpSection?: (section: number) => void,
+	isSmallScreen?: boolean,
+	setActiveStep?: (step: number) => void
 ) => {
 	for (const [index, node] of navPanelCasesNodes.entries()) {
-			if (node === e.currentTarget && activeStep !== index && setJumpSection) {
-					sidePanelRef?.current?.scrollTo({
-							top: sidePanelNodes[index].offsetTop,
-					});
-					setJumpSection(index);
-					break;
+		if (node === e.currentTarget && activeStep !== index && setJumpSection) {
+			if (!isSmallScreen) {
+				sidePanelRef?.current?.scrollTo({
+					top: sidePanelNodes[index].offsetTop,
+				});
+				setJumpSection(index);
+				break;
+			} else if (setActiveStep) {
+				setActiveStep(index);
 			}
+		}
 	}
 };
