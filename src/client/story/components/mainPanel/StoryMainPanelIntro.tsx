@@ -44,9 +44,12 @@ export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroProps> = ({
 	children,
 	sidePanelRef,
 	activeStep,
+	setActiveStep,
+	sidePanelChildrenCount,
 	backgroundImage = '',
 	disableCtaButton,
 	ctaButtonText = 'Proceed to next screen',
+	isSmallScreen,
 }) => {
 	/**
 	 * Generates dynamic class names by combining the base class with additional class names.
@@ -91,7 +94,17 @@ export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroProps> = ({
 				{!disableCtaButton && (
 					<Button
 						className={classes('ptr-StoryMainPanelIntro-ctaButton')}
-						onClick={() => sidePanelRef && handleScrollDown(sidePanelNodes, activeStep, sidePanelRef)}
+						onClick={() =>
+							sidePanelRef &&
+							handleScrollDown(
+								sidePanelNodes,
+								activeStep,
+								sidePanelRef,
+								sidePanelChildrenCount,
+								isSmallScreen,
+								setActiveStep
+							)
+						}
 						variant="filled"
 						rightSection={
 							<div className="ptr-StoryMainPanelIntro-ctaButton-chevrons">

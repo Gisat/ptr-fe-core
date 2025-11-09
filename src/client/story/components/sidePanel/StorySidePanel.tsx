@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { StoryNavPanel } from './navPanel/StoryNavPanel';
 import './style.css';
+import { renderActiveSection } from '../../helpers';
 
 /**
  * Props for the StorySidePanel component.
@@ -30,20 +30,17 @@ interface StorySidePanelProps {
 /**
  * StorySidePanel Component
  * On small screens, animates slide left/right between sections.
+ * All children are rendered, but only the active one is visible.
+ * Navigation panel is now handled outside this component.
  */
 export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 	className,
 	children,
 	onScroll,
 	setSidePanelRef,
+	setSidePanelChildrenCount,
 	panelLayout,
 	activeStep = 0,
-	setActiveStep,
-	setJumpSection,
-	contentSize,
-	hideNavigation = false,
-	navigationIcons,
-	fullNavigation = true,
 	isSmallScreen,
 	visiblePanel,
 }) => {
@@ -63,15 +60,17 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 		}
 	}, [setSidePanelRef]);
 
+	useEffect(() => {
+		if (setSidePanelChildrenCount) {
+			setSidePanelChildrenCount(children ? React.Children.count(children) : 0);
+		}
+	}, [setSidePanelChildrenCount]);
+
 	// Generate class names dynamically
 	const generateClasses = (baseClass: string): string => {
-		return classnames(
-			baseClass,
-			{ 'hide-navigation': hideNavigation },
-			`is-${panelLayout}-layout`,
-			`is-${visiblePanel}-visible`,
-			className
-		);
+		return classnames(baseClass, `is-${panelLayout}-layout`, `is-${visiblePanel}-visible`, className, {
+			'is-small-screen': isSmallScreen,
+		});
 	};
 
 	// Handle step change and set animation direction
@@ -129,40 +128,8 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 
 	return (
 		<div className={generateClasses('ptr-StorySidePanel-container')}>
-			{/* Render the navigation panel if navigation is not hidden */}
-			{sidePanelRef.current && !hideNavigation ? (
-				<StoryNavPanel
-					activeStep={activeStep}
-					setActiveStep={setActiveStep}
-					setJumpSection={setJumpSection}
-					sidePanelRef={sidePanelRef as React.RefObject<HTMLDivElement>}
-					contentSize={contentSize}
-					navigationIcons={navigationIcons}
-					fullNavigation={fullNavigation}
-					isSmallScreen={isSmallScreen}
-				/>
-			) : null}
-
-			<div
-				className={generateClasses('ptr-StorySidePanel')}
-				ref={sidePanelRef}
-				onScroll={onScroll}
-				style={{ display: visiblePanel === 'side' ? undefined : 'none' }}
-			>
-				{isSmallScreen
-					? React.Children.toArray(children).map((child, idx) => (
-							<div
-								key={idx}
-								className={classnames('ptr-StorySidePanel-case', 'ptr-StorySidePanel-slide-wrapper', {
-									hidden: idx !== displayedStep,
-								})}
-								onScroll={onScroll}
-								style={idx === displayedStep ? wrapperStyle : { display: 'none' }}
-							>
-								{child}
-							</div>
-						))
-					: children}
+			<div className={generateClasses('ptr-StorySidePanel')} ref={sidePanelRef} onScroll={onScroll}>
+				{isSmallScreen ? renderActiveSection(children, displayedStep, wrapperStyle) : children}
 			</div>
 		</div>
 	);

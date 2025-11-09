@@ -56,6 +56,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	setActiveStep,
 	setJumpSection,
 	sidePanelRef,
+	sidePanelChildrenCount,
 	contentSize,
 	navigationIcons,
 	fullNavigation,
@@ -77,7 +78,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	 * Updates the overflow state of the navigation panel based on the side panel's height.
 	 */
 	useEffect(() => {
-		if (sidePanelRef?.current && navPanel.current) {
+		if (!isSmallScreen && sidePanelRef?.current && navPanel.current) {
 			const sidePanelHeight = sidePanelRef.current.offsetHeight;
 			const navPanelHeight = navPanel.current.offsetHeight;
 
@@ -116,7 +117,14 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 				handleScrollUp(sidePanelNodes, activeStep, sidePanelRef, isSmallScreen, setActiveStep);
 				break;
 			case StoryActionType.DOWN:
-				handleScrollDown(sidePanelNodes, activeStep, sidePanelRef, isSmallScreen, setActiveStep);
+				handleScrollDown(
+					sidePanelNodes,
+					activeStep,
+					sidePanelRef,
+					sidePanelChildrenCount,
+					isSmallScreen,
+					setActiveStep
+				);
 				break;
 			default:
 				break;
@@ -131,7 +139,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	const getSectionNavigationIcons = (index: number) => {
 		const navigationStep = {
 			home: 0,
-			footer: sidePanelNodes.length - 1,
+			footer: sidePanelChildrenCount - 1,
 		};
 		switch (index) {
 			case navigationStep.home:
@@ -167,8 +175,9 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	/**
 	 * Retrieves all child nodes of the side panel and generates navigation icons for each.
 	 */
-	const sidePanelNodes = sidePanelRef?.current ? (Array.from(sidePanelRef.current.childNodes) as HTMLElement[]) : [];
-	const sectionNavigationIcons = sidePanelNodes.map((_, index) => getSectionNavigationIcons(index));
+	const sectionNavigationIcons = Array.from({ length: sidePanelChildrenCount ?? 0 }).map((_, index) =>
+		getSectionNavigationIcons(index)
+	);
 
 	return (
 		<div className={classes(['ptr-StoryNavPanelContainer'])} ref={navPanel}>

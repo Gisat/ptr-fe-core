@@ -1,11 +1,17 @@
 import classnames from 'classnames';
 import { StorySidePanel } from './components/sidePanel/StorySidePanel';
-import React, { Children, cloneElement, useCallback, useRef, useState } from 'react';
+import React, { Children, cloneElement, useCallback, useEffect, useRef, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import './style.css';
 import './variables.css';
 import { IconMap, IconTextCaption } from '@tabler/icons-react';
 import { SegmentedControl } from '@mantine/core';
+import { StoryNavPanel } from './components/sidePanel/navPanel/StoryNavPanel';
+
+export const DEFAULT_SMALL_SCREEN_WIDTH = 450.98;
+export const DEFAULT_SMALL_SCREEN_HEIGHT = 450.98;
+export const DEFAULT_MEDIUM_SCREEN_WIDTH = 991.98;
+export const DEFAULT_MEDIUM_SCREEN_HEIGHT = 450.98;
 
 /**
  * Props for the Story component.
@@ -26,27 +32,40 @@ export const Story: React.FC<StoryProps> = ({
 	children,
 	defaultStep = 0,
 	onStepChange,
-	storySmallScreenWidth,
-	storySmallScreenHeight,
+	storySmallScreenWidth = DEFAULT_SMALL_SCREEN_WIDTH,
+	storySmallScreenHeight = DEFAULT_SMALL_SCREEN_HEIGHT,
+	storyMediumScreenWidth = DEFAULT_MEDIUM_SCREEN_WIDTH,
+	storyMediumScreenHeight = DEFAULT_MEDIUM_SCREEN_HEIGHT,
+	navigationIcons,
+	fullNavigation = true,
+	hideNavigation = false,
 }) => {
 	const [activeStep, setActiveStep] = useState<number>(defaultStep);
 	const [jumpSection, setJumpSection] = useState<number | null>(null);
 	const [sidePanelRef, setSidePanelRef] = useState<SidePanelRef | undefined>(undefined);
+	const [sidePanelChildrenCount, setSidePanelChildrenCount] = useState<number>(0);
 	const [contentSize, setContentSize] = useState<[number, number] | undefined>(undefined);
 	const [panelLayout, setPanelLayout] = useState<string>('horizontal');
 	const [visiblePanel, setVisiblePanel] = useState<'main' | 'side'>('main');
 	const [isSmallScreen, setIsSmallScreen] = useState(false);
 
-	const classes = classnames('ptr-Story', {}, `is-${panelLayout}-layout`, `is-${visiblePanel}-visible`, className);
+	const classes = (currentClass) =>
+		classnames(currentClass, `is-${panelLayout}-layout`, `is-${visiblePanel}-visible`, className, {
+			'is-small-screen': isSmallScreen,
+		});
 
 	const touchStartX = useRef<number | null>(null);
 	const touchEndX = useRef<number | null>(null);
 	const touchStartTime = useRef<number | null>(null);
 	const touchEndTime = useRef<number | null>(null);
 
+	useEffect(() => {
+		setActiveStep(0);
+	}, [isSmallScreen]);
+
 	// Helper to get max step for current panel
 	const getMaxStep = () => {
-		return sidePanelRef.current.childNodes.length - 1;
+		return sidePanelChildrenCount - 1;
 	};
 
 	const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -92,14 +111,27 @@ export const Story: React.FC<StoryProps> = ({
 		touchEndTime.current = null;
 	};
 
-	const onResize = useCallback(({ width, height }: { width: number | null; height: number | null }) => {
-		if (width !== null && height !== null) {
-			setContentSize([width, height]);
-			const small = width <= storySmallScreenWidth || height < storySmallScreenHeight;
-			setPanelLayout(small ? 'vertical' : 'horizontal');
-			setIsSmallScreen(small);
-		}
-	}, []);
+	const onResize = useCallback(
+		({ width, height }: { width: number | null; height: number | null }) => {
+			if (width !== null && height !== null) {
+				setContentSize([width, height]);
+				const isSmall = width <= storySmallScreenWidth || height <= storySmallScreenHeight;
+				const isMedium =
+					(width <= storyMediumScreenWidth && width > storySmallScreenWidth) ||
+					(height <= storyMediumScreenHeight && height > storySmallScreenHeight);
+
+				if (isSmall) {
+					setPanelLayout('single');
+				} else if (isMedium) {
+					setPanelLayout('vertical');
+				} else {
+					setPanelLayout('horizontal');
+				}
+			}
+		},
+		[storySmallScreenWidth, storySmallScreenHeight, storyMediumScreenWidth, storyMediumScreenHeight]
+	);
+
 	const { ref } = useResizeDetector({
 		handleHeight: true,
 		onResize,
@@ -151,9 +183,12 @@ export const Story: React.FC<StoryProps> = ({
 	const renderChild = (child: React.ReactNode) => {
 		if (React.isValidElement(child)) {
 			if (child.type === StorySidePanel) {
+				// Render sidePanel only if visiblePanel is 'side'
+				// if (visiblePanel === 'side') {
 				return cloneElement(child as React.ReactElement<any>, {
 					onScroll,
 					setSidePanelRef,
+					setSidePanelChildrenCount,
 					panelLayout,
 					activeStep,
 					setActiveStep,
@@ -162,65 +197,83 @@ export const Story: React.FC<StoryProps> = ({
 					isSmallScreen,
 					visiblePanel,
 				});
+				// }
+				// return null;
 			} else if (sidePanelRef !== undefined || noSidePanel) {
 				if (!isSmallScreen || visiblePanel === 'main') {
 					return cloneElement(child as React.ReactElement<any>, {
 						activeStep,
+						setActiveStep,
 						setJumpSection,
 						sidePanelRef,
 						panelLayout,
 						noSidePanel,
 						isSmallScreen,
+						sidePanelChildrenCount,
 					});
 				}
 			}
 		}
 		return null;
 	};
-
 	return (
 		<div
-			className={classes}
+			className={classes('ptr-Story')}
 			ref={ref}
 			onTouchStart={handleTouchStart}
 			onTouchMove={handleTouchMove}
 			onTouchEnd={handleTouchEnd}
 		>
 			{Children.map(children, renderChild)}
-			{isSmallScreen && (
-				<div className="ptr-StoryPanelToggle">
-					<SegmentedControl
-						value={visiblePanel}
-						onChange={(val) => setVisiblePanel(val as 'main' | 'side')}
-						data={[
-							{
-								value: 'side',
-								label: (
-									<span className="ptr-StoryPanelToggle-icon">
-										<IconTextCaption size={20} />
-									</span>
-								),
-							},
-							{
-								value: 'main',
-								label: (
-									<span className="ptr-StoryPanelToggle-icon">
-										<IconMap size={20} />
-									</span>
-								),
-							},
-						]}
-						fullWidth
-						color="gray"
-						classNames={{
-							root: 'ptr-StoryPanelToggle-segmented',
-							label: 'ptr-StoryPanelToggle-label',
-							// active: 'ptr-StoryPanelToggle-active',
-						}}
-						aria-label="Panel switch"
+			<div className={classes('ptr-StoryPanelWrapper')}>
+				{isSmallScreen && (
+					<div className="ptr-StoryPanelToggle">
+						<SegmentedControl
+							value={visiblePanel}
+							onChange={(val) => setVisiblePanel(val as 'main' | 'side')}
+							data={[
+								{
+									value: 'side',
+									label: (
+										<span className="ptr-StoryPanelToggle-icon">
+											<IconTextCaption size={20} />
+										</span>
+									),
+								},
+								{
+									value: 'main',
+									label: (
+										<span className="ptr-StoryPanelToggle-icon">
+											<IconMap size={20} />
+										</span>
+									),
+								},
+							]}
+							fullWidth
+							color="var(--base500)"
+							classNames={{
+								root: 'ptr-StoryPanelToggle-segmented',
+								label: 'ptr-StoryPanelToggle-label',
+								control: 'ptr-StoryPanelToggle-control',
+							}}
+							aria-label="Panel switch"
+						/>
+					</div>
+				)}
+				{sidePanelRef?.current && !hideNavigation ? (
+					<StoryNavPanel
+						activeStep={activeStep}
+						setActiveStep={setActiveStep}
+						setJumpSection={setJumpSection}
+						sidePanelRef={sidePanelRef as React.RefObject<HTMLDivElement>}
+						sidePanelChildrenCount={sidePanelChildrenCount}
+						contentSize={contentSize}
+						navigationIcons={navigationIcons}
+						fullNavigation={fullNavigation}
+						isSmallScreen={isSmallScreen}
 					/>
-				</div>
-			)}
+				) : null}
+			</div>
 		</div>
 	);
 };

@@ -44,6 +44,7 @@ export const StoryNavPanel: React.FC<StoryNavPanelProps> = ({
 	setActiveStep,
 	setJumpSection,
 	sidePanelRef,
+	sidePanelChildrenCount,
 	layout,
 	contentSize,
 	navigationIcons,
@@ -51,7 +52,7 @@ export const StoryNavPanel: React.FC<StoryNavPanelProps> = ({
 	isSmallScreen,
 }) => {
 	// Generate dynamic class names
-	const classes = classnames('ptr-StoryNavPanel', {}, layout, className);
+	const classes = classnames('ptr-StoryNavPanel', { 'is-small-screen': isSmallScreen }, layout, className);
 
 	return (
 		<div className={classes}>
@@ -61,6 +62,7 @@ export const StoryNavPanel: React.FC<StoryNavPanelProps> = ({
 				setActiveStep={setActiveStep}
 				setJumpSection={setJumpSection}
 				sidePanelRef={sidePanelRef}
+				sidePanelChildrenCount={sidePanelChildrenCount}
 				contentSize={contentSize}
 				navigationIcons={navigationIcons}
 				fullNavigation={fullNavigation}
