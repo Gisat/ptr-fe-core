@@ -13,7 +13,7 @@
 	flex-flow: column;
 }
 
-.ptr-StoryPanelWrapper.is-small-screen {
+.ptr-StoryPanelWrapper.is-single-layout {
 	height: 5rem;
 	padding: .5rem 1rem 0;
 	display: flex;
@@ -47,8 +47,4 @@
 		height: 100%;
     padding: 0 8px;
 		font-size: 1.1rem;
-}
-
-.ptr-StoryPanelToggle-control[data-active] .ptr-StoryPanelToggle-icon {
-    /* color: var(--base100) */
 }

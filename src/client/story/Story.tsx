@@ -47,12 +47,9 @@ export const Story: React.FC<StoryProps> = ({
 	const [contentSize, setContentSize] = useState<[number, number] | undefined>(undefined);
 	const [panelLayout, setPanelLayout] = useState<string>('horizontal');
 	const [visiblePanel, setVisiblePanel] = useState<'main' | 'side'>('main');
-	const [isSmallScreen, setIsSmallScreen] = useState(false);
 
 	const classes = (currentClass) =>
-		classnames(currentClass, `is-${panelLayout}-layout`, `is-${visiblePanel}-visible`, className, {
-			'is-small-screen': isSmallScreen,
-		});
+		classnames(currentClass, `is-${panelLayout}-layout`, `is-${visiblePanel}-visible`, className);
 
 	const touchStartX = useRef<number | null>(null);
 	const touchEndX = useRef<number | null>(null);
@@ -61,7 +58,7 @@ export const Story: React.FC<StoryProps> = ({
 
 	useEffect(() => {
 		setActiveStep(0);
-	}, [isSmallScreen]);
+	}, [panelLayout]);
 
 	// Helper to get max step for current panel
 	const getMaxStep = () => {
@@ -138,7 +135,7 @@ export const Story: React.FC<StoryProps> = ({
 	});
 
 	const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
-		if (!sidePanelRef?.current || isSmallScreen) return;
+		if (!sidePanelRef?.current || panelLayout === 'single') return;
 
 		const sidePanelNodes = Array.from(sidePanelRef.current.childNodes) as HTMLElement[];
 		const userReachedBottom =
@@ -194,13 +191,12 @@ export const Story: React.FC<StoryProps> = ({
 					setActiveStep,
 					setJumpSection,
 					contentSize,
-					isSmallScreen,
 					visiblePanel,
 				});
 				// }
 				// return null;
 			} else if (sidePanelRef !== undefined || noSidePanel) {
-				if (!isSmallScreen || visiblePanel === 'main') {
+				if (panelLayout !== 'single' || visiblePanel === 'main') {
 					return cloneElement(child as React.ReactElement<any>, {
 						activeStep,
 						setActiveStep,
@@ -208,7 +204,6 @@ export const Story: React.FC<StoryProps> = ({
 						sidePanelRef,
 						panelLayout,
 						noSidePanel,
-						isSmallScreen,
 						sidePanelChildrenCount,
 					});
 				}
@@ -226,7 +221,7 @@ export const Story: React.FC<StoryProps> = ({
 		>
 			{Children.map(children, renderChild)}
 			<div className={classes('ptr-StoryPanelWrapper')}>
-				{isSmallScreen && (
+				{panelLayout === 'single' && (
 					<div className="ptr-StoryPanelToggle">
 						<SegmentedControl
 							value={visiblePanel}
@@ -260,7 +255,7 @@ export const Story: React.FC<StoryProps> = ({
 						/>
 					</div>
 				)}
-				{sidePanelRef?.current && !hideNavigation ? (
+				{panelLayout === 'single' && sidePanelRef?.current && !hideNavigation ? (
 					<StoryNavPanel
 						activeStep={activeStep}
 						setActiveStep={setActiveStep}
@@ -270,7 +265,7 @@ export const Story: React.FC<StoryProps> = ({
 						contentSize={contentSize}
 						navigationIcons={navigationIcons}
 						fullNavigation={fullNavigation}
-						isSmallScreen={isSmallScreen}
+						panelLayout={panelLayout}
 					/>
 				) : null}
 			</div>

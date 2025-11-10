@@ -45,15 +45,13 @@ export const StoryNavPanel: React.FC<StoryNavPanelProps> = ({
 	setJumpSection,
 	sidePanelRef,
 	sidePanelChildrenCount,
-	layout,
+	panelLayout,
 	contentSize,
 	navigationIcons,
 	fullNavigation,
-	isSmallScreen,
 }) => {
 	// Generate dynamic class names
-	const classes = classnames('ptr-StoryNavPanel', { 'is-small-screen': isSmallScreen }, layout, className);
-
+	const classes = classnames('ptr-StoryNavPanel', `is-${panelLayout}-layout`, className);
 	return (
 		<div className={classes}>
 			<StoryNavPanelContainer
@@ -66,7 +64,7 @@ export const StoryNavPanel: React.FC<StoryNavPanelProps> = ({
 				contentSize={contentSize}
 				navigationIcons={navigationIcons}
 				fullNavigation={fullNavigation}
-				isSmallScreen={isSmallScreen}
+				isSmallScreen={panelLayout === 'single'}
 			/>
 		</div>
 	);

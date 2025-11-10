@@ -59,7 +59,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	sidePanelChildrenCount,
 	contentSize,
 	navigationIcons,
-	fullNavigation,
+	fullNavigation = true,
 	isSmallScreen,
 }) => {
 	const [isOverflown, setIsOverflown] = useState(false);
@@ -179,6 +179,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 		getSectionNavigationIcons(index)
 	);
 
+	console.log(sidePanelChildrenCount > 0, sidePanelChildrenCount, sectionNavigationIcons, isOverflown, fullNavigation);
 	return (
 		<div className={classes(['ptr-StoryNavPanelContainer'])} ref={navPanel}>
 			<IconChevronUp

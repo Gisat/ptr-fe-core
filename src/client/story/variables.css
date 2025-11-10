@@ -54,39 +54,49 @@ This file defines layout dimensions, typography, and responsive design variables
 		overflow: hidden;
 	}
 
-	.ptr-StorySidePanel-container.is-vertical-layout.is-small-screen.is-main-visible {
+	.ptr-Story.is-single-layout {
+		flex-flow: column;
+	}
+
+	.ptr-StorySidePanel-container.is-single-layout.is-main-visible {
 		display: none;
 	}
 
-	.ptr-StorySidePanel-container.is-vertical-layout.is-small-screen {
+	.ptr-StorySidePanel-container.is-single-layout {
+		width: 100%;
 		order: 0;
 		height: calc(100% - 5rem);
 		overflow-x: hidden;
 	}
 
-	.ptr-StorySidePanel.is-vertical-layout.is-side-visible.is-small-screen {
+	.ptr-StorySidePanel.is-single-layout.is-side-visible {
 		padding: 0 0 1.5rem 1.5rem;
 	}
 
-	.ptr-StoryMainPanel.is-vertical-layout.is-small-screen {
+	.ptr-StorySidePanel.is-single-layout {
+		width: 100%;
+	}
+
+	.ptr-StoryMainPanel.is-single-layout {
+		width: 100%;
 		order: 0;
 		height: calc(100% - 5rem);
 		box-shadow: 3px 0 3px rgb(0 0 0 / 15%);
 	}
 
-	.ptr-StoryNavPanel.is-small-screen {
+	.ptr-StoryNavPanel.is-single-layout {
 		height: var(--StoryNavPanelWidth);
 		width: 100%;
 		/* flex-direction: row; */
 		/* transform: rotate(-90deg); */
 	}
 
-	.ptr-StoryNavPanel.is-small-screen .ptr-StoryNavPanelContainer, 
-	.ptr-StoryNavPanel.is-small-screen .ptr-StoryNavPanelCases {
+	.ptr-StoryNavPanel.is-single-layout .ptr-StoryNavPanelContainer, 
+	.ptr-StoryNavPanel.is-single-layout .ptr-StoryNavPanelCases {
 		flex-direction: row;
 	}
 
-	.ptr-StoryNavPanel.is-small-screen .ptr-StoryNavPanelContainer > svg {
+	.ptr-StoryNavPanel.is-single-layout .ptr-StoryNavPanelContainer > svg {
 		transform: rotate(-90deg);
 	}
 }

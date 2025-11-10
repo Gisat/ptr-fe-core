@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import './style.css';
 import { renderActiveSection } from '../../helpers';
+import { StoryNavPanel } from './navPanel/StoryNavPanel';
 
 /**
  * Props for the StorySidePanel component.
@@ -9,30 +10,25 @@ import { renderActiveSection } from '../../helpers';
 interface StorySidePanelProps {
 	className?: string;
 	children?: React.ReactNode;
-	onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
+	onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
 	setSidePanelRef?: (ref: React.RefObject<HTMLDivElement>) => void;
-	panelLayout?: string;
+	setSidePanelChildrenCount?: (cnt: number) => void;
+	panelLayout?: string; // 'single' | 'vertical' | 'horizontal'
 	activeStep?: number;
-	setActiveStep?: (step: number) => void;
-	setJumpSection?: (section: number) => void;
+	setActiveStep?: (n: number) => void;
+	setJumpSection?: (n: number | null) => void;
 	contentSize?: [number, number];
+	visiblePanel?: string; // 'main' | 'side'
 	hideNavigation?: boolean;
+	fullNavigation?: boolean;
 	navigationIcons?: {
 		home?: React.ReactNode;
 		case?: React.ReactNode;
 		footer?: React.ReactNode;
 	};
-	fullNavigation?: boolean;
-	isSmallScreen?: boolean;
-	visiblePanel?: string;
+	sidePanelChildrenCount?: number;
 }
 
-/**
- * StorySidePanel Component
- * On small screens, animates slide left/right between sections.
- * All children are rendered, but only the active one is visible.
- * Navigation panel is now handled outside this component.
- */
 export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 	className,
 	children,
@@ -41,56 +37,53 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 	setSidePanelChildrenCount,
 	panelLayout,
 	activeStep = 0,
-	isSmallScreen,
+	setActiveStep,
+	setJumpSection,
+	contentSize,
 	visiblePanel,
+	hideNavigation,
+	fullNavigation,
+	navigationIcons,
+	sidePanelChildrenCount = 0,
 }) => {
 	const sidePanelRef = useRef<HTMLDivElement>(null);
 
-	// Animation state for small screens
 	const [displayedStep, setDisplayedStep] = useState(activeStep);
 	const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
 	const [direction, setDirection] = useState<'left' | 'right'>('right');
-	const [wrapperStyle, setWrapperStyle] = useState({});
+	const [wrapperStyle, setWrapperStyle] = useState<React.CSSProperties>({});
 	const animationDuration = 400;
 
-	// Set the side panel reference when the component mounts
 	useEffect(() => {
-		if (setSidePanelRef && sidePanelRef) {
-			setSidePanelRef(sidePanelRef as React.RefObject<HTMLDivElement>);
-		}
+		if (setSidePanelRef) setSidePanelRef(sidePanelRef as React.RefObject<HTMLDivElement>);
 	}, [setSidePanelRef]);
 
 	useEffect(() => {
 		if (setSidePanelChildrenCount) {
 			setSidePanelChildrenCount(children ? React.Children.count(children) : 0);
 		}
-	}, [setSidePanelChildrenCount]);
+	}, [children, setSidePanelChildrenCount]);
 
-	// Generate class names dynamically
-	const generateClasses = (baseClass: string): string => {
-		return classnames(baseClass, `is-${panelLayout}-layout`, `is-${visiblePanel}-visible`, className, {
-			'is-small-screen': isSmallScreen,
-		});
-	};
+	const generateClasses = (base: string) =>
+		classnames(base, `is-${panelLayout}-layout`, `is-${visiblePanel}-visible`, className);
 
-	// Handle step change and set animation direction
+	// Single layout slide animation
 	useEffect(() => {
-		if (isSmallScreen && activeStep !== displayedStep && phase === 'idle') {
+		if (panelLayout === 'single' && activeStep !== displayedStep && phase === 'idle') {
 			setDirection(activeStep > displayedStep ? 'right' : 'left');
 			setPhase('out');
 			setWrapperStyle({});
 		}
-	}, [activeStep, displayedStep, phase, isSmallScreen]);
+	}, [panelLayout, activeStep, displayedStep, phase]);
 
-	// Animate out: slide current screen away
 	useEffect(() => {
-		if (isSmallScreen && phase === 'out') {
+		if (panelLayout === 'single' && phase === 'out') {
 			setWrapperStyle({
-				transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
+				transition: `transform ${animationDuration}ms cubic-bezier(.4,0,.2,1), opacity ${animationDuration}ms cubic-bezier(.4,0,.2,1)`,
 				transform: direction === 'right' ? 'translateX(-100%)' : 'translateX(100%)',
 				opacity: 0,
 			});
-			const timeout = setTimeout(() => {
+			const t = setTimeout(() => {
 				setPhase('in');
 				setWrapperStyle({
 					transition: 'none',
@@ -99,37 +92,65 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 				});
 				setDisplayedStep(activeStep);
 			}, animationDuration);
-			return () => clearTimeout(timeout);
+			return () => clearTimeout(t);
 		}
-	}, [phase, direction, activeStep, animationDuration, isSmallScreen]);
+	}, [panelLayout, phase, direction, activeStep, animationDuration]);
 
-	// Animate in: slide new screen in
 	useEffect(() => {
-		if (isSmallScreen && phase === 'in') {
-			const raf = requestAnimationFrame(() => {
+		if (panelLayout === 'single' && phase === 'in') {
+			const raf = requestAnimationFrame(() =>
 				setWrapperStyle({
-					transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
+					transition: `transform ${animationDuration}ms cubic-bezier(.4,0,.2,1), opacity ${animationDuration}ms cubic-bezier(.4,0,.2,1)`,
 					transform: 'translateX(0)',
 					opacity: 1,
-				});
-			});
-			const timeout = setTimeout(() => setPhase('idle'), animationDuration);
+				})
+			);
+			const t = setTimeout(() => setPhase('idle'), animationDuration);
 			return () => {
 				cancelAnimationFrame(raf);
-				clearTimeout(timeout);
+				clearTimeout(t);
 			};
 		}
-	}, [phase, animationDuration, isSmallScreen]);
+	}, [panelLayout, phase, animationDuration]);
 
-	// Reset wrapper style when idle
 	useEffect(() => {
 		if (phase === 'idle') setWrapperStyle({});
 	}, [phase]);
 
+	const body =
+		panelLayout === 'single'
+			? renderActiveSection(children, displayedStep, wrapperStyle, {
+					activeStep: displayedStep,
+				})
+			: children;
+
+	// console.log(
+	// 	panelLayout !== 'single',
+	// 	!hideNavigation,
+	// 	sidePanelRef.current,
+	// 	sidePanelChildrenCount > 0,
+	// 	sidePanelChildrenCount,
+	// 	children,
+	// 	React.Children.count(children)
+	// );
+
 	return (
 		<div className={generateClasses('ptr-StorySidePanel-container')}>
+			{panelLayout !== 'single' && !hideNavigation && sidePanelRef.current && (
+				<StoryNavPanel
+					activeStep={activeStep}
+					setActiveStep={setActiveStep!}
+					setJumpSection={setJumpSection}
+					sidePanelRef={sidePanelRef as React.RefObject<HTMLDivElement>}
+					sidePanelChildrenCount={React.Children.count(children)}
+					contentSize={contentSize}
+					navigationIcons={navigationIcons}
+					fullNavigation={fullNavigation}
+					panelLayout={panelLayout}
+				/>
+			)}
 			<div className={generateClasses('ptr-StorySidePanel')} ref={sidePanelRef} onScroll={onScroll}>
-				{isSmallScreen ? renderActiveSection(children, displayedStep, wrapperStyle) : children}
+				{body}
 			</div>
 		</div>
 	);

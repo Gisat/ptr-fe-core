@@ -19,8 +19,8 @@ export const handleScrollUp = (
 				sidePanelRef?.current?.scrollTo({
 					top: sidePanelNodes[index - 1].offsetTop,
 				});
+				break;
 			}
-			break;
 		}
 	}
 };

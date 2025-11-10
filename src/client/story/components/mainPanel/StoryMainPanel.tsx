@@ -15,7 +15,6 @@ export const StoryMainPanel = ({
 	noSidePanel = false,
 	animationDuration = 400,
 	pauseBetweenSlides = 0,
-	isSmallScreen,
 	sidePanelChildrenCount,
 }) => {
 	const [displayedStep, setDisplayedStep] = useState(activeStep);
@@ -25,7 +24,6 @@ export const StoryMainPanel = ({
 
 	const panelClasses = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className, {
 		'ptr-StoryMainPanel--no-scroll': phase !== StoryPhaseType.IDLE,
-		'is-small-screen': isSmallScreen,
 	});
 
 	useEffect(() => {
@@ -39,7 +37,7 @@ export const StoryMainPanel = ({
 	useEffect(() => {
 		if (phase === StoryPhaseType.OUT) {
 			let transform;
-			if (isSmallScreen) {
+			if (panelLayout === 'single') {
 				transform = direction === StoryActionType.DOWN ? 'translateX(-100%)' : 'translateX(100%)';
 			} else {
 				transform = direction === StoryActionType.DOWN ? 'translateY(-100%)' : 'translateY(100%)';
@@ -53,7 +51,7 @@ export const StoryMainPanel = ({
 				const pauseTimeout = setTimeout(() => {
 					setPhase(StoryPhaseType.IN);
 					let inTransform;
-					if (isSmallScreen) {
+					if (panelLayout === 'single') {
 						inTransform = direction === StoryActionType.DOWN ? 'translateX(100%)' : 'translateX(-100%)';
 					} else {
 						inTransform = direction === StoryActionType.DOWN ? 'translateY(100%)' : 'translateY(-100%)';
@@ -69,14 +67,14 @@ export const StoryMainPanel = ({
 			}, animationDuration);
 			return () => clearTimeout(timeout);
 		}
-	}, [phase, direction, activeStep, animationDuration, pauseBetweenSlides, isSmallScreen]);
+	}, [phase, direction, activeStep, animationDuration, pauseBetweenSlides, panelLayout === 'single']);
 
 	useEffect(() => {
 		if (phase === StoryPhaseType.IN) {
 			const raf = requestAnimationFrame(() => {
 				setWrapperStyle({
 					transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
-					transform: isSmallScreen ? 'translateX(0)' : 'translateY(0)',
+					transform: panelLayout === 'single' ? 'translateX(0)' : 'translateY(0)',
 					opacity: 1,
 				});
 			});
@@ -86,7 +84,7 @@ export const StoryMainPanel = ({
 				clearTimeout(timeout);
 			};
 		}
-	}, [phase, animationDuration, isSmallScreen]);
+	}, [phase, animationDuration]);
 
 	useEffect(() => {
 		if (phase === StoryPhaseType.IDLE) setWrapperStyle({});
@@ -98,7 +96,7 @@ export const StoryMainPanel = ({
 				{renderActiveSection(children, displayedStep, wrapperStyle, {
 					sidePanelRef,
 					activeStep,
-					isSmallScreen,
+					isSmallScreen: panelLayout === 'single',
 					setActiveStep,
 					sidePanelChildrenCount,
 				})}
