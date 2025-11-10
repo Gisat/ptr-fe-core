@@ -13,7 +13,7 @@ import { handleScrollDown } from './logic/handleScrollDown';
 import { handleHomeNavigation } from './logic/handleHomeNavigation';
 import { handleFooterNavigation } from './logic/handleFooterNavigation';
 import { handleCaseNavigation } from './logic/handleCaseNavigation';
-import { StoryActionType } from '../../../enum.story.actionType';
+import { StoryActionType } from '../../../enums/enum.story.actionType';
 import './style.css';
 
 /**
@@ -23,11 +23,15 @@ interface StoryNavPanelContainerProps {
 	/** Additional class names for styling */
 	className?: string;
 	/** The currently active step in the navigation */
-	activeStep?: number;
+	activeStep: number;
+	/** Callback to set the active step */
+	setActiveStep: (step: number) => void;
 	/** Callback to set the section to jump to */
-	setJumpSection?: (section: number) => void;
+	setJumpSection: (section: number) => void;
 	/** Reference to the side panel */
-	sidePanelRef?: React.RefObject<HTMLDivElement>;
+	sidePanelRef: React.RefObject<HTMLDivElement>;
+	/** Number of children (sections) in the side panel */
+	sidePanelChildrenCount: number;
 	/** Size of the content area ([width, height]) */
 	contentSize?: [number, number];
 	/** Custom navigation icons */
@@ -38,6 +42,8 @@ interface StoryNavPanelContainerProps {
 	};
 	/** Whether to show full navigation */
 	fullNavigation?: boolean;
+	/** Whether the layout is small screen (single panel) */
+	isSmallScreen?: boolean;
 }
 
 /**
@@ -87,12 +93,12 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 				setLastSidePanelHeight(sidePanelHeight);
 			}
 		}
-	}, [sidePanelRef, contentSize, lastSidePanelHeight]);
+	}, [sidePanelRef, contentSize, lastSidePanelHeight, isSmallScreen]);
 
 	/**
 	 * Handles scrolling to a specific section or navigating up/down.
 	 * @param {React.MouseEvent} e - The mouse event.
-	 * @param {'section' | 'up' | 'down'} type - The type of navigation action.
+	 * @param {StoryActionType} type - The type of navigation action.
 	 */
 	const scrollToSection = (e: React.MouseEvent, type: StoryActionType) => {
 		if (!sidePanelRef?.current || !navPanelCasesRef.current) return;
@@ -139,7 +145,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	const getSectionNavigationIcons = (index: number) => {
 		const navigationStep = {
 			home: 0,
-			footer: sidePanelChildrenCount - 1,
+			footer: sidePanelChildrenCount ? sidePanelChildrenCount - 1 : 0,
 		};
 		switch (index) {
 			case navigationStep.home:
@@ -173,13 +179,12 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	};
 
 	/**
-	 * Retrieves all child nodes of the side panel and generates navigation icons for each.
+	 * Retrieves all child nodes of the side panel and generates navigation icons for each section.
 	 */
 	const sectionNavigationIcons = Array.from({ length: sidePanelChildrenCount ?? 0 }).map((_, index) =>
 		getSectionNavigationIcons(index)
 	);
 
-	console.log(sidePanelChildrenCount > 0, sidePanelChildrenCount, sectionNavigationIcons, isOverflown, fullNavigation);
 	return (
 		<div className={classes(['ptr-StoryNavPanelContainer'])} ref={navPanel}>
 			<IconChevronUp

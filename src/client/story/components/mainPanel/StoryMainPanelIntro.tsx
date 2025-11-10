@@ -14,30 +14,37 @@ interface StoryMainPanelIntroProps {
 	/** Additional class names for styling */
 	className?: string;
 	/** Content to render inside the main panel intro */
-	children?: ReactNode;
-	/** Reference to the side panel DOM node */
-	sidePanelRef?: React.RefObject<HTMLDivElement>;
+	children: ReactNode;
+	/** Reference to the side panel DOM node used for scrolling */
+	sidePanelRef: React.RefObject<HTMLDivElement>;
 	/** The currently active step index */
-	activeStep?: number;
-	/** Background image (can be a StaticImageData object or a string URL) */
+	activeStep: number;
+	/**
+	 * Setter for the active step (index of the currently visible section).
+	 * Called after programmatic scroll (CTA or swipe) to sync state.
+	 */
+	setActiveStep: (step: number) => void;
+	/** Total number of sections (side panel children) */
+	sidePanelChildrenCount: number;
+	/** Background image (string URL or object with src) */
 	backgroundImage?: BackgroundImageType;
-	/** Whether to disable the call-to-action button */
+	/** Disable the call‑to‑action button when true */
 	disableCtaButton?: boolean;
-	/** Text for the call-to-action button */
+	/** Text label for the call‑to‑action button */
 	ctaButtonText?: string;
+	/**
+	 * True when in single (small) layout; affects scroll behavior
+	 * passed to navigation handlers for conditional logic.
+	 */
+	isSmallScreen: boolean;
 }
 
 /**
- * StoryMainPanelIntro Component
+ * StoryMainPanelIntro
  *
- * This component represents the introductory section of the main panel in a story layout.
- * It displays a background image and overlays content, such as headlines or descriptions.
- *
- * @param {StoryMainPanelIntroProps} props - The props for the component.
- * @param {string} [props.className] - Additional class names for styling.
- * @param {ReactNode} [props.children] - Content to render inside the main panel intro.
- * @param {BackgroundImageType} [props.backgroundImage=""] - Background image for the panel.
- * @returns {JSX.Element} The rendered StoryMainPanelIntro component.
+ * Introductory hero/landing section for the main panel.
+ * Renders a background image (optional), overlay content, and an optional CTA
+ * button that scrolls to the next section in the side panel.
  */
 export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroProps> = ({
 	className,
@@ -52,21 +59,12 @@ export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroProps> = ({
 	isSmallScreen,
 }) => {
 	/**
-	 * Generates dynamic class names by combining the base class with additional class names.
-	 * @param {string} baseClass - The base class name.
-	 * @returns {string} The combined class name.
+	 * Combine base and custom class names.
 	 */
 	const classes = (baseClass: string): string => classnames(baseClass, className);
 
 	/**
-	 * Resolves the image source URL from a given background image input.
-	 *
-	 * This function handles two possible types of input:
-	 * - A plain string representing the image URL (e.g., "/images/bg.jpg" or external CDN URL).
-	 * - An object with a `src` property (e.g., a `StaticImageData` object from a Webpack/Next.js import).
-	 *
-	 * @param {BackgroundImageType | undefined} img - The background image input to resolve.
-	 * @returns {string | undefined} The resolved image URL as a string, or undefined if input is invalid.
+	 * Resolve an image source string from supported backgroundImage formats.
 	 */
 	const resolveImageSrc = (img: BackgroundImageType | undefined): string | undefined => {
 		if (!img) return undefined;
@@ -75,15 +73,15 @@ export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroProps> = ({
 		return undefined;
 	};
 
-	/**
-	 * The resolved background image URL, derived from the `backgroundImage` prop.
-	 * This value is used to set the inline `backgroundImage` style in the component.
-	 */
+	/** Resolved background image URL (if any). */
 	const backgroundImageUrl = resolveImageSrc(backgroundImage);
 
-	// Inline style for the background image
+	/** Inline style object for background image. */
 	const style = backgroundImageUrl ? { backgroundImage: `url(${backgroundImageUrl})` } : undefined;
 
+	/**
+	 * Cached list of side panel section nodes used for scroll navigation.
+	 */
 	const sidePanelNodes =
 		sidePanelRef && sidePanelRef.current ? (Array.from(sidePanelRef.current.childNodes) as HTMLElement[]) : [];
 
@@ -112,6 +110,7 @@ export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroProps> = ({
 								<IconChevronDown size={16} className="ptr-StoryMainPanelIntro-ctaButton-chevronBlink-2" />
 							</div>
 						}
+						aria-label="Scroll to next section"
 					>
 						{ctaButtonText}
 					</Button>

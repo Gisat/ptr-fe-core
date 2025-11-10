@@ -8,12 +8,26 @@
 	height: 100%;
 }
 
+.ptr-StoryNavPanel.is-single-layout {
+	height: var(--StoryNavPanelWidth);
+	width: 100%;
+}
+
+.ptr-StoryNavPanel.is-single-layout .ptr-StoryNavPanelContainer, 
+.ptr-StoryNavPanel.is-single-layout .ptr-StoryNavPanelCases {
+	flex-direction: row;
+}
+
 .ptr-StoryNavPanelContainer {
 	display: flex;
 	flex-flow: column;
 	align-items: center;
 	justify-content: center;
 	gap: .4rem;
+}
+
+.ptr-StoryNavPanel.is-single-layout .ptr-StoryNavPanelContainer > svg {
+	transform: rotate(-90deg);
 }
 
 .ptr-StoryNavPanelCases {

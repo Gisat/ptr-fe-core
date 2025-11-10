@@ -3,22 +3,25 @@ import classnames from 'classnames';
 import './style.css';
 import { renderActiveSection } from '../../helpers';
 import { StoryNavPanel } from './navPanel/StoryNavPanel';
+import { StoryPhaseType } from '../../enums/enum.story.phaseType';
+import { StoryPanelLayout } from '../../enums/enum.story.panelLayout';
+import { StoryPanelDirection } from '../../enums/enum.story.sidePanelDirection';
 
 /**
  * Props for the StorySidePanel component.
  */
 interface StorySidePanelProps {
 	className?: string;
-	children?: React.ReactNode;
-	onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
-	setSidePanelRef?: (ref: React.RefObject<HTMLDivElement>) => void;
-	setSidePanelChildrenCount?: (cnt: number) => void;
-	panelLayout?: string; // 'single' | 'vertical' | 'horizontal'
-	activeStep?: number;
-	setActiveStep?: (n: number) => void;
-	setJumpSection?: (n: number | null) => void;
+	children: React.ReactNode;
+	onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+	setSidePanelRef: (ref: React.RefObject<HTMLDivElement>) => void;
+	setSidePanelChildrenCount: (cnt: number) => void;
+	panelLayout: StoryPanelLayout;
+	activeStep: number;
+	setActiveStep: (n: number) => void;
+	setJumpSection: (n: number | null) => void;
 	contentSize?: [number, number];
-	visiblePanel?: string; // 'main' | 'side'
+	visiblePanel: string; // 'main' | 'side'
 	hideNavigation?: boolean;
 	fullNavigation?: boolean;
 	navigationIcons?: {
@@ -26,7 +29,7 @@ interface StorySidePanelProps {
 		case?: React.ReactNode;
 		footer?: React.ReactNode;
 	};
-	sidePanelChildrenCount?: number;
+	sidePanelChildrenCount: number;
 }
 
 export const StorySidePanel: React.FC<StorySidePanelProps> = ({
@@ -35,7 +38,7 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 	onScroll,
 	setSidePanelRef,
 	setSidePanelChildrenCount,
-	panelLayout,
+	panelLayout = StoryPanelLayout.HORIZONTAL,
 	activeStep = 0,
 	setActiveStep,
 	setJumpSection,
@@ -44,13 +47,13 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 	hideNavigation,
 	fullNavigation,
 	navigationIcons,
-	sidePanelChildrenCount = 0,
+	sidePanelChildrenCount,
 }) => {
 	const sidePanelRef = useRef<HTMLDivElement>(null);
 
 	const [displayedStep, setDisplayedStep] = useState(activeStep);
-	const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
-	const [direction, setDirection] = useState<'left' | 'right'>('right');
+	const [phase, setPhase] = useState<StoryPhaseType>(StoryPhaseType.IDLE);
+	const [direction, setDirection] = useState<StoryPanelDirection>(StoryPanelDirection.RIGHT);
 	const [wrapperStyle, setWrapperStyle] = useState<React.CSSProperties>({});
 	const animationDuration = 400;
 
@@ -69,25 +72,25 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 
 	// Single layout slide animation
 	useEffect(() => {
-		if (panelLayout === 'single' && activeStep !== displayedStep && phase === 'idle') {
-			setDirection(activeStep > displayedStep ? 'right' : 'left');
-			setPhase('out');
+		if (panelLayout === StoryPanelLayout.SINGLE && activeStep !== displayedStep && phase === StoryPhaseType.IDLE) {
+			setDirection(activeStep > displayedStep ? StoryPanelDirection.RIGHT : StoryPanelDirection.LEFT);
+			setPhase(StoryPhaseType.OUT);
 			setWrapperStyle({});
 		}
 	}, [panelLayout, activeStep, displayedStep, phase]);
 
 	useEffect(() => {
-		if (panelLayout === 'single' && phase === 'out') {
+		if (panelLayout === StoryPanelLayout.SINGLE && phase === StoryPhaseType.OUT) {
 			setWrapperStyle({
 				transition: `transform ${animationDuration}ms cubic-bezier(.4,0,.2,1), opacity ${animationDuration}ms cubic-bezier(.4,0,.2,1)`,
-				transform: direction === 'right' ? 'translateX(-100%)' : 'translateX(100%)',
+				transform: direction === StoryPanelDirection.RIGHT ? 'translateX(-100%)' : 'translateX(100%)',
 				opacity: 0,
 			});
 			const t = setTimeout(() => {
-				setPhase('in');
+				setPhase(StoryPhaseType.IN);
 				setWrapperStyle({
 					transition: 'none',
-					transform: direction === 'right' ? 'translateX(100%)' : 'translateX(-100%)',
+					transform: direction === StoryPanelDirection.RIGHT ? 'translateX(100%)' : 'translateX(-100%)',
 					opacity: 0,
 				});
 				setDisplayedStep(activeStep);
@@ -97,7 +100,7 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 	}, [panelLayout, phase, direction, activeStep, animationDuration]);
 
 	useEffect(() => {
-		if (panelLayout === 'single' && phase === 'in') {
+		if (panelLayout === StoryPanelLayout.SINGLE && phase === StoryPhaseType.IN) {
 			const raf = requestAnimationFrame(() =>
 				setWrapperStyle({
 					transition: `transform ${animationDuration}ms cubic-bezier(.4,0,.2,1), opacity ${animationDuration}ms cubic-bezier(.4,0,.2,1)`,
@@ -105,7 +108,7 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 					opacity: 1,
 				})
 			);
-			const t = setTimeout(() => setPhase('idle'), animationDuration);
+			const t = setTimeout(() => setPhase(StoryPhaseType.IDLE), animationDuration);
 			return () => {
 				cancelAnimationFrame(raf);
 				clearTimeout(t);
@@ -114,35 +117,25 @@ export const StorySidePanel: React.FC<StorySidePanelProps> = ({
 	}, [panelLayout, phase, animationDuration]);
 
 	useEffect(() => {
-		if (phase === 'idle') setWrapperStyle({});
+		if (phase === StoryPhaseType.IDLE) setWrapperStyle({});
 	}, [phase]);
 
 	const body =
-		panelLayout === 'single'
+		panelLayout === StoryPanelLayout.SINGLE
 			? renderActiveSection(children, displayedStep, wrapperStyle, {
 					activeStep: displayedStep,
 				})
 			: children;
 
-	// console.log(
-	// 	panelLayout !== 'single',
-	// 	!hideNavigation,
-	// 	sidePanelRef.current,
-	// 	sidePanelChildrenCount > 0,
-	// 	sidePanelChildrenCount,
-	// 	children,
-	// 	React.Children.count(children)
-	// );
-
 	return (
 		<div className={generateClasses('ptr-StorySidePanel-container')}>
-			{panelLayout !== 'single' && !hideNavigation && sidePanelRef.current && (
+			{panelLayout !== StoryPanelLayout.SINGLE && !hideNavigation && sidePanelRef.current && (
 				<StoryNavPanel
 					activeStep={activeStep}
 					setActiveStep={setActiveStep!}
 					setJumpSection={setJumpSection}
 					sidePanelRef={sidePanelRef as React.RefObject<HTMLDivElement>}
-					sidePanelChildrenCount={React.Children.count(children)}
+					sidePanelChildrenCount={sidePanelChildrenCount}
 					contentSize={contentSize}
 					navigationIcons={navigationIcons}
 					fullNavigation={fullNavigation}

@@ -9,13 +9,17 @@ interface StoryNavPanelProps {
 	/** Additional class names for styling */
 	className?: string;
 	/** The currently active step in the navigation */
-	activeStep?: number;
+	activeStep: number;
+	/** Callback to set the active step */
+	setActiveStep: (step: number) => void;
 	/** Callback to set the section to jump to */
-	setJumpSection?: (section: number) => void;
+	setJumpSection: (section: number) => void;
 	/** Reference to the side panel */
-	sidePanelRef?: React.RefObject<HTMLDivElement>;
-	/** Layout of the navigation panel (e.g., "horizontal", "vertical") */
-	layout?: string;
+	sidePanelRef: React.RefObject<HTMLDivElement>;
+	/** Number of children (sections) in the side panel */
+	sidePanelChildrenCount: number;
+	/** Layout of the navigation panel (e.g., "horizontal", "vertical", "single") */
+	panelLayout: string;
 	/** Size of the content area ([width, height]) */
 	contentSize?: [number, number];
 	/** Custom navigation icons for specific sections (e.g., home, footer, etc.) */
@@ -33,7 +37,7 @@ interface StoryNavPanelProps {
  *
  * This component represents the navigation panel within the side panel of a story layout.
  * It provides navigation functionality, such as jumping between sections, and supports
- * customizable layouts.
+ * customizable layouts and icons.
  *
  * @param {StoryNavPanelProps} props - The props for the component.
  * @returns {JSX.Element} The rendered StoryNavPanel component.
@@ -50,8 +54,11 @@ export const StoryNavPanel: React.FC<StoryNavPanelProps> = ({
 	navigationIcons,
 	fullNavigation,
 }) => {
-	// Generate dynamic class names
+	/**
+	 * Generates dynamic class names for the navigation panel based on layout and custom classes.
+	 */
 	const classes = classnames('ptr-StoryNavPanel', `is-${panelLayout}-layout`, className);
+
 	return (
 		<div className={classes}>
 			<StoryNavPanelContainer

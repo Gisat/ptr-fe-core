@@ -37,6 +37,25 @@
 	height: 40%;
 }
 
+.ptr-StorySidePanel-container.is-single-layout.is-main-visible {
+	display: none;
+}
+
+.ptr-StorySidePanel-container.is-single-layout {
+	width: 100%;
+	order: 0;
+	height: calc(100% - 5rem);
+	overflow-x: hidden;
+}
+
+.ptr-StorySidePanel.is-single-layout.is-side-visible {
+	padding: 0 0 1.5rem 1.5rem;
+}
+
+.ptr-StorySidePanel.is-single-layout {
+	width: 100%;
+}
+
 .ptr-StorySidePanelIntro, .ptr-StorySidePanelFooter, .ptr-StorySidePanelCase {
 	padding: 0 1.5rem 0 0;
 }
