@@ -1,8 +1,13 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerActiveLayerChange } from '../../client/shared/appState/reducerHandlers/activeLayerChange';
-import { AppSharedState } from '../../client/shared/appState/state.models';
-import { ActionLayerActiveChange } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildRenderingLayer, cloneRenderingLayer, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerActiveLayerChange } from '../../../client/shared/appState/reducerHandlers/activeLayerChange';
+import { AppSharedState } from '../../../client/shared/appState/state.models';
+import { ActionLayerActiveChange } from '../../../client/shared/appState/state.models.actions';
+import {
+	buildAppState,
+	buildRenderingLayer,
+	cloneRenderingLayer,
+	makeActionFactory,
+} from '../../tools/reducer.helpers';
 
 // Test fixture: two rendering layers where only vegetation is active to mimic baseline app state.
 

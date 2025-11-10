@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapSetModeChange } from '../../client/shared/appState/reducerHandlers/mapSetModeChange';
-import { ActionMapSetModeChange } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetModeChange } from '../../../client/shared/appState/reducerHandlers/mapSetModeChange';
+import { ActionMapSetModeChange } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapSet, makeActionFactory } from '../../tools/reducer.helpers';
 
 // Helper: produces map set with configurable visual mode for testing toggles.
 const mapSet = (key: string, mode: 'slider' | 'grid' = 'grid') =>

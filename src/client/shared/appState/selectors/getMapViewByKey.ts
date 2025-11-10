@@ -14,7 +14,7 @@ export const getMapViewByKey = (state: AppSharedState, key: string): MapView | n
 		return null;
 	}
 
-	if (!map.view) {
+	if (!map.view || Object.keys(map.view).length === 0) {
 		console.warn(`Map with key "${key}" does not have a view.`);
 		return null;
 	}

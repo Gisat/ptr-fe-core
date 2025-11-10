@@ -1,9 +1,14 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerFetchSources } from '../../client/shared/appState/reducerHandlers/fetchSourcesUpdate';
-import { ActionChangeLayerSources } from '../../client/shared/appState/state.models.actions';
-import { RenderingLayer } from '../../client/shared/models/models.layers';
-import { Datasource } from '../../globals/shared/panther/models.nodes';
-import { buildAppState, buildRenderingLayer, cloneRenderingLayer, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerFetchSources } from '../../../client/shared/appState/reducerHandlers/fetchSourcesUpdate';
+import { ActionChangeLayerSources } from '../../../client/shared/appState/state.models.actions';
+import { RenderingLayer } from '../../../client/shared/models/models.layers';
+import { Datasource } from '../../../globals/shared/panther/models.nodes';
+import {
+	buildAppState,
+	buildRenderingLayer,
+	cloneRenderingLayer,
+	makeActionFactory,
+} from '../../tools/reducer.helpers';
 
 // Fixture: initial rendering layers representing a map with two inactive thematic layers.
 

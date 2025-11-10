@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapSetSyncChange } from '../../client/shared/appState/reducerHandlers/mapSetSyncChange';
-import { ActionMapSetSyncChange } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetSyncChange } from '../../../client/shared/appState/reducerHandlers/mapSetSyncChange';
+import { ActionMapSetSyncChange } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapSet, makeActionFactory } from '../../tools/reducer.helpers';
 
 // Helper: builds map set fixture with configurable sync flags.
 const mapSet = (key: string, sync: { zoom: boolean; center: boolean }) =>

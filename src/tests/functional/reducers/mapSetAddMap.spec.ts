@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapSetAddMap } from '../../client/shared/appState/reducerHandlers/mapSetAddMap';
-import { ActionMapAddToMapSet } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetAddMap } from '../../../client/shared/appState/reducerHandlers/mapSetAddMap';
+import { ActionMapAddToMapSet } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../../tools/reducer.helpers';
 
 // Helper: constructs map set fixture with optional map keys to simulate existing membership.
 const mapSet = (key: string, maps: string[] = ['map-a']) =>

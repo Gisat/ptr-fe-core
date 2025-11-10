@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapLayerAdd } from '../../client/shared/appState/reducerHandlers/mapLayerAdd';
-import { ActionMapLayerAdd } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapLayerAdd } from '../../../client/shared/appState/reducerHandlers/mapLayerAdd';
+import { ActionMapLayerAdd } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../../tools/reducer.helpers';
 
 // Action factory for MAP_LAYER_ADD with typed payload.
 const action = makeActionFactory<ActionMapLayerAdd>(StateActionType.MAP_LAYER_ADD);

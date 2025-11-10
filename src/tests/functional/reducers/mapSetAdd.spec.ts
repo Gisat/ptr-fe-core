@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapSetAddMapSet } from '../../client/shared/appState/reducerHandlers/mapSetAdd';
-import { ActionMapSetAdd } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetAddMapSet } from '../../../client/shared/appState/reducerHandlers/mapSetAdd';
+import { ActionMapSetAdd } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapSet, makeActionFactory } from '../../tools/reducer.helpers';
 
 // Helper: builds fake state populated with the provided map sets.
 const createFakeState = (mapSets: ReturnType<typeof mapSet>[] = []) => buildAppState({ mapSets });

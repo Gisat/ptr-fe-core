@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapLayerActiveChange } from '../../client/shared/appState/reducerHandlers/mapLayerActiveChange';
-import { ActionMapLayerActiveChange } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapLayerActiveChange } from '../../../client/shared/appState/reducerHandlers/mapLayerActiveChange';
+import { ActionMapLayerActiveChange } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../../tools/reducer.helpers';
 
 // Helper: wraps map fixtures into app state with supplied map collection.
 const buildFakeState = (maps) => buildAppState({ maps });

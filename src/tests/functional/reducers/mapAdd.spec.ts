@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapAdd } from '../../client/shared/appState/reducerHandlers/mapAdd';
-import { ActionMapAdd } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapModel, buildRenderingLayer, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapAdd } from '../../../client/shared/appState/reducerHandlers/mapAdd';
+import { ActionMapAdd } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapModel, buildRenderingLayer, makeActionFactory } from '../../tools/reducer.helpers';
 
 // Helper: constructs a map model seeded with a single active base layer.
 const baseMap = (key: string) =>

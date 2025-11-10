@@ -1,13 +1,13 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerGlobalStateUpdate } from '../../client/shared/appState/reducerHandlers/globalStateUpdate';
-import { ActionGlobalStateUpdate } from '../../client/shared/appState/state.models.actions';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerGlobalStateUpdate } from '../../../client/shared/appState/reducerHandlers/globalStateUpdate';
+import { ActionGlobalStateUpdate } from '../../../client/shared/appState/state.models.actions';
 import {
 	buildAppState,
 	buildMapModel,
 	buildMapSet,
 	buildRenderingLayer,
 	makeActionFactory,
-} from '../tools/reducer.helpers';
+} from '../../tools/reducer.helpers';
 
 // Helper: baseline app state mock with defaults for slices not under test.
 const createFakeState = () => buildAppState();

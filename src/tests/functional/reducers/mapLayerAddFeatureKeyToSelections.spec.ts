@@ -1,9 +1,9 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerAddFeatureKeyToSelections } from '../../client/shared/appState/reducerHandlers/mapLayerAddFeatureKeyToSelections';
-import { ActionMapLayerAddFeatureKey } from '../../client/shared/appState/state.models.actions';
-import { SELECTION_DEFAULT_DISTINCT_COLOURS } from '../../client/shared/constants/colors';
-import { Selection } from '../../client/shared/models/models.selections';
-import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerAddFeatureKeyToSelections } from '../../../client/shared/appState/reducerHandlers/mapLayerAddFeatureKeyToSelections';
+import { ActionMapLayerAddFeatureKey } from '../../../client/shared/appState/state.models.actions';
+import { SELECTION_DEFAULT_DISTINCT_COLOURS } from '../../../client/shared/constants/colors';
+import { Selection } from '../../../client/shared/models/models.selections';
+import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../../tools/reducer.helpers';
 
 // Helper: composes fake app state with provided maps and optional selections slice.
 const buildFakeState = (maps: ReturnType<typeof buildMapModel>[], selections: Selection[] = []) =>

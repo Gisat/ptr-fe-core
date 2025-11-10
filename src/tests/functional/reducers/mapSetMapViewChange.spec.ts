@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapSetMapViewChange } from '../../client/shared/appState/reducerHandlers/mapSetMapViewChange';
-import { ActionMapViewChange } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetMapViewChange } from '../../../client/shared/appState/reducerHandlers/mapSetMapViewChange';
+import { ActionMapViewChange } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapModel, buildMapSet, makeActionFactory } from '../../tools/reducer.helpers';
 
 // Helper: builds map model with specified view to mimic stored map positions.
 const mapModel = (key: string, view: { zoom: number; latitude: number; longitude: number }) =>

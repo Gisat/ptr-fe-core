@@ -1,7 +1,7 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapSetRemove } from '../../client/shared/appState/reducerHandlers/mapSetRemove';
-import { ActionMapSetRemove } from '../../client/shared/appState/state.models.actions';
-import { buildAppState, buildMapSet, makeActionFactory } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapSetRemove } from '../../../client/shared/appState/reducerHandlers/mapSetRemove';
+import { ActionMapSetRemove } from '../../../client/shared/appState/state.models.actions';
+import { buildAppState, buildMapSet, makeActionFactory } from '../../tools/reducer.helpers';
 
 // Helper: produces basic map set fixture used for removal scenarios.
 const mapSet = (key: string) =>

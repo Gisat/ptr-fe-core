@@ -1,8 +1,8 @@
-import { StateActionType } from '../../client/shared/appState/enum.state.actionType';
-import { reduceHandlerMapLayerRemove } from '../../client/shared/appState/reducerHandlers/mapLayerRemove';
-import { ActionMapLayerRemove } from '../../client/shared/appState/state.models.actions';
-import { Selection } from '../../client/shared/models/models.selections';
-import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../tools/reducer.helpers';
+import { StateActionType } from '../../../client/shared/appState/enum.state.actionType';
+import { reduceHandlerMapLayerRemove } from '../../../client/shared/appState/reducerHandlers/mapLayerRemove';
+import { ActionMapLayerRemove } from '../../../client/shared/appState/state.models.actions';
+import { Selection } from '../../../client/shared/models/models.selections';
+import { buildAppState, buildMapModel, makeActionFactory, mapLayerStub } from '../../tools/reducer.helpers';
 
 // Helper: composes fake state from provided maps and optional selection entries.
 const buildFakeState = (maps: ReturnType<typeof buildMapModel>[], selections: Selection[] = []) =>
