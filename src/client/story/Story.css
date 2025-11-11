@@ -1,0 +1,23 @@
+.ptr-Story {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-flow: row;
+}
+
+.ptr-Story.is-horizontal-layout {
+    flex-direction: row;
+}
+
+.ptr-Story.is-vertical-layout, .ptr-Story.is-single-layout {
+	flex-flow: column;
+}
+
+.ptr-StoryPanelWrapper.is-single-layout {
+	height: 5rem;
+	padding: .5rem 1rem 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+}
