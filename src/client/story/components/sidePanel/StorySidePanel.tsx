@@ -24,7 +24,7 @@ export interface StorySidePanelPublicProps {
  */
 export const StorySidePanel: React.FC<StorySidePanelPublicProps> & {
 	__PTR_STORY_SIDE_PANEL?: true; // Marker for internal detection
-} = ({ children, className }) => <div className={className}>{children}</div>;
+} = ({ children }) => <>{children}</>;
 
 // Marker used for internal detection (prevents passing internal props from apps)
 StorySidePanel.__PTR_STORY_SIDE_PANEL = true;

@@ -27,7 +27,7 @@ export interface StoryMainPanelPublicProps {
  */
 export const StoryMainPanel: React.FC<StoryMainPanelPublicProps> & {
 	__PTR_STORY_MAIN_PANEL?: true; // Marker for internal detection
-} = ({ children, className }) => <div className={className}>{children}</div>;
+} = ({ children }) => <>{children}</>;
 
 // Marker used for internal detection (prevents passing internal props from apps)
 StoryMainPanel.__PTR_STORY_MAIN_PANEL = true;

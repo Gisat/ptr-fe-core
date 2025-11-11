@@ -136,6 +136,14 @@ export const Story: React.FC<StoryProps> = ({
 	function renderStoryChildElement(child: React.ReactNode) {
 		if (!React.isValidElement(child)) return null;
 
+		/**
+		 * Checks if the child is a public side panel or main panel wrapper.
+		 *
+		 * This uses a static marker property (__PTR_STORY_SIDE_PANEL or __PTR_STORY_MAIN_PANEL)
+		 * that is set on the public wrapper component function. When React creates an element,
+		 * its type property refers to the component function. By attaching a static property to the function,
+		 * we can identify public wrappers at runtime and swap them for internal logic components.
+		 */
 		const isPublicSidePanel = (child.type as any)?.__PTR_STORY_SIDE_PANEL === true;
 		const isPublicMainPanel = (child.type as any)?.__PTR_STORY_MAIN_PANEL === true;
 
