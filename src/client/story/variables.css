@@ -8,7 +8,7 @@ This file defines layout dimensions, typography, and responsive design variables
 	/* Layout Dimensions */
 	--StoryNavPanelWidth: 2.5rem; /* Width of the navigation panel */
 	--StoryLayoutPanelWidth: 25rem; /* Default width of the layout panel */
-	--StorySidePanelWidth: calc(var(--StoryLayoutPanelWidth)); /* Total width of the side panel */
+	--StorySidePanelWidth: calc(var(--StoryLayoutPanelWidth) + var(--StoryNavPanelWidth)); /* Total width of the side panel */
 	--StoryMainPanelWidth: calc(100% - var(--StorySidePanelWidth)); /* Remaining width for the main panel */
 
 	/* Typography */
