@@ -15,7 +15,7 @@ interface StoryNavPanelProps {
 	/** Callback to set the section to jump to */
 	setJumpSection: (section: number) => void;
 	/** Reference to the side panel */
-	sidePanelRef: React.RefObject<HTMLDivElement>;
+	sidePanelRef: React.RefObject<HTMLDivElement | null>;
 	/** Number of children (sections) in the side panel */
 	sidePanelChildrenCount: number;
 	/** Layout of the navigation panel (e.g., "horizontal", "vertical", "single") */
@@ -24,8 +24,11 @@ interface StoryNavPanelProps {
 	contentSize?: [number, number];
 	/** Custom navigation icons for specific sections (e.g., home, footer, etc.) */
 	navigationIcons?: {
+		/** Icon for the home section */
 		home?: React.ReactNode;
+		/** Icon for the case section */
 		case?: React.ReactNode;
+		/** Icon for the footer section */
 		footer?: React.ReactNode;
 	};
 	/** Whether to show full navigation */

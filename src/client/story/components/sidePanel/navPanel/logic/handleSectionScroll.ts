@@ -12,7 +12,7 @@ export const handleSectionScroll = (
 	sidePanelNodes: HTMLElement[],
 	navPanelCasesNodes: HTMLElement[],
 	activeStep: number | undefined,
-	sidePanelRef: React.RefObject<HTMLDivElement>,
+	sidePanelRef: React.RefObject<HTMLDivElement | null>,
 	setJumpSection?: (section: number) => void,
 	isSmallScreen?: boolean,
 	setActiveStep?: (step: number) => void

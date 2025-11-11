@@ -7,7 +7,7 @@
 export const handleScrollDown = (
 	sidePanelNodes: HTMLElement[],
 	activeStep: number | undefined,
-	sidePanelRef: React.RefObject<HTMLDivElement>,
+	sidePanelRef: React.RefObject<HTMLDivElement | null>,
 	sidePanelChildrenCount: number,
 	isSmallScreen?: boolean,
 	setActiveStep?: (step: number) => void

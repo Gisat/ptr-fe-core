@@ -9,11 +9,7 @@
     flex-direction: row;
 }
 
-.ptr-Story.is-vertical-layout {
-	flex-flow: column;
-}
-
-.ptr-Story.is-single-layout {
+.ptr-Story.is-vertical-layout, .ptr-Story.is-single-layout {
 	flex-flow: column;
 }
 

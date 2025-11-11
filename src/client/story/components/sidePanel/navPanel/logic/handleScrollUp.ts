@@ -7,7 +7,7 @@
 export const handleScrollUp = (
 	sidePanelNodes: HTMLElement[],
 	activeStep: number | undefined,
-	sidePanelRef: React.RefObject<HTMLDivElement>,
+	sidePanelRef: React.RefObject<HTMLDivElement | null>,
 	isSmallScreen?: boolean,
 	setActiveStep?: (step: number) => void
 ) => {

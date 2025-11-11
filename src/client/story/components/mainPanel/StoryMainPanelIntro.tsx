@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Button } from '@mantine/core';
 import { IconChevronDown } from '@tabler/icons-react';
 import { handleScrollDown } from '../sidePanel/navPanel/logic/handleScrollDown';
@@ -7,46 +7,70 @@ import './style.css';
 
 type BackgroundImageType = string | { src: string };
 
-/**
- * Props for the StoryMainPanelIntro component.
- */
-interface StoryMainPanelIntroProps {
-	/** Additional class names for styling */
+/** Public presentational wrapper for the main panel intro. */
+export interface StoryMainPanelIntroPublicProps {
+	/** Optional additional class name for styling */
 	className?: string;
-	/** Content to render inside the main panel intro */
-	children: ReactNode;
-	/** Reference to the side panel DOM node used for scrolling */
-	sidePanelRef: React.RefObject<HTMLDivElement>;
-	/** The currently active step index */
-	activeStep: number;
-	/**
-	 * Setter for the active step (index of the currently visible section).
-	 * Called after programmatic scroll (CTA or swipe) to sync state.
-	 */
-	setActiveStep: (step: number) => void;
-	/** Total number of sections (side panel children) */
-	sidePanelChildrenCount: number;
-	/** Background image (string URL or object with src) */
+	/** Child elements to render inside the intro */
+	children: React.ReactNode;
+	/** Optional background image for the intro */
 	backgroundImage?: BackgroundImageType;
-	/** Disable the call‑to‑action button when true */
+	/** Flag to disable the call-to-action button */
 	disableCtaButton?: boolean;
-	/** Text label for the call‑to‑action button */
+	/** Text for the call-to-action button */
 	ctaButtonText?: string;
-	/**
-	 * True when in single (small) layout; affects scroll behavior
-	 * passed to navigation handlers for conditional logic.
-	 */
+}
+
+/**
+ * StoryMainPanelIntro Component
+ *
+ * This component serves as a public wrapper for the main panel intro in the story layout.
+ * It allows for rendering child components and provides a call-to-action button to navigate
+ * to the next section.
+ *
+ * @param {StoryMainPanelIntroPublicProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered StoryMainPanelIntro component.
+ */
+export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroPublicProps> & {
+	__PTR_STORY_MAIN_PANEL_INTRO?: true; // Marker for internal detection
+} = ({ children }) => <>{children}</>;
+
+// Marker used for internal detection (prevents passing internal props from apps)
+StoryMainPanelIntro.__PTR_STORY_MAIN_PANEL_INTRO = true;
+
+interface StoryMainPanelIntroInternalProps {
+	/** Optional additional class name for styling */
+	className?: string;
+	/** Child elements to render inside the intro */
+	children: React.ReactNode;
+	/** Optional background image for the intro */
+	backgroundImage?: BackgroundImageType;
+	/** Flag to disable the call-to-action button */
+	disableCtaButton?: boolean;
+	/** Text for the call-to-action button */
+	ctaButtonText?: string;
+	/** Reference to the side panel DOM element */
+	sidePanelRef: React.RefObject<HTMLDivElement | null>;
+	/** Currently active step index */
+	activeStep: number;
+	/** Function to update the active step index */
+	setActiveStep: (step: number) => void;
+	/** Number of children in the side panel */
+	sidePanelChildrenCount: number;
+	/** Flag to indicate if the screen is small */
 	isSmallScreen: boolean;
 }
 
 /**
- * StoryMainPanelIntro
+ * StoryMainPanelIntroInternal Component
  *
- * Introductory hero/landing section for the main panel.
- * Renders a background image (optional), overlay content, and an optional CTA
- * button that scrolls to the next section in the side panel.
+ * This component manages the internal functionality of the main panel intro, including
+ * rendering the background image and the call-to-action button for navigating to the next section.
+ *
+ * @param {StoryMainPanelIntroInternalProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered StoryMainPanelIntroInternal component.
  */
-export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroProps> = ({
+export const StoryMainPanelIntroInternal: React.FC<StoryMainPanelIntroInternalProps> = ({
 	className,
 	children,
 	sidePanelRef,
@@ -58,32 +82,20 @@ export const StoryMainPanelIntro: React.FC<StoryMainPanelIntroProps> = ({
 	ctaButtonText = 'Proceed to next screen',
 	isSmallScreen,
 }) => {
-	/**
-	 * Combine base and custom class names.
-	 */
-	const classes = (baseClass: string): string => classnames(baseClass, className);
+	const classes = (base: string) => classnames(base, className);
 
 	/**
-	 * Resolve an image source string from supported backgroundImage formats.
+	 * Resolves the background image source.
+	 * @param {BackgroundImageType | undefined} img - The background image input.
+	 * @returns {string | undefined} The resolved image source.
 	 */
-	const resolveImageSrc = (img: BackgroundImageType | undefined): string | undefined => {
-		if (!img) return undefined;
-		if (typeof img === 'string') return img;
-		if ('src' in img) return img.src;
-		return undefined;
-	};
+	const resolveImageSrc = (img: BackgroundImageType | undefined): string | undefined =>
+		!img ? undefined : typeof img === 'string' ? img : img.src;
 
-	/** Resolved background image URL (if any). */
 	const backgroundImageUrl = resolveImageSrc(backgroundImage);
-
-	/** Inline style object for background image. */
 	const style = backgroundImageUrl ? { backgroundImage: `url(${backgroundImageUrl})` } : undefined;
 
-	/**
-	 * Cached list of side panel section nodes used for scroll navigation.
-	 */
-	const sidePanelNodes =
-		sidePanelRef && sidePanelRef.current ? (Array.from(sidePanelRef.current.childNodes) as HTMLElement[]) : [];
+	const sidePanelNodes = sidePanelRef?.current ? (Array.from(sidePanelRef.current.childNodes) as HTMLElement[]) : [];
 
 	return (
 		<div className={classes('ptr-StoryMainPanelIntro')} style={style}>

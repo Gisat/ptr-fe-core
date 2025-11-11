@@ -1,82 +1,90 @@
-import { ReactNode, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import classnames from 'classnames';
 import { StoryPhaseType } from '../../enums/enum.story.phaseType';
 import { StoryActionType } from '../../enums/enum.story.actionType';
-import { renderActiveSection } from '../../helpers';
+import { StoryPanelLayout } from '../../enums/enum.story.panelLayout';
+import { renderActiveSection } from '../../utils/renderActiveSection';
+import { StoryMainPanelIntroInternal } from './StoryMainPanelIntro';
 import './style.css';
 
+/** Public presentational wrapper for the main panel (apps only). */
+export interface StoryMainPanelPublicProps {
+	/** Child elements to render inside the main panel */
+	children: React.ReactNode;
+}
+
 /**
- * Props for StoryMainPanel.
+ * StoryMainPanel Component
+ *
+ * This component serves as a public wrapper for the main panel in the story layout.
+ * It allows for rendering child components and provides internal functionality for managing
+ * the active step and animations.
+ *
+ * @param {StoryMainPanelPublicProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered StoryMainPanel component.
  */
-interface StoryMainPanelProps {
-	/** Optional custom class name */
+export const StoryMainPanel: React.FC<StoryMainPanelPublicProps> & {
+	__PTR_STORY_MAIN_PANEL?: true; // Marker for internal detection
+} = ({ children }) => <>{children}</>;
+
+// Marker used for internal detection (prevents passing internal props from apps)
+StoryMainPanel.__PTR_STORY_MAIN_PANEL = true;
+
+interface StoryMainPanelInternalProps {
+	/** Optional class name for styling */
 	className?: string;
-	/** Panel children (sections). Accepts an array or single React node */
-	children: ReactNode;
-	/** Currently active (target) section index */
+	/** Child elements to render inside the main panel */
+	children: React.ReactNode;
+	/** Currently active step index */
 	activeStep: number;
-	/** Setter to update active section (lifted state) */
+	/** Function to update the active step index */
 	setActiveStep: (index: number) => void;
-	/** Ref to side panel (used for coordinated scroll actions) */
-	sidePanelRef: React.RefObject<HTMLDivElement | undefined>;
-	/** Current layout mode; animations switch axis when 'single' */
-	panelLayout: 'horizontal' | 'vertical' | 'single';
-	/** True if there is no side panel (main panel should span full width) */
-	noSidePanel?: boolean;
-	/** Duration of in/out transition (ms) */
+	/** Reference to the side panel DOM element */
+	sidePanelRef: React.RefObject<HTMLDivElement | null>;
+	/** Current layout mode of the panel */
+	panelLayout: StoryPanelLayout;
+	/** Flag to indicate if there is no side panel */
+	noSidePanel: boolean;
+	/** Duration of the animation in milliseconds */
 	animationDuration?: number;
-	/** Optional pause (ms) between OUT and IN phases */
+	/** Pause duration between slides in milliseconds */
 	pauseBetweenSlides?: number;
-	/** Total count of side panel sections (for CTA logic etc.) */
+	/** Number of children in the side panel */
 	sidePanelChildrenCount: number;
 }
 
 /**
- * StoryMainPanel
+ * StoryMainPanelInternal Component
  *
- * Handles animated transitions between main panel "slides" (children) based on activeStep.
- * Animation phases:
- *  - IDLE: Stable. Interaction allowed.
- *  - OUT: Current slide animates out (opacity -> 0, translate away).
- *  - IN: New slide animates in (reset off‑screen then translate to 0).
+ * This component manages the internal functionality of the main panel, including animations
+ * and rendering of active sections based on the current step. It handles transitions between
+ * steps and integrates with the side panel.
  *
- * Direction is inferred by comparing new activeStep with displayedStep:
- *  - DOWN: Forward (next section)
- *  - UP: Backward (previous section)
- *
- * Axis choice:
- *  - 'single' layout => horizontal (translateX)
- *  - other layouts   => vertical (translateY)
+ * @param {StoryMainPanelInternalProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered StoryMainPanelInternal component.
  */
-export const StoryMainPanel: React.FC<StoryMainPanelProps> = ({
+export const StoryMainPanelInternal: React.FC<StoryMainPanelInternalProps> = ({
 	className,
-	children = [],
-	activeStep = 0,
+	children,
+	activeStep,
 	setActiveStep,
 	sidePanelRef,
-	panelLayout = 'horizontal',
-	noSidePanel = false,
+	panelLayout,
+	noSidePanel,
 	animationDuration = 400,
 	pauseBetweenSlides = 0,
 	sidePanelChildrenCount,
 }) => {
-	/** Slide currently rendered (may lag behind activeStep during animation) */
 	const [displayedStep, setDisplayedStep] = useState(activeStep);
-	/** Current animation phase */
 	const [phase, setPhase] = useState<StoryPhaseType>(StoryPhaseType.IDLE);
-	/** Direction of transition (UP / DOWN) */
 	const [direction, setDirection] = useState<StoryActionType>(StoryActionType.DOWN);
-	/** Inline style applied to animated wrapper */
 	const [wrapperStyle, setWrapperStyle] = useState<Record<string, any>>({});
 
-	/** Computed classes including phase-based scroll lock */
 	const panelClasses = classnames('ptr-StoryMainPanel', `is-${panelLayout}-layout`, className, {
 		'ptr-StoryMainPanel--no-scroll': phase !== StoryPhaseType.IDLE,
 	});
 
-	/**
-	 * Detect step change -> start OUT phase.
-	 */
+	// Effect to handle step changes and set animation direction
 	useEffect(() => {
 		if (activeStep !== displayedStep && phase === StoryPhaseType.IDLE) {
 			setDirection(activeStep > displayedStep ? StoryActionType.DOWN : StoryActionType.UP);
@@ -85,13 +93,11 @@ export const StoryMainPanel: React.FC<StoryMainPanelProps> = ({
 		}
 	}, [activeStep, displayedStep, phase]);
 
-	/**
-	 * OUT phase: animate current slide out, then prepare IN phase (after optional pause).
-	 */
+	// Effect to handle the OUT phase of the animation
 	useEffect(() => {
 		if (phase === StoryPhaseType.OUT) {
-			const horizontal = panelLayout === 'single';
-			const transform = horizontal
+			const horizontalAxis = panelLayout === StoryPanelLayout.SINGLE;
+			const transform = horizontalAxis
 				? direction === StoryActionType.DOWN
 					? 'translateX(-100%)'
 					: 'translateX(100%)'
@@ -108,7 +114,7 @@ export const StoryMainPanel: React.FC<StoryMainPanelProps> = ({
 			const outTimeout = setTimeout(() => {
 				const pauseTimeout = setTimeout(() => {
 					setPhase(StoryPhaseType.IN);
-					const inTransform = horizontal
+					const inTransform = horizontalAxis
 						? direction === StoryActionType.DOWN
 							? 'translateX(100%)'
 							: 'translateX(-100%)'
@@ -130,16 +136,14 @@ export const StoryMainPanel: React.FC<StoryMainPanelProps> = ({
 		}
 	}, [phase, direction, activeStep, animationDuration, pauseBetweenSlides, panelLayout]);
 
-	/**
-	 * IN phase: animate new slide into place and end at IDLE.
-	 */
+	// Effect to handle the IN phase of the animation
 	useEffect(() => {
 		if (phase === StoryPhaseType.IN) {
-			const horizontal = panelLayout === 'single';
+			const horizontalAxis = panelLayout === StoryPanelLayout.SINGLE;
 			const raf = requestAnimationFrame(() => {
 				setWrapperStyle({
 					transition: `transform ${animationDuration}ms cubic-bezier(0.4,0,0.2,1), opacity ${animationDuration}ms cubic-bezier(0.4,0,0.2,1)`,
-					transform: horizontal ? 'translateX(0)' : 'translateY(0)',
+					transform: horizontalAxis ? 'translateX(0)' : 'translateY(0)',
 					opacity: 1,
 				});
 			});
@@ -151,20 +155,41 @@ export const StoryMainPanel: React.FC<StoryMainPanelProps> = ({
 		}
 	}, [phase, animationDuration, panelLayout]);
 
-	/**
-	 * Reset transient styles after animation completes.
-	 */
+	// Reset wrapper style when phase is IDLE
 	useEffect(() => {
 		if (phase === StoryPhaseType.IDLE) setWrapperStyle({});
 	}, [phase]);
 
+	// Process children to find and render the intro component
+	const processedChildren = React.Children.map(children, (child) => {
+		if (React.isValidElement(child) && (child.type as any)?.__PTR_STORY_MAIN_PANEL_INTRO === true) {
+			const childElement = child as React.ReactElement<any>;
+			return (
+				<StoryMainPanelIntroInternal
+					className={childElement.props.className}
+					backgroundImage={childElement.props.backgroundImage}
+					disableCtaButton={childElement.props.disableCtaButton}
+					ctaButtonText={childElement.props.ctaButtonText}
+					sidePanelRef={sidePanelRef}
+					activeStep={activeStep}
+					setActiveStep={setActiveStep}
+					sidePanelChildrenCount={sidePanelChildrenCount}
+					isSmallScreen={panelLayout === StoryPanelLayout.SINGLE}
+				>
+					{childElement.props.children}
+				</StoryMainPanelIntroInternal>
+			);
+		}
+		return child;
+	});
+
 	return (
 		<div className={panelClasses} style={noSidePanel ? { width: '100%' } : {}}>
 			<div className="ptr-StoryMainPanel-contentWrapper">
-				{renderActiveSection(children, displayedStep, wrapperStyle, {
+				{renderActiveSection(processedChildren, displayedStep, wrapperStyle, {
 					sidePanelRef,
 					activeStep,
-					isSmallScreen: panelLayout === 'single',
+					isSmallScreen: panelLayout === StoryPanelLayout.SINGLE,
 					setActiveStep,
 					sidePanelChildrenCount,
 				})}

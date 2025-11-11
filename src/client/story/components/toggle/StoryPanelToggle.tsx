@@ -4,13 +4,28 @@ import { IconMap, IconTextCaption } from '@tabler/icons-react';
 import { StoryPanelType } from '../../enums/enum.story.panelType';
 import './StoryPanelToggle.css';
 
+/**
+ * Props for the StoryPanelToggle component.
+ */
 interface StoryPanelToggleProps {
+	/** The currently selected panel type */
 	value: StoryPanelType;
+	/** Callback function to handle panel type changes */
 	onChange: (v: StoryPanelType) => void;
+	/** Optional additional class name for styling */
 	className?: string;
 }
 
-export const StoryPanelToggle: React.FC<StoryPanelToggleProps> = ({ value, onChange }) => {
+/**
+ * StoryPanelToggle Component
+ *
+ * This component provides a toggle switch for selecting between different story panel types.
+ * It uses a segmented control to allow users to switch between the side and main panels.
+ *
+ * @param {StoryPanelToggleProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered StoryPanelToggle component.
+ */
+export const StoryPanelToggle: React.FC<StoryPanelToggleProps> = ({ value, onChange, className }) => {
 	const data = useMemo(
 		() => [
 			{
@@ -34,7 +49,7 @@ export const StoryPanelToggle: React.FC<StoryPanelToggleProps> = ({ value, onCha
 	);
 
 	return (
-		<div className={'ptr-StoryPanelToggle'}>
+		<div className={`ptr-StoryPanelToggle ${className}`}>
 			<SegmentedControl
 				value={value}
 				onChange={(val) => onChange(val as StoryPanelType)}
