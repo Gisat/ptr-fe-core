@@ -6,6 +6,7 @@ import { StoryPhaseType } from '../../enums/enum.story.phaseType';
 import { StoryPanelLayout } from '../../enums/enum.story.panelLayout';
 import { StoryPanelDirection } from '../../enums/enum.story.sidePanelDirection';
 import { StoryPanelType } from '../../enums/enum.story.panelType';
+import './style.css';
 
 /**
  * Public props for the StorySidePanel component.
