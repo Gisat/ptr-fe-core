@@ -63,6 +63,10 @@ interface StorySidePanelInternalProps {
 	};
 	/** Number of children in the side panel */
 	sidePanelChildrenCount: number;
+	/** Duration of the animation in milliseconds */
+	animationDuration?: number;
+	/** Pause duration between slides in milliseconds */
+	pauseBetweenSlides?: number;
 }
 
 /**
@@ -84,12 +88,13 @@ export const StorySidePanelInternal: React.FC<StorySidePanelInternalProps> = ({
 	fullNavigation,
 	navigationIcons,
 	sidePanelChildrenCount,
+	animationDuration = 400,
+	pauseBetweenSlides = 0,
 }) => {
 	const [displayedStep, setDisplayedStep] = useState(activeStep); // Currently displayed step
 	const [phase, setPhase] = useState<StoryPhaseType>(StoryPhaseType.IDLE); // Current animation phase
 	const [direction, setDirection] = useState<StoryPanelDirection>(StoryPanelDirection.RIGHT); // Direction of the animation
 	const [wrapperStyle, setWrapperStyle] = useState<React.CSSProperties>({}); // Styles for the wrapper
-	const animationDuration = 400; // Duration of the animation in milliseconds
 
 	useEffect(() => {
 		setSidePanelChildrenCount(React.Children.count(children)); // Update the number of children in the side panel
@@ -116,18 +121,21 @@ export const StorySidePanelInternal: React.FC<StorySidePanelInternalProps> = ({
 				transform: direction === StoryPanelDirection.RIGHT ? 'translateX(-100%)' : 'translateX(100%)',
 				opacity: 0,
 			});
-			const t = setTimeout(() => {
-				setPhase(StoryPhaseType.IN);
-				setWrapperStyle({
-					transition: 'none',
-					transform: direction === StoryPanelDirection.RIGHT ? 'translateX(100%)' : 'translateX(-100%)',
-					opacity: 0,
-				});
-				setDisplayedStep(activeStep);
+			const outT = setTimeout(() => {
+				const pauseT = setTimeout(() => {
+					setPhase(StoryPhaseType.IN);
+					setWrapperStyle({
+						transition: 'none',
+						transform: direction === StoryPanelDirection.RIGHT ? 'translateX(100%)' : 'translateX(-100%)',
+						opacity: 0,
+					});
+					setDisplayedStep(activeStep);
+				}, pauseBetweenSlides);
+				return () => clearTimeout(pauseT);
 			}, animationDuration);
-			return () => clearTimeout(t);
+			return () => clearTimeout(outT);
 		}
-	}, [panelLayout, phase, direction, activeStep, animationDuration]);
+	}, [panelLayout, phase, direction, activeStep, animationDuration, pauseBetweenSlides]);
 
 	// IN phase effect
 	useEffect(() => {

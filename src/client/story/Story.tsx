@@ -47,6 +47,10 @@ type StoryProps = {
 	fullNavigation?: boolean;
 	/** Hide navigation panel */
 	hideNavigation?: boolean;
+	/** Duration of the animation in milliseconds */
+	animationDuration?: number;
+	/** Pause duration between slides in milliseconds */
+	pauseBetweenSlides?: number;
 };
 
 /**
@@ -65,6 +69,8 @@ export const Story: React.FC<StoryProps> = ({
 	navigationIcons,
 	fullNavigation = true,
 	hideNavigation = false,
+	animationDuration = 400,
+	pauseBetweenSlides = 0,
 }) => {
 	/** Currently active section index */
 	const [activeStep, setActiveStep] = useState<number>(defaultStep);
@@ -164,6 +170,8 @@ export const Story: React.FC<StoryProps> = ({
 					navigationIcons={navigationIcons}
 					hideNavigation={hideNavigation}
 					className={childElement.props.className}
+					animationDuration={animationDuration}
+					pauseBetweenSlides={pauseBetweenSlides}
 				>
 					{childElement.props.children}
 				</StorySidePanelInternal>
@@ -182,6 +190,8 @@ export const Story: React.FC<StoryProps> = ({
 						panelLayout={panelLayout}
 						noSidePanel={noSidePanel}
 						sidePanelChildrenCount={sidePanelChildrenCount}
+						animationDuration={animationDuration}
+						pauseBetweenSlides={pauseBetweenSlides}
 					>
 						{childElement.props.children}
 					</StoryMainPanelInternal>
