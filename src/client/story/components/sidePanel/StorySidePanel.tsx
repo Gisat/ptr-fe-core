@@ -13,6 +13,8 @@ import { StoryPanelType } from '../../enums/enum.story.panelType';
 export interface StorySidePanelPublicProps {
 	/** Child elements to render inside the side panel */
 	children: React.ReactNode;
+	/** Optional additional class name for styling */
+	className?: string;
 }
 
 /**
@@ -21,7 +23,7 @@ export interface StorySidePanelPublicProps {
  */
 export const StorySidePanel: React.FC<StorySidePanelPublicProps> & {
 	__PTR_STORY_SIDE_PANEL?: true; // Marker for internal detection
-} = ({ children }) => <>{children}</>;
+} = ({ children, className }) => <div className={className}>{children}</div>;
 
 // Marker used for internal detection (prevents passing internal props from apps)
 StorySidePanel.__PTR_STORY_SIDE_PANEL = true;

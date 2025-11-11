@@ -11,6 +11,8 @@ import './style.css';
 export interface StoryMainPanelPublicProps {
 	/** Child elements to render inside the main panel */
 	children: React.ReactNode;
+	/** Optional additional class name for styling */
+	className?: string;
 }
 
 /**
@@ -25,7 +27,7 @@ export interface StoryMainPanelPublicProps {
  */
 export const StoryMainPanel: React.FC<StoryMainPanelPublicProps> & {
 	__PTR_STORY_MAIN_PANEL?: true; // Marker for internal detection
-} = ({ children }) => <>{children}</>;
+} = ({ children, className }) => <div className={className}>{children}</div>;
 
 // Marker used for internal detection (prevents passing internal props from apps)
 StoryMainPanel.__PTR_STORY_MAIN_PANEL = true;
