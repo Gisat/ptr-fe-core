@@ -1,8 +1,28 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { SegmentedControl } from '@mantine/core';
 import { IconMap, IconTextCaption } from '@tabler/icons-react';
 import { StoryPanelType } from '../../enums/enum.story.panelType';
 import './StoryPanelToggle.css';
+
+// Data for the panel toggle options
+const PANEL_TOGGLE_DATA = [
+	{
+		value: StoryPanelType.SIDE,
+		label: (
+			<span className="ptr-StoryPanelToggle-icon">
+				<IconTextCaption size={20} />
+			</span>
+		),
+	},
+	{
+		value: StoryPanelType.MAIN,
+		label: (
+			<span className="ptr-StoryPanelToggle-icon">
+				<IconMap size={20} />
+			</span>
+		),
+	},
+];
 
 /**
  * Props for the StoryPanelToggle component.
@@ -26,34 +46,12 @@ interface StoryPanelToggleProps {
  * @returns {JSX.Element} The rendered StoryPanelToggle component.
  */
 export const StoryPanelToggle: React.FC<StoryPanelToggleProps> = ({ value, onChange, className }) => {
-	const data = useMemo(
-		() => [
-			{
-				value: StoryPanelType.SIDE,
-				label: (
-					<span className="ptr-StoryPanelToggle-icon">
-						<IconTextCaption size={20} />
-					</span>
-				),
-			},
-			{
-				value: StoryPanelType.MAIN,
-				label: (
-					<span className="ptr-StoryPanelToggle-icon">
-						<IconMap size={20} />
-					</span>
-				),
-			},
-		],
-		[]
-	);
-
 	return (
 		<div className={`ptr-StoryPanelToggle ${className}`}>
 			<SegmentedControl
 				value={value}
 				onChange={(val) => onChange(val as StoryPanelType)}
-				data={data}
+				data={PANEL_TOGGLE_DATA}
 				fullWidth
 				color="var(--base500)"
 				classNames={{
