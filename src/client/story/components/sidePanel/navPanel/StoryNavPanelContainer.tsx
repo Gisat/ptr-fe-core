@@ -104,10 +104,10 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 	 * @param {StoryActionType} type - The type of navigation action.
 	 */
 	const scrollToSection = (e: React.MouseEvent, type: StoryActionType) => {
-		if (!sidePanelRef?.current || !navPanelCasesRef.current) return;
-
-		const sidePanelNodes = Array.from(sidePanelRef.current.childNodes) as HTMLElement[];
-		const navPanelCasesNodes = Array.from(navPanelCasesRef.current.childNodes) as HTMLElement[];
+		const sidePanelNodes = sidePanelRef.current ? (Array.from(sidePanelRef.current.childNodes) as HTMLElement[]) : [];
+		const navPanelCasesNodes = navPanelCasesRef.current
+			? (Array.from(navPanelCasesRef.current.childNodes) as HTMLElement[])
+			: [];
 
 		switch (type) {
 			case StoryActionType.SECTION:

@@ -167,7 +167,7 @@ export const StorySidePanelInternal: React.FC<StorySidePanelInternalProps> = ({
 			? renderActiveSection(children, displayedStep, wrapperStyle, { activeStep: displayedStep })
 			: children;
 
-	return (
+	return visiblePanelType === StoryPanelType.SIDE || panelLayout !== StoryPanelLayout.SINGLE ? (
 		<div className={generateClasses('ptr-StorySidePanel-container')}>
 			{panelLayout !== StoryPanelLayout.SINGLE &&
 				!hideNavigation &&
@@ -189,5 +189,5 @@ export const StorySidePanelInternal: React.FC<StorySidePanelInternalProps> = ({
 				{body}
 			</div>
 		</div>
-	);
+	) : null;
 };

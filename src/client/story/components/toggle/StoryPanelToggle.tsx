@@ -32,8 +32,6 @@ interface StoryPanelToggleProps {
 	value: StoryPanelType;
 	/** Callback function to handle panel type changes */
 	onChange: (v: StoryPanelType) => void;
-	/** Optional additional class name for styling */
-	className?: string;
 }
 
 /**
@@ -45,9 +43,9 @@ interface StoryPanelToggleProps {
  * @param {StoryPanelToggleProps} props - The props for the component.
  * @returns {JSX.Element} The rendered StoryPanelToggle component.
  */
-export const StoryPanelToggle: React.FC<StoryPanelToggleProps> = ({ value, onChange, className }) => {
+export const StoryPanelToggle: React.FC<StoryPanelToggleProps> = ({ value, onChange }) => {
 	return (
-		<div className={`ptr-StoryPanelToggle ${className}`}>
+		<div className="ptr-StoryPanelToggle">
 			<SegmentedControl
 				value={value}
 				onChange={(val) => onChange(val as StoryPanelType)}

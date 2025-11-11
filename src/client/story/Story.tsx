@@ -228,7 +228,7 @@ export const Story: React.FC<StoryProps> = ({
 					<StoryPanelToggle value={visiblePanelType} onChange={(val) => setVisiblePanelType(val)} />
 				)}
 
-				{panelLayout === StoryPanelLayout.SINGLE && sidePanelRef.current && !hideNavigation && (
+				{panelLayout === StoryPanelLayout.SINGLE && !hideNavigation && (
 					<StoryNavPanel
 						activeStep={activeStep}
 						setActiveStep={setActiveStep}
