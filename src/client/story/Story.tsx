@@ -129,7 +129,6 @@ export const Story: React.FC<StoryProps> = ({
 	const hasSidePanel = Children.toArray(children).some(
 		(child) => React.isValidElement(child) && child.type === StorySidePanel
 	);
-	const noSidePanel = !hasSidePanel;
 
 	/**
 	 * Renders each child, replacing public wrappers with internal logic components.
@@ -188,7 +187,7 @@ export const Story: React.FC<StoryProps> = ({
 						setActiveStep={setActiveStep}
 						sidePanelRef={sidePanelRef}
 						panelLayout={panelLayout}
-						noSidePanel={noSidePanel}
+						noSidePanel={!hasSidePanel}
 						sidePanelChildrenCount={sidePanelChildrenCount}
 						animationDuration={animationDuration}
 						pauseBetweenSlides={pauseBetweenSlides}
