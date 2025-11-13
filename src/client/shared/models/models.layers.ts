@@ -1,4 +1,4 @@
-import { Datasource } from '../../../globals/shared/panther/models.nodes';
+import { Datasource } from '@gisatcz/ptr-be-core/browser';
 import { LayerTreeInteraction } from '../layers/models.layers';
 import { Nullable } from '../../../globals/shared/coding/code.types';
 

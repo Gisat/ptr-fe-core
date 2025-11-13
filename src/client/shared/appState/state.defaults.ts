@@ -1,4 +1,4 @@
-import { UsedNodeLabels } from '../../../globals/shared/panther/enums.panther';
+import { UsedNodeLabels } from '@gisatcz/ptr-be-core/browser';
 import { AppSharedState } from './state.models';
 
 /**

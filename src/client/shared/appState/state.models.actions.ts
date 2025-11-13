@@ -1,11 +1,4 @@
-import {
-	ApplicationNode,
-	Datasource,
-	PantherEntity,
-	Period,
-	Place,
-	Style,
-} from '../../../globals/shared/panther/models.nodes';
+import { ApplicationNode, Datasource, PantherEntity, Period, Place, MapStyle } from '@gisatcz/ptr-be-core/browser';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
@@ -60,7 +53,7 @@ export interface ActionChangePeriods extends AppSpecificAction {
  */
 export interface ActionChangeStyles extends AppSpecificAction {
 	type: StateActionType.FETCH_STYLES;
-	payload: Style[];
+	payload: MapStyle[];
 }
 
 /**

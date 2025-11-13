@@ -1,16 +1,23 @@
 import { isArray } from 'lodash';
-import { UsedNodeLabels } from '../../../globals/shared/panther/enums.panther';
+import { UsedNodeLabels } from '@gisatcz/ptr-be-core/browser';
 import {
 	ApplicationNode,
 	Datasource,
 	Place,
 	PantherEntity,
 	FullPantherEntity,
-	FullPantherEntityWithNeighbours,
-	Style,
+	MapStyle,
 	Period,
-} from '../../../globals/shared/panther/models.nodes';
+} from '@gisatcz/ptr-be-core/browser';
 import { Nullable } from '../../../globals/shared/coding/code.types';
+
+/**
+ * Represents a full panther entity with its neighbours.
+ */
+export interface FullPantherEntityWithNeighbours {
+	node: FullPantherEntity;
+	neighbours: FullPantherEntity[];
+}
 
 /**
  * Get unique items from an array of objects based on a specific key
@@ -62,7 +69,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 				} else if (n.labels.includes(UsedNodeLabels.Place)) {
 					acc.placeNodes.push(n as Place);
 				} else if (n.labels.includes(UsedNodeLabels.Style)) {
-					acc.styleNodes.push(n as Style);
+					acc.styleNodes.push(n as MapStyle);
 				} else if (n.labels.includes(UsedNodeLabels.Period)) {
 					acc.periodNodes.push(n as Period);
 				}
@@ -75,7 +82,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 			datasourceNodes: [] as Datasource[],
 			layerNodes: [] as PantherEntity[],
 			placeNodes: [] as Place[],
-			styleNodes: [] as Style[],
+			styleNodes: [] as MapStyle[],
 			periodNodes: [] as Period[],
 		}
 	);
@@ -86,7 +93,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 		datasourceNodes: uniqueItemsByKey(datasourceNodes) as Datasource[],
 		layerNodes: uniqueItemsByKey(layerNodes) as PantherEntity[],
 		placeNodes: uniqueItemsByKey(placeNodes) as Place[],
-		styleNodes: uniqueItemsByKey(styleNodes) as Style[],
+		styleNodes: uniqueItemsByKey(styleNodes) as MapStyle[],
 		periodNodes: uniqueItemsByKey(periodNodes) as Period[],
 	};
 };

@@ -1,5 +1,5 @@
 import { AppSharedState } from '../../appState/state.models';
-import { PantherEntity } from '../../../../globals/shared/panther/models.nodes';
+import { PantherEntity } from '@gisatcz/ptr-be-core/browser';
 
 /**
  * Selector to get all layers from the shared application state.

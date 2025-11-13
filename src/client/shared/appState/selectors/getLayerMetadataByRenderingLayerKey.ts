@@ -1,5 +1,5 @@
+import { FullPantherEntity } from '@gisatcz/ptr-be-core/browser';
 import { AppSharedState } from '../state.models';
-import { PantherEntity } from '../../../../globals/shared/panther/models.nodes';
 import { getAllLayers } from './getAllLayers';
 
 /**
@@ -16,7 +16,7 @@ import { getAllLayers } from './getAllLayers';
 export const getLayerMetadataByRenderingLayerKey = (
 	state: AppSharedState,
 	key: string | undefined
-): PantherEntity | undefined => {
+): FullPantherEntity | undefined => {
 	// Check if the key is provided
 	if (!key) {
 		console.warn('getLayerMetadataByRenderingLayerKey: rendering layer key is undefined');

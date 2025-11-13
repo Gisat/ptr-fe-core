@@ -2,7 +2,7 @@ import { TileLayer } from '@deck.gl/geo-layers';
 import { LayerGeneralProps } from './map.layers.models';
 import { BitmapLayer } from '@deck.gl/layers';
 import { validateDatasource } from './validate.layers';
-import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
+import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 
 /**
  * Creates a TileLayer for DeckGL using the provided source node and activity status.

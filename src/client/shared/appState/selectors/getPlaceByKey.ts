@@ -1,5 +1,5 @@
+import { Place } from '@gisatcz/ptr-be-core/browser';
 import { AppSharedState } from '../../appState/state.models';
-import { Place } from '../../../../globals/shared/panther/models.nodes';
 
 /**
  * Selector to get place by its key from the shared application state.

@@ -106,5 +106,8 @@
 		"sqlite3": "^5.1.7",
 		"swr": "^2.3.0",
 		"uuid": "^11.1.0"
+	},
+	"dependencies": {
+		"@gisatcz/ptr-be-core": "^0.0.1-dev.7"
 	}
 }

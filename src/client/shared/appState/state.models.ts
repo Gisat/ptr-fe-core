@@ -1,5 +1,5 @@
+import { ApplicationNode, PantherEntity, Period, Place, MapStyle } from '@gisatcz/ptr-be-core/browser';
 import { RenderingLayer } from '../models/models.layers';
-import { ApplicationNode, PantherEntity, Period, Place, Style } from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapSetModel } from '../models/models.mapSet';
 import { Selection } from '../models/models.selections';
@@ -14,7 +14,7 @@ export interface AppSharedState {
 	renderingLayers: RenderingLayer[]; // backend layers in rendering context
 	mapSets: MapSetModel[]; // map sets containing one or multiple synced or unsynced maps
 	maps: SingleMapModel[]; // individual maps with defined view and list of layers to be rendered
-	styles: Style[]; // metadata of styles
+	styles: MapStyle[]; // metadata of styles
 	periods: Period[]; // metadata of periods
 	selections: Selection[]; // selections of features in layers
 }

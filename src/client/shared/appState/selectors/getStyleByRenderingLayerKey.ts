@@ -1,5 +1,5 @@
+import { MapStyle } from '@gisatcz/ptr-be-core/browser';
 import { AppSharedState } from '../../appState/state.models';
-import { Style } from '../../../../globals/shared/panther/models.nodes';
 import { getAllLayers } from './getAllLayers';
 
 /**
@@ -9,7 +9,10 @@ import { getAllLayers } from './getAllLayers';
  * @param {string | undefined} layerKey - The key of the layer for which places are to be retrieved.
  * @returns {Style | undefined} - Style model
  */
-export const getStyleByRenderingLayerKey = (state: AppSharedState, layerKey: string | undefined): Style | undefined => {
+export const getStyleByRenderingLayerKey = (
+	state: AppSharedState,
+	layerKey: string | undefined
+): MapStyle | undefined => {
 	// get rendering layer neighbour keys
 	const renderingLayer = state.renderingLayers.find((renderingLayer) => renderingLayer.key === layerKey);
 	if (!renderingLayer) return undefined;

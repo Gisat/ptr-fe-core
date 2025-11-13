@@ -1,7 +1,7 @@
 import { LayerGeneralProps } from './map.layers.models';
 import { _WMSLayer as WMSLayer } from '@deck.gl/geo-layers';
 import { validateDatasource } from './validate.layers';
-import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
+import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 
 /**
  * Creates a WMS (Web Map Service) layer using the provided source node and activation status.

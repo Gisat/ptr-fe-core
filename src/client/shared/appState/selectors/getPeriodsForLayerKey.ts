@@ -1,5 +1,5 @@
+import { Period } from '@gisatcz/ptr-be-core/browser';
 import { AppSharedState } from '../../appState/state.models';
-import { Period } from '../../../../globals/shared/panther/models.nodes';
 
 /**
  * Retrieves a list of periods associated with a given layer key.

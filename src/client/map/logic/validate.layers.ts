@@ -1,5 +1,4 @@
-import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
-import { Datasource } from '../../../globals/shared/panther/models.nodes';
+import { Datasource, UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 
 /**
  * Validates datasource node for required fields
