@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { TileLayer } from '@deck.gl/geo-layers';
 import { LayersList, MapViewState } from '@deck.gl/core';
 import DeckGL from '@deck.gl/react';
+import { Nullable } from '@gisatcz/ptr-be-core/browser';
 import { defaultMapViewState, defaultMapView } from '../logic/map.defaults';
 import { parseLayersFromSharedState } from '../logic/parsing.layers';
 import FeatureDetailModal, { FeatureModalState } from './FeatureDetailModal';
 import { FeatureInteractionFunc } from '../logic/models.events';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { LayerTreeInteraction } from '../../shared/layers/models.layers';
-import { Nullable } from '../../../globals';
 import { getRenderingLayersByKeys } from '../../shared/appState/selectors/getRenderingLayersByKeys';
 import '../map.css';
 

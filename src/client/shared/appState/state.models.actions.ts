@@ -1,4 +1,3 @@
-import { ApplicationNode, Datasource, PantherEntity, Period, Place, MapStyle } from '@gisatcz/ptr-be-core/browser';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
@@ -7,13 +6,21 @@ import { RenderingLayer } from '../models/models.layers';
 import { StateActionType } from './enum.state.actionType'; // Import the ActionType enum
 import { AppSpecificAction } from './state.models.reducer';
 import { Selection } from '../models/models.selections';
+import {
+	ApplicationNodeWithNeighbours,
+	DatasourceWithNeighbours,
+	FullPantherEntityWithNeighboursAsProp,
+	PantherEntityWithNeighbours,
+	PeriodWithNeighbours,
+	PlaceWithNeighbours,
+} from '../models/models.metadata.js';
 
 /**
  * When we set up application node
  */
 export interface ActionSetApplicationNode extends AppSpecificAction {
 	type: StateActionType.APP_NODE;
-	payload: ApplicationNode;
+	payload: ApplicationNodeWithNeighbours;
 }
 
 /**
@@ -21,7 +28,7 @@ export interface ActionSetApplicationNode extends AppSpecificAction {
  */
 export interface ActionChangeLayerSources extends AppSpecificAction {
 	type: StateActionType.FETCH_SOURCES;
-	payload: Datasource[];
+	payload: DatasourceWithNeighbours[];
 }
 
 /**
@@ -29,7 +36,7 @@ export interface ActionChangeLayerSources extends AppSpecificAction {
  */
 export interface ActionChangeLayers extends AppSpecificAction {
 	type: StateActionType.FETCH_LAYERS;
-	payload: PantherEntity[];
+	payload: PantherEntityWithNeighbours[];
 }
 
 /**
@@ -37,7 +44,7 @@ export interface ActionChangeLayers extends AppSpecificAction {
  */
 export interface ActionChangePlaces extends AppSpecificAction {
 	type: StateActionType.FETCH_PLACES;
-	payload: Place[];
+	payload: PlaceWithNeighbours[];
 }
 
 /**
@@ -45,7 +52,7 @@ export interface ActionChangePlaces extends AppSpecificAction {
  */
 export interface ActionChangePeriods extends AppSpecificAction {
 	type: StateActionType.FETCH_PERIODS;
-	payload: Period[];
+	payload: PeriodWithNeighbours[];
 }
 
 /**
@@ -53,7 +60,7 @@ export interface ActionChangePeriods extends AppSpecificAction {
  */
 export interface ActionChangeStyles extends AppSpecificAction {
 	type: StateActionType.FETCH_STYLES;
-	payload: MapStyle[];
+	payload: FullPantherEntityWithNeighboursAsProp[];
 }
 
 /**

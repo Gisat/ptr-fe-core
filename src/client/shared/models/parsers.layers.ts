@@ -1,5 +1,7 @@
-import { ApplicationNode, Datasource, HasLevels, PantherEntity } from '@gisatcz/ptr-be-core/browser';
+import { HasLevels, PantherEntity } from '@gisatcz/ptr-be-core/browser';
 import { RenderingLayer } from './models.layers';
+import { parseDatasourceConfiguration } from './parsers.datasources';
+import { ApplicationNodeWithNeighbours, DatasourceWithNeighbours } from './models.metadata.js';
 
 /**
  * Parse backend datasource nodes into rendering layers usinf application configuration context (mainly layer tree)
@@ -8,14 +10,10 @@ import { RenderingLayer } from './models.layers';
  * @returns List of layers with full context needed to be rendered
  */
 export const parseDatasourcesToRenderingLayers = (
-	datasourceNodes: Datasource[],
-	applicationNode: ApplicationNode
+	datasourceNodes: DatasourceWithNeighbours[],
+	applicationNode: ApplicationNodeWithNeighbours
 ): RenderingLayer[] => {
-	const configurationJs =
-		applicationNode &&
-		(typeof applicationNode.configuration === 'string'
-			? JSON.parse(applicationNode.configuration)
-			: applicationNode.configuration);
+	const configurationJs = applicationNode && parseDatasourceConfiguration(applicationNode.configuration);
 
 	if (configurationJs) {
 		if (datasourceNodes.length !== configurationJs?.layerTree?.length)

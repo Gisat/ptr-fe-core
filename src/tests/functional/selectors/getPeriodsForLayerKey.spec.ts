@@ -1,6 +1,7 @@
 import { getPeriodsForLayerKey } from '../../../client/shared/appState/selectors/getPeriodsForLayerKey';
 import { AppSharedState } from '../../../client/shared/appState/state.models';
 import { buildAppState, buildRenderingLayer } from '../../tools/reducer.helpers';
+import { PeriodWithNeighbours } from '../../../client';
 
 const LAYER_KEY = 'layer-key';
 const PERIOD_KEY_2018 = 'period-2018';
@@ -9,7 +10,7 @@ const PERIOD_KEY_2019 = 'period-2019';
 /**
  * Shared period fixtures that keep tests deterministic while remaining easy to read.
  */
-const PERIODS_TEMPLATE: AppSharedState['periods'] = [
+const PERIODS_TEMPLATE: PeriodWithNeighbours[] = [
 	{
 		labels: ['period'],
 		key: PERIOD_KEY_2018,

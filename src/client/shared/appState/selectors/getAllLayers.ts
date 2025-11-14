@@ -1,10 +1,10 @@
 import { AppSharedState } from '../../appState/state.models';
-import { PantherEntity } from '@gisatcz/ptr-be-core/browser';
+import { PantherEntityWithNeighbours } from '../../models/models.metadata.js';
 
 /**
  * Selector to get all layers from the shared application state.
  * @param state
  */
-export const getAllLayers = (state: AppSharedState): PantherEntity[] => {
+export const getAllLayers = (state: AppSharedState): PantherEntityWithNeighbours[] => {
 	return state?.layers || [];
 };

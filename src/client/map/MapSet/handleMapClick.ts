@@ -11,6 +11,7 @@ import {
 import { AppSharedState } from '../../shared/appState/state.models';
 import { getFeatureId } from '../../shared/helpers/getFeatureId';
 import { StateActionType } from '../../shared/appState/enum.state.actionType';
+import { parseDatasourceConfiguration } from '../../shared/models/parsers.datasources';
 
 /**
  * Handles map click events for feature selection logic.
@@ -57,23 +58,7 @@ export function handleMapClick({
 		: undefined;
 
 	// Get the configuration from the clicked mapLayer's datasource
-	let config = mapLayer?.datasource?.configuration;
-
-	// If the configuration is a string (likely JSON), parse it into an object
-	if (typeof config === 'string') {
-		try {
-			config = JSON.parse(config);
-		} catch (error) {
-			// If parsing fails, set config to undefined to avoid runtime errors
-			console.warn('[handleMapClick] Failed to parse layer configuration JSON:', {
-				configString: config,
-				error,
-				layerId,
-				mapLayer,
-			});
-			config = undefined;
-		}
-	}
+	let config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
 
 	// Get the unique feature identifier for selection logic
 	const featureId = getFeatureId(

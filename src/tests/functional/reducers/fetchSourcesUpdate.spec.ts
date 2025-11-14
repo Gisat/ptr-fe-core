@@ -2,13 +2,13 @@ import { StateActionType } from '../../../client/shared/appState/enum.state.acti
 import { reduceHandlerFetchSources } from '../../../client/shared/appState/reducerHandlers/fetchSourcesUpdate';
 import { ActionChangeLayerSources } from '../../../client/shared/appState/state.models.actions';
 import { RenderingLayer } from '../../../client/shared/models/models.layers';
-import { Datasource } from '../../../globals/shared/panther/models.nodes';
 import {
 	buildAppState,
 	buildRenderingLayer,
 	cloneRenderingLayer,
 	makeActionFactory,
 } from '../../tools/reducer.helpers';
+import { DatasourceWithNeighbours } from '../../../client';
 
 // Fixture: initial rendering layers representing a map with two inactive thematic layers.
 
@@ -34,7 +34,10 @@ const baseRenderingLayers: RenderingLayer[] = [
 ];
 
 // Helper: builds a datasource mock with predictable defaults for layer synthesis.
-const createFakeDatasource = (key: string, overrides: Partial<Datasource> = {}): Datasource => ({
+const createFakeDatasource = (
+	key: string,
+	overrides: Partial<DatasourceWithNeighbours> = {}
+): DatasourceWithNeighbours => ({
 	key,
 	labels: ['datasource'],
 	nameDisplay: key,

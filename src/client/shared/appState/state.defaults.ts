@@ -13,7 +13,7 @@ export const defaultStateValue = () => {
 			lastUpdatedAt: Date.now(),
 			nameDisplay: 'Default App Node',
 			nameInternal: 'defaultAppNode',
-			configuration: {},
+			configuration: JSON.stringify({}),
 			labels: [UsedNodeLabels.Application],
 		},
 		renderingLayers: [],

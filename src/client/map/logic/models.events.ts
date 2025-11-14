@@ -1,4 +1,4 @@
-import { Nullable } from '../../../globals/shared/coding/code.types';
+import { Nullable } from '@gisatcz/ptr-be-core/browser';
 
 /**
  * Function type that represents map feature interaction

@@ -1,6 +1,8 @@
 import { getRenderingLayerByKey } from '../../../client/shared/appState/selectors/getRenderingLayerByKey';
 import { AppSharedState } from '../../../client/shared/appState/state.models';
 import { buildAppState, buildRenderingLayer } from '../../tools/reducer.helpers';
+import { FullPantherEntityWithNeighboursAsProp, RenderingLayer } from '../../../client';
+import { PantherEntityWithNeighbours } from '../../../client/shared/models/models.metadata.js';
 
 /**
  * Rendering layer key under test for the success scenario.
@@ -40,7 +42,7 @@ const DATASOURCE_CONFIGURATION = {
 /**
  * Produces a lightweight layer entity, wiring neighbours to the style key.
  */
-const createLayer = (key: string): AppSharedState['layers'][number] => ({
+const createLayer = (key: string): PantherEntityWithNeighbours => ({
 	labels: ['layer'],
 	key,
 	nameDisplay: key,
@@ -53,7 +55,7 @@ const createLayer = (key: string): AppSharedState['layers'][number] => ({
 /**
  * Returns a style instance that references the mock configuration.
  */
-const createStyle = (key: string): AppSharedState['styles'][number] => ({
+const createStyle = (key: string): FullPantherEntityWithNeighboursAsProp => ({
 	labels: ['style'],
 	key,
 	nameDisplay: key,
@@ -61,17 +63,17 @@ const createStyle = (key: string): AppSharedState['styles'][number] => ({
 	description: '',
 	lastUpdatedAt: 0,
 	specificName: key,
-	configuration: STYLE_CONFIGURATION,
+	configuration: JSON.stringify(STYLE_CONFIGURATION),
 });
 
 /**
  * Builds a rendering layer with datasource neighbours pointing at the layer key.
  */
-const createRenderingLayer = (): AppSharedState['renderingLayers'][number] =>
+const createRenderingLayer = (): RenderingLayer =>
 	buildRenderingLayer(RENDERING_LAYER_KEY, {
 		datasource: {
 			neighbours: [LAYER_KEY],
-			configuration: DATASOURCE_CONFIGURATION,
+			configuration: JSON.stringify(DATASOURCE_CONFIGURATION),
 		},
 	});
 

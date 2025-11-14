@@ -1,14 +1,14 @@
-import { Place } from '@gisatcz/ptr-be-core/browser';
 import { AppSharedState } from '../../appState/state.models';
+import { PlaceWithNeighbours } from '../../models/models.metadata.js';
 
 /**
  * Retrieves a list of places associated with a given layer key.
  *
  * @param {AppSharedState} state - The application state containing places and rendering layers.
  * @param {string | null} layerKey - The key of the layer for which places are to be retrieved.
- * @returns {Place[]} - An array of places associated with the given layer key. Returns an empty array if no places are found or if the layer key is null.
+ * @returns {PlaceWithNeighbours[]} - An array of places associated with the given layer key. Returns an empty array if no places are found or if the layer key is null.
  */
-export const getPlacesForLayerKey = (state: AppSharedState, layerKey: string | null): Place[] => {
+export const getPlacesForLayerKey = (state: AppSharedState, layerKey: string | null): PlaceWithNeighbours[] => {
 	// Retrieve all places from the application state
 	const allPlaces = state?.places;
 

@@ -1,4 +1,5 @@
-import { Datasource, UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
+import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
+import { DatasourceWithNeighbours } from '../../shared/models/models.metadata.js';
 
 /**
  * Validates datasource node for required fields
@@ -7,7 +8,7 @@ import { Datasource, UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
  * @param requireUrl Do we require URL in configuration?
  */
 export const validateDatasource = (
-	source: Datasource,
+	source: DatasourceWithNeighbours,
 	requiredDatasourceType: UsedDatasourceLabels,
 	requireUrl: boolean
 ) => {

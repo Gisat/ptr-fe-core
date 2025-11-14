@@ -2,8 +2,9 @@ import { getRenderingLayerByKey } from '../../../client/shared/appState/selector
 import { getRenderingLayersByKeys } from '../../../client/shared/appState/selectors/getRenderingLayersByKeys';
 import { AppSharedState } from '../../../client/shared/appState/state.models';
 import { RenderingLayer } from '../../../client/shared/models/models.layers';
-import { DatasourceConfiguration } from '../../../globals/shared/panther/models.nodes.properties';
 import { buildAppState, buildRenderingLayer } from '../../tools/reducer.helpers';
+import { parseDatasourceConfiguration } from '../../../client/shared/models/parsers.datasources';
+import { FullPantherEntityWithNeighboursAsProp } from '../../../client/shared/models/models.metadata.js';
 
 /**
  * Rendering layer identifiers used throughout the tests.
@@ -21,7 +22,7 @@ const STYLE_KEYS = ['style-1', 'style-2'];
 /**
  * Mock style configurations, mirroring how datasource settings are merged.
  */
-const STYLE_CONFIGURATIONS: Partial<DatasourceConfiguration>[] = [
+const STYLE_CONFIGURATIONS = [
 	{
 		cogBitmapOptions: {
 			useChannel: 1,
@@ -37,7 +38,7 @@ const STYLE_CONFIGURATIONS: Partial<DatasourceConfiguration>[] = [
 /**
  * Datasource configurations that should be merged with style entries.
  */
-const DATASOURCE_CONFIGURATIONS: Partial<DatasourceConfiguration>[] = [
+const DATASOURCE_CONFIGURATIONS = [
 	{
 		geojsonOptions: {
 			featureIdProperty: 'id',
@@ -63,7 +64,7 @@ const DATASOURCE_CONFIGURATIONS: Partial<DatasourceConfiguration>[] = [
 /**
  * Builds a layer stub whose neighbours reference a specific style.
  */
-const createLayer = (index: number): AppSharedState['layers'][number] => {
+const createLayer = (index: number): FullPantherEntityWithNeighboursAsProp => {
 	const key = LAYER_KEYS[index];
 
 	return {
@@ -80,7 +81,7 @@ const createLayer = (index: number): AppSharedState['layers'][number] => {
 /**
  * Assembles a style stub with the corresponding configuration.
  */
-const createStyle = (index: number): AppSharedState['styles'][number] => {
+const createStyle = (index: number): FullPantherEntityWithNeighboursAsProp => {
 	const key = STYLE_KEYS[index];
 
 	return {
@@ -91,18 +92,18 @@ const createStyle = (index: number): AppSharedState['styles'][number] => {
 		description: '',
 		lastUpdatedAt: 0,
 		specificName: key,
-		configuration: STYLE_CONFIGURATIONS[index],
+		configuration: parseDatasourceConfiguration(STYLE_CONFIGURATIONS[index]),
 	};
 };
 
 /**
  * Produces a rendering layer whose datasource points at the layer under test.
  */
-const createRenderingLayer = (index: number): AppSharedState['renderingLayers'][number] =>
+const createRenderingLayer = (index: number): RenderingLayer =>
 	buildRenderingLayer(RENDERING_LAYER_KEYS[index], {
 		datasource: {
 			neighbours: [LAYER_KEYS[index]],
-			configuration: DATASOURCE_CONFIGURATIONS[index],
+			configuration: parseDatasourceConfiguration(DATASOURCE_CONFIGURATIONS[index]),
 		},
 	});
 

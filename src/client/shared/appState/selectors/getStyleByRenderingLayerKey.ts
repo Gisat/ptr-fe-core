@@ -1,6 +1,6 @@
-import { MapStyle } from '@gisatcz/ptr-be-core/browser';
 import { AppSharedState } from '../../appState/state.models';
 import { getAllLayers } from './getAllLayers';
+import { FullPantherEntityWithNeighboursAsProp } from '../../models/models.metadata.js';
 
 /**
  * Retrieves a style for rendering layer.
@@ -12,7 +12,10 @@ import { getAllLayers } from './getAllLayers';
 export const getStyleByRenderingLayerKey = (
 	state: AppSharedState,
 	layerKey: string | undefined
-): MapStyle | undefined => {
+): FullPantherEntityWithNeighboursAsProp | undefined => {
+	// return undefined when no style present in state
+	if (!state.styles) return undefined;
+
 	// get rendering layer neighbour keys
 	const renderingLayer = state.renderingLayers.find((renderingLayer) => renderingLayer.key === layerKey);
 	if (!renderingLayer) return undefined;
