@@ -1,14 +1,14 @@
 import { AppSharedState } from '../../appState/state.models';
-import { Period } from '../../../../globals/shared/panther/models.nodes';
+import { PeriodWithNeighbours } from '../../models/models.metadata';
 
 /**
  * Retrieves a list of periods associated with a given layer key.
  *
  * @param {AppSharedState} state - The application state containing periods and rendering layers.
  * @param {string | null} layerKey - The key of the layer for which periods are to be retrieved.
- * @returns {Period[]} - An array of periods associated with the given layer key. Returns an empty array if no periods are found or if the layer key is null.
+ * @returns {PeriodWithNeighbours[]} - An array of periods associated with the given layer key. Returns an empty array if no periods are found or if the layer key is null.
  */
-export const getPeriodsForLayerKey = (state: AppSharedState, layerKey: string | null): Period[] => {
+export const getPeriodsForLayerKey = (state: AppSharedState, layerKey: string | null): PeriodWithNeighbours[] => {
 	// Retrieve all periods from the application state
 	const allPeriods = state?.periods;
 

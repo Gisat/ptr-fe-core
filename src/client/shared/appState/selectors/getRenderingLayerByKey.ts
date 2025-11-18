@@ -1,6 +1,7 @@
 import { AppSharedState } from '../state.models';
 import { RenderingLayer } from '../../models/models.layers';
 import { getStyleByRenderingLayerKey } from './getStyleByRenderingLayerKey';
+import { parseDatasourceConfiguration } from '../../models/parsers.datasources';
 
 /**
  * Retrieves a rendering layer by its key from the shared application state.
@@ -32,14 +33,14 @@ export const getRenderingLayerByKey = (state: AppSharedState, key: string | unde
 	const style = getStyleByRenderingLayerKey(state, key);
 
 	// If a style is found and it has a configuration, merge it with the datasource configuration
-	if (style && typeof style.configuration === 'object') {
-		let configuration = style.configuration;
+	if (style?.configuration) {
+		let configuration = parseDatasourceConfiguration(style.configuration);
 
 		// Merge existing datasource configuration with the style configuration if both exist
-		if (renderingLayer.datasource?.configuration && typeof renderingLayer.datasource.configuration === 'object') {
+		if (renderingLayer.datasource?.configuration) {
 			configuration = {
-				...renderingLayer.datasource.configuration,
-				...style.configuration,
+				...parseDatasourceConfiguration(renderingLayer.datasource.configuration),
+				...configuration,
 			};
 		}
 

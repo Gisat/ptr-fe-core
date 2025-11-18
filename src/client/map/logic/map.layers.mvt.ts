@@ -1,7 +1,7 @@
 import { MVTLayer } from '@deck.gl/geo-layers';
 import { LayerGeneralProps } from './map.layers.models';
 import { validateDatasource } from './validate.layers';
-import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
+import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 
 /**
  * Creates an MVT (Mapbox Vector Tile) layer using DeckGL.

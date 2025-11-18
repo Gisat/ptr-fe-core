@@ -1,13 +1,13 @@
+import { Unsure, Nullable } from '@gisatcz/ptr-be-core/browser';
 import { OneOfInteractionFunc } from './models.events';
-import { Datasource } from '../../../globals/shared/panther/models.nodes';
-import { Nullable, Unsure } from '../../../globals/shared/coding/code.types';
 import { Selection } from '../../shared/models/models.selections';
+import { DatasourceWithNeighbours } from '../../shared/models/models.metadata';
 
 /**
  * General props for every rendered layer by DeckGL
  */
 export interface LayerGeneralProps {
-	sourceNode: Datasource;
+	sourceNode: DatasourceWithNeighbours;
 	style: Nullable<any>;
 	isActive: boolean;
 	key: string;

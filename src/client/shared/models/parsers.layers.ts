@@ -1,6 +1,7 @@
+import { HasLevels, PantherEntity } from '@gisatcz/ptr-be-core/browser';
 import { RenderingLayer } from './models.layers';
-import { Datasource, ApplicationNode, PantherEntity } from '../../../globals/shared/panther/models.nodes';
-import { HasLevels } from '../../../globals/shared/panther/models.nodes.properties';
+import { parseDatasourceConfiguration } from './parsers.datasources';
+import { ApplicationNodeWithNeighbours, DatasourceWithNeighbours } from './models.metadata';
 
 /**
  * Parse backend datasource nodes into rendering layers usinf application configuration context (mainly layer tree)
@@ -9,26 +10,23 @@ import { HasLevels } from '../../../globals/shared/panther/models.nodes.properti
  * @returns List of layers with full context needed to be rendered
  */
 export const parseDatasourcesToRenderingLayers = (
-	datasourceNodes: Datasource[],
-	applicationNode: ApplicationNode
+	datasourceNodes: DatasourceWithNeighbours[],
+	applicationNode: ApplicationNodeWithNeighbours
 ): RenderingLayer[] => {
-	const configurationJs =
-		applicationNode && (typeof applicationNode.configuration === 'string'
-			? JSON.parse(applicationNode.configuration)
-			: applicationNode.configuration);
+	const configurationJs = applicationNode && parseDatasourceConfiguration(applicationNode.configuration);
 
 	if (configurationJs) {
 		if (datasourceNodes.length !== configurationJs?.layerTree?.length)
 			throw new Error('Datasource Parsing: layerTree is different from datasource collection');
-		
+
 		// TODO validation
 		const layertree = configurationJs?.layerTree as (PantherEntity & HasLevels)[];
-		
+
 		const mapped = layertree.map((layertreeElement) => {
 			const equalDatasource = datasourceNodes.find((datasource) => datasource.key === layertreeElement.key);
-			
+
 			if (!equalDatasource) throw new Error('Datasource Parsing: missing datasource for layertree element');
-			
+
 			const renderingLayer: RenderingLayer = {
 				datasource: equalDatasource,
 				key: equalDatasource.key, // TODO: handle layer key
@@ -36,13 +34,13 @@ export const parseDatasourcesToRenderingLayers = (
 				level: layertreeElement.level,
 				interaction: null, // TODO: Other default?
 			};
-			
+
 			return renderingLayer;
 		});
-		
+
 		return mapped;
 	}
-	
+
 	// If there is no configuration, we assume that all datasources are not active and have level 0
 	// TODO: better conversion of datasources to rendering layers. Maybe not here? We need a style as well.
 	else {
@@ -53,8 +51,8 @@ export const parseDatasourcesToRenderingLayers = (
 				isActive: false,
 				level: 0, // TODO: Other default?
 				interaction: null, // TODO: Other default?
-			}
-			
+			};
+
 			return renderingLayer;
 		});
 	}

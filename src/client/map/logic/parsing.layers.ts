@@ -5,7 +5,7 @@ import { createTileLayer } from './map.layers.tile';
 import { createMVTLayer } from './map.layers.mvt';
 import { createWMSLayer } from './map.layers.wms';
 import { LayerTreeInteraction } from '../../shared/layers/models.layers';
-import { UsedDatasourceLabels } from '../../../globals/shared/panther/enums.panther';
+import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { createCogLayer } from '../logic/map.layers.cog';
 import { Selection } from 'src/client/shared/models/models.selections';
 

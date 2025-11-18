@@ -1,7 +1,11 @@
 import { getStyleByRenderingLayerKey } from '../../../client/shared/appState/selectors/getStyleByRenderingLayerKey';
 import { AppSharedState } from '../../../client/shared/appState/state.models';
-import { DatasourceConfiguration } from '../../../globals/shared/panther/models.nodes.properties';
 import { buildAppState, buildRenderingLayer } from '../../tools/reducer.helpers';
+import { RenderingLayer } from '../../../client';
+import {
+	FullPantherEntityWithNeighboursAsProp,
+	PantherEntityWithNeighbours,
+} from '../../../client/shared/models/models.metadata';
 
 /**
  * Rendering layer key under test.
@@ -19,14 +23,14 @@ const STYLE_KEY = 'style-1';
 /**
  * Configuration payload attached to the style fixture.
  */
-const STYLE_CONFIGURATION: Partial<DatasourceConfiguration> = {
+const STYLE_CONFIGURATION = {
 	cogBitmapOptions: { useChannel: 1 },
 };
 
 /**
  * Produces a minimal layer whose neighbours include the test style.
  */
-const createLayer = (): AppSharedState['layers'][number] => ({
+const createLayer = (): PantherEntityWithNeighbours => ({
 	labels: ['layer'],
 	key: LAYER_KEY,
 	nameDisplay: LAYER_KEY,
@@ -39,7 +43,7 @@ const createLayer = (): AppSharedState['layers'][number] => ({
 /**
  * Builds a style entry associated with the test layer.
  */
-const createStyle = (): AppSharedState['styles'][number] => ({
+const createStyle = (): FullPantherEntityWithNeighboursAsProp => ({
 	labels: ['style'],
 	key: STYLE_KEY,
 	nameDisplay: STYLE_KEY,
@@ -47,13 +51,13 @@ const createStyle = (): AppSharedState['styles'][number] => ({
 	description: '',
 	lastUpdatedAt: 0,
 	specificName: STYLE_KEY,
-	configuration: STYLE_CONFIGURATION,
+	configuration: JSON.stringify(STYLE_CONFIGURATION),
 });
 
 /**
  * Creates a rendering layer pointing at the linked layer via datasource neighbours.
  */
-const createRenderingLayer = (): AppSharedState['renderingLayers'][number] =>
+const createRenderingLayer = (): RenderingLayer =>
 	buildRenderingLayer(RENDERING_LAYER_KEY, {
 		datasource: {
 			neighbours: [LAYER_KEY],

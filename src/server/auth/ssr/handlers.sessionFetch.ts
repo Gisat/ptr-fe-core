@@ -1,4 +1,4 @@
-import { Nullable } from '../../../globals/shared/coding/code.types';
+import { Nullable } from '@gisatcz/ptr-be-core/browser';
 import { ErrorBehavior } from '../../../globals/shared/errors/enums.errorBehavior';
 import { HttpStatusCode } from '../../../globals/shared/errors/enums.httpStatusCode';
 import { BaseHttpError } from '../../../globals/shared/errors/models.error';

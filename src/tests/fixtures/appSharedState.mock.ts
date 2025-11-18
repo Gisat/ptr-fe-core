@@ -354,11 +354,11 @@ export const fullAppSharedStateMock: AppSharedState = {
 			description: '',
 			specificName: 'npp_act',
 			lastUpdatedAt: 1754919714681,
-			configuration: {
+			configuration: JSON.stringify({
 				cogBitmapOptions: {
 					useChannel: 1,
 				},
-			},
+			}),
 		},
 		{
 			labels: ['style'],
@@ -368,11 +368,11 @@ export const fullAppSharedStateMock: AppSharedState = {
 			description: '',
 			specificName: 'sos',
 			lastUpdatedAt: 1754919714681,
-			configuration: {
+			configuration: JSON.stringify({
 				cogBitmapOptions: {
 					useChannel: 1,
 				},
-			},
+			}),
 		},
 		{
 			labels: ['style'],
@@ -382,7 +382,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			description: '',
 			specificName: 's2tiles',
 			lastUpdatedAt: 1754919714681,
-			configuration: {
+			configuration: JSON.stringify({
 				geojsonOptions: {
 					featureIdProperty: 'id',
 					selectionStyle: {
@@ -391,7 +391,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 						maxSelectionCount: 8,
 					},
 				},
-			},
+			}),
 		},
 	],
 	// Time periods associated with datasets, enabling temporal filtering.
@@ -403,7 +403,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			nameDisplay: '2018',
 			description: '',
 			lastUpdatedAt: 1754919714681,
-			validUtcIntervalIso: '2018',
+			validIntervalIso: '2018',
 			validFrom: 1514761200000,
 			validTo: 1543618800000,
 		},
@@ -414,7 +414,7 @@ export const fullAppSharedStateMock: AppSharedState = {
 			nameDisplay: '2019',
 			description: '',
 			lastUpdatedAt: 1754919714681,
-			validUtcIntervalIso: '2019',
+			validIntervalIso: '2019',
 			validFrom: 1546297200000,
 			validTo: 1575154800000,
 		},

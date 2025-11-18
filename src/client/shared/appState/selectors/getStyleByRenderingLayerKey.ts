@@ -1,6 +1,6 @@
 import { AppSharedState } from '../../appState/state.models';
-import { Style } from '../../../../globals/shared/panther/models.nodes';
 import { getAllLayers } from './getAllLayers';
+import { FullPantherEntityWithNeighboursAsProp } from '../../models/models.metadata';
 
 /**
  * Retrieves a style for rendering layer.
@@ -9,7 +9,13 @@ import { getAllLayers } from './getAllLayers';
  * @param {string | undefined} layerKey - The key of the layer for which places are to be retrieved.
  * @returns {Style | undefined} - Style model
  */
-export const getStyleByRenderingLayerKey = (state: AppSharedState, layerKey: string | undefined): Style | undefined => {
+export const getStyleByRenderingLayerKey = (
+	state: AppSharedState,
+	layerKey: string | undefined
+): FullPantherEntityWithNeighboursAsProp | undefined => {
+	// return undefined when no style present in state
+	if (!state.styles) return undefined;
+
 	// get rendering layer neighbour keys
 	const renderingLayer = state.renderingLayers.find((renderingLayer) => renderingLayer.key === layerKey);
 	if (!renderingLayer) return undefined;
