@@ -2,7 +2,7 @@ import { getRenderingLayerByKey } from '../../../client/shared/appState/selector
 import { AppSharedState } from '../../../client/shared/appState/state.models';
 import { buildAppState, buildRenderingLayer } from '../../tools/reducer.helpers';
 import { FullPantherEntityWithNeighboursAsProp, RenderingLayer } from '../../../client';
-import { PantherEntityWithNeighbours } from '../../../client/shared/models/models.metadata.js';
+import { PantherEntityWithNeighbours } from '../../../client/shared/models/models.metadata';
 
 /**
  * Rendering layer key under test for the success scenario.

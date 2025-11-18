@@ -1,6 +1,6 @@
 import { AppSharedState } from '../../appState/state.models';
 import { getAllLayers } from './getAllLayers';
-import { FullPantherEntityWithNeighboursAsProp } from '../../models/models.metadata.js';
+import { FullPantherEntityWithNeighboursAsProp } from '../../models/models.metadata';
 
 /**
  * Retrieves a style for rendering layer.

@@ -8,7 +8,7 @@ import {
 	PantherEntityWithNeighbours,
 	PeriodWithNeighbours,
 	PlaceWithNeighbours,
-} from '../models/models.metadata.js';
+} from '../models/models.metadata';
 
 /**
  * Shared state of the application

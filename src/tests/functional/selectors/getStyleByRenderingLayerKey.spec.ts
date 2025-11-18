@@ -5,7 +5,7 @@ import { RenderingLayer } from '../../../client';
 import {
 	FullPantherEntityWithNeighboursAsProp,
 	PantherEntityWithNeighbours,
-} from '../../../client/shared/models/models.metadata.js';
+} from '../../../client/shared/models/models.metadata';
 
 /**
  * Rendering layer key under test.

@@ -4,7 +4,7 @@ import { AppSharedState } from '../../../client/shared/appState/state.models';
 import { RenderingLayer } from '../../../client/shared/models/models.layers';
 import { buildAppState, buildRenderingLayer } from '../../tools/reducer.helpers';
 import { parseDatasourceConfiguration } from '../../../client/shared/models/parsers.datasources';
-import { FullPantherEntityWithNeighboursAsProp } from '../../../client/shared/models/models.metadata.js';
+import { FullPantherEntityWithNeighboursAsProp } from '../../../client/shared/models/models.metadata';
 
 /**
  * Rendering layer identifiers used throughout the tests.

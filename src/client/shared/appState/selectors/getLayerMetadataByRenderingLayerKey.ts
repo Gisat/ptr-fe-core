@@ -1,6 +1,6 @@
 import { AppSharedState } from '../state.models';
 import { getAllLayers } from './getAllLayers';
-import { PantherEntityWithNeighbours } from '../../models/models.metadata.js';
+import { PantherEntityWithNeighbours } from '../../models/models.metadata';
 
 /**
  * Retrieves metadata for a layer based on the rendering layer key.

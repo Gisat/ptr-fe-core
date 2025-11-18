@@ -1,7 +1,7 @@
 import { HasLevels, PantherEntity } from '@gisatcz/ptr-be-core/browser';
 import { RenderingLayer } from './models.layers';
 import { parseDatasourceConfiguration } from './parsers.datasources';
-import { ApplicationNodeWithNeighbours, DatasourceWithNeighbours } from './models.metadata.js';
+import { ApplicationNodeWithNeighbours, DatasourceWithNeighbours } from './models.metadata';
 
 /**
  * Parse backend datasource nodes into rendering layers usinf application configuration context (mainly layer tree)

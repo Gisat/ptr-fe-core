@@ -1,7 +1,7 @@
 import { Unsure, Nullable } from '@gisatcz/ptr-be-core/browser';
 import { OneOfInteractionFunc } from './models.events';
 import { Selection } from '../../shared/models/models.selections';
-import { DatasourceWithNeighbours } from '../../shared/models/models.metadata.js';
+import { DatasourceWithNeighbours } from '../../shared/models/models.metadata';
 
 /**
  * General props for every rendered layer by DeckGL

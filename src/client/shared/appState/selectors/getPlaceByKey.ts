@@ -1,5 +1,5 @@
 import { AppSharedState } from '../../appState/state.models';
-import { PlaceWithNeighbours } from '../../models/models.metadata.js';
+import { PlaceWithNeighbours } from '../../models/models.metadata';
 
 /**
  * Selector to get place by its key from the shared application state.

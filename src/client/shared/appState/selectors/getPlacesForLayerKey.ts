@@ -1,5 +1,5 @@
 import { AppSharedState } from '../../appState/state.models';
-import { PlaceWithNeighbours } from '../../models/models.metadata.js';
+import { PlaceWithNeighbours } from '../../models/models.metadata';
 
 /**
  * Retrieves a list of places associated with a given layer key.

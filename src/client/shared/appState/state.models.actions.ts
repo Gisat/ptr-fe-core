@@ -13,7 +13,7 @@ import {
 	PantherEntityWithNeighbours,
 	PeriodWithNeighbours,
 	PlaceWithNeighbours,
-} from '../models/models.metadata.js';
+} from '../models/models.metadata';
 
 /**
  * When we set up application node

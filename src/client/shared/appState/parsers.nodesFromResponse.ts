@@ -8,7 +8,7 @@ import {
 	PantherEntityWithNeighbours,
 	PeriodWithNeighbours,
 	PlaceWithNeighbours,
-} from '../models/models.metadata.js';
+} from '../models/models.metadata';
 
 /**
  * Get unique items from an array of objects based on a specific key

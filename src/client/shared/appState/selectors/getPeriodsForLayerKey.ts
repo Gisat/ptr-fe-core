@@ -1,5 +1,5 @@
 import { AppSharedState } from '../../appState/state.models';
-import { PeriodWithNeighbours } from '../../models/models.metadata.js';
+import { PeriodWithNeighbours } from '../../models/models.metadata';
 
 /**
  * Retrieves a list of periods associated with a given layer key.
