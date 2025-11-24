@@ -7,7 +7,7 @@ import { hexToRgbArray } from '../../shared/helpers/hexToRgbArray';
 import { SELECTION_DEFAULT_COLOUR } from '../../shared/constants/colors';
 import { useAxios } from '../../shared/hooks/useAxios';
 
-const defaultRoute = '/data/geojson';
+const defaultRoute = '/api/data/geojson';
 
 /**
  * Represents the structure needed for feature identification and property access.
