@@ -58,22 +58,23 @@ export const createGeojsonLayer = ({
 	customRoute = defaultRoute,
 }: LayerGeneralProps) => {
 	const { documentId, validIntervalIso } = sourceNode;
-
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, false);
 
-	let data: any;
-	let error: any;
+	const axiosResult = useAxios(
+		{ fetchUrl: customRoute },
+		undefined,
+		{ documentId, validIntervalIso },
+		{ method: 'POST' }
+	);
 
+	let data: unknown;
+	let error: unknown;
+
+	// 'xxx' is just a temporary placeholder to indicate that URL is not provided
 	if (url && url !== 'xxx') {
 		data = url;
 		error = undefined;
 	} else {
-		const axiosResult = useAxios(
-			{ fetchUrl: customRoute },
-			undefined,
-			{ dokumentId: documentId, validIntervalIso: validIntervalIso },
-			{ method: 'POST' }
-		);
 		data = axiosResult.data;
 		error = axiosResult.error;
 	}
