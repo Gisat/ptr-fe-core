@@ -14,6 +14,7 @@ export interface LayerGeneralProps {
 	opacity?: number;
 	selection?: Selection;
 	isInteractive?: boolean;
+	customRoute?: string;
 
 	//TODO better typing and more types of inclick handlers for general purposes
 	onClickHandler: Unsure<OneOfInteractionFunc>;

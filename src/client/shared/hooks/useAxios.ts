@@ -1,5 +1,5 @@
-import {useState, useRef, useEffect} from 'react';
-import axios, {AxiosRequestConfig} from 'axios';
+import { useState, useEffect } from 'react';
+import axios, { AxiosRequestConfig } from 'axios';
 
 /**
  * Options for configuring the `useAxios` hook.
@@ -8,8 +8,8 @@ import axios, {AxiosRequestConfig} from 'axios';
  * @property {'GET' | 'POST'} [method] - HTTP method to use for the request (default is 'GET').
  */
 export interface UseAxiosOptions {
-    axiosConfig?: AxiosRequestConfig;
-    method?: 'GET' | 'POST';
+	axiosConfig?: AxiosRequestConfig;
+	method?: 'GET' | 'POST';
 }
 
 /**
@@ -22,10 +22,10 @@ export interface UseAxiosOptions {
  * @property {boolean} isValidating - Indicates whether the request is currently being validated.
  */
 export interface UseAxiosReturn<T> {
-    data: T | null;
-    error: any | null;
-    isLoading: boolean;
-    isValidating: boolean;
+	data: T | null;
+	error: any | null;
+	isLoading: boolean;
+	isValidating: boolean;
 }
 
 /**
@@ -47,49 +47,43 @@ export interface UseAxiosReturn<T> {
  *  );
  */
 export function useAxios<T = unknown>(
-    url: { fetchUrl: string },
-    fetcher?: (url: string) => Promise<T>,
-    payload?: unknown,
-    options: UseAxiosOptions = {}
+	url: { fetchUrl: string },
+	fetcher?: (url: string) => Promise<T>,
+	payload?: unknown,
+	options: UseAxiosOptions = {}
 ): UseAxiosReturn<T> {
-    const [data, setData] = useState<T | null>(null);
-    const [error, setError] = useState<any | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isValidating, setIsValidating] = useState(false);
+	const [data, setData] = useState<T | null>(null);
+	const [error, setError] = useState<any | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
+	const [isValidating, setIsValidating] = useState(false);
 
-    // Ref to ensure the effect runs only once.
-    const ranRef = useRef(false);
+	useEffect(() => {
+		(async () => {
+			setIsValidating(true);
+			setIsLoading(true);
+			setError(null);
+			try {
+				const method = (options.method ?? 'GET').toUpperCase() as 'GET' | 'POST';
+				let responseData: T;
+				if (method === 'GET') {
+					if (fetcher) {
+						responseData = await fetcher(url.fetchUrl);
+					} else {
+						responseData = (await axios.get<T>(url.fetchUrl, options.axiosConfig)).data;
+					}
+				} else {
+					responseData = (await axios.post<T>(url.fetchUrl, payload, options.axiosConfig)).data;
+				}
 
-    useEffect(() => {
-        if (ranRef.current) return;
-        ranRef.current = true;
+				setData(responseData);
+			} catch (err) {
+				setError(err);
+			} finally {
+				setIsValidating(false);
+				setIsLoading(false);
+			}
+		})();
+	}, [url.fetchUrl, fetcher, JSON.stringify(payload), options.method, JSON.stringify(options.axiosConfig)]);
 
-        (async () => {
-            setIsValidating(true);
-            setIsLoading(true);
-            setError(null);
-            try {
-                const method = (options.method ?? 'GET').toUpperCase() as 'GET' | 'POST';
-                let responseData: T;
-                if (method === 'GET') {
-                    if (fetcher) {
-                        responseData = await fetcher(url.fetchUrl);
-                    } else {
-                        responseData = (await axios.get<T>(url.fetchUrl, options.axiosConfig)).data;
-                    }
-                } else {
-                    responseData = (await axios.post<T>(url.fetchUrl, payload, options.axiosConfig)).data;
-                }
-
-                setData(responseData);
-            } catch (err) {
-                setError(err);
-            } finally {
-                setIsValidating(false);
-                setIsLoading(false);
-            }
-        })();
-    }, [url.fetchUrl, fetcher, payload, options.method, options.axiosConfig]);
-
-    return {data, error, isLoading, isValidating};
+	return { data, error, isLoading, isValidating };
 }

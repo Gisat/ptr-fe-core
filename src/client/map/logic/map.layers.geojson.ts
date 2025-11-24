@@ -5,6 +5,9 @@ import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { getFeatureId } from '../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../shared/helpers/hexToRgbArray';
 import { SELECTION_DEFAULT_COLOUR } from '../../shared/constants/colors';
+import { useAxios } from '../../shared/hooks/useAxios';
+
+const defaultRoute = '/data/geojson';
 
 /**
  * Represents the structure needed for feature identification and property access.
@@ -38,6 +41,7 @@ const defaultLayerStyle = {
  * @param {string} param0.key - Layer identifier.
  * @param {number} param0.opacity - Layer opacity.
  * @param {Object} param0.selection - Selection object containing featureKeys, distinctColours, and featureKeyColourIndexPairs.
+ * @param {string} [param0.customRoute=defaultRoute] - Custom route for fetching GeoJSON data.
  * @returns {GeoJsonLayer} The created GeoJsonLayer instance.
  *
  * @todo This is only a first draft of the GeoJSON layer implementation.
@@ -51,8 +55,33 @@ export const createGeojsonLayer = ({
 	key,
 	opacity,
 	selection,
+	customRoute = defaultRoute,
 }: LayerGeneralProps) => {
-	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, true);
+	const { documentId, validIntervalIso } = sourceNode;
+
+	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, false);
+
+	let data: any;
+	let error: any;
+
+	if (url && url !== 'xxx') {
+		data = url;
+		error = undefined;
+	} else {
+		const axiosResult = useAxios(
+			{ fetchUrl: customRoute },
+			undefined,
+			{ dokumentId: documentId, validIntervalIso: validIntervalIso },
+			{ method: 'POST' }
+		);
+		data = axiosResult.data;
+		error = axiosResult.error;
+	}
+
+	// Log an error if data fetching fails
+	if (error) {
+		console.error('Error loading map data:', error);
+	}
 
 	const selectedFeatureKeys = selection?.featureKeys ?? [];
 	const distinctColours = selection?.distinctColours ?? [SELECTION_DEFAULT_COLOUR];
@@ -98,7 +127,7 @@ export const createGeojsonLayer = ({
 		id: key,
 		opacity: opacity ?? 1,
 		visible: isActive,
-		data: url,
+		data: data,
 		updateTriggers: {
 			getLineColor: [layerStyle, selection],
 			getFillColor: [layerStyle, selection],
