@@ -102,13 +102,10 @@ export function handleMapClick({
 		}
 	} else {
 		if (isSelected && layerFeatureKeys.length === 1) {
-			if (layerFeatureKeys.length > minSelectionCount) {
-				// Click on the only selected feature: remove it (deselect all), if above minSelectionCount
-				sharedStateDispatch({
-					type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
-					payload: { mapKey, layerKey: layerId, featureKey: featureId },
-				} as ActionMapLayerRemoveFeatureKey);
-			}
+			sharedStateDispatch({
+				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
+				payload: { mapKey, layerKey: layerId, featureKey: featureId },
+			} as ActionMapLayerRemoveFeatureKey);
 		} else {
 			// Click: set this feature as the only selected feature
 			sharedStateDispatch({
