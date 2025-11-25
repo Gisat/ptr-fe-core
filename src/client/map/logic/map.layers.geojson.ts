@@ -128,7 +128,7 @@ export const createGeojsonLayer = ({
 		id: key,
 		opacity: opacity ?? 1,
 		visible: isActive,
-		data: data,
+		data,
 		updateTriggers: {
 			getLineColor: [layerStyle, selection],
 			getFillColor: [layerStyle, selection],
