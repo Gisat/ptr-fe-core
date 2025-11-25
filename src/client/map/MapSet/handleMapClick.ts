@@ -101,7 +101,7 @@ export function handleMapClick({
 			} as ActionMapLayerAddFeatureKey);
 		}
 	} else {
-		if (isSelected && layerFeatureKeys.length === 1 && minSelectionCount > 1) {
+		if (isSelected && layerFeatureKeys.length === 1 && minSelectionCount !== 1) {
 			sharedStateDispatch({
 				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 				payload: { mapKey, layerKey: layerId, featureKey: featureId },
