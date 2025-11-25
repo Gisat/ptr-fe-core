@@ -81,15 +81,18 @@ export function handleMapClick({
 	const layerFeatureKeys = layerSelection?.featureKeys ?? [];
 	const isSelected = layerFeatureKeys.includes(featureId);
 	const maxSelectionCount = customSelectionStyle?.maxSelectionCount;
+	const minSelectionCount = customSelectionStyle?.minSelectionCount ?? 0;
 
 	// Handle selection logic based on Ctrl key and current selection state
 	if (controlIsDown) {
 		if (isSelected) {
-			// Ctrl + click on selected feature: remove from selection
-			sharedStateDispatch({
-				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
-				payload: { mapKey, layerKey: layerId, featureKey: featureId },
-			} as ActionMapLayerRemoveFeatureKey);
+			// Ctrl + click on selected feature: remove from selection, if above minSelectionCount
+			if (layerFeatureKeys.length > minSelectionCount) {
+				sharedStateDispatch({
+					type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
+					payload: { mapKey, layerKey: layerId, featureKey: featureId },
+				} as ActionMapLayerRemoveFeatureKey);
+			}
 		} else if (!maxSelectionCount || layerFeatureKeys.length < maxSelectionCount) {
 			// Ctrl + click on unselected feature: add to selection (if maxSelectionCount not reached)
 			sharedStateDispatch({
@@ -98,8 +101,7 @@ export function handleMapClick({
 			} as ActionMapLayerAddFeatureKey);
 		}
 	} else {
-		if (isSelected && layerFeatureKeys.length === 1) {
-			// Click on the only selected feature: remove it (deselect all)
+		if (isSelected && layerFeatureKeys.length === 1 && minSelectionCount !== 1) {
 			sharedStateDispatch({
 				type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY,
 				payload: { mapKey, layerKey: layerId, featureKey: featureId },
