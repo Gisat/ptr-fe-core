@@ -41,12 +41,13 @@ const defaultLayerStyle = {
  * @param {string} param0.key - Layer identifier.
  * @param {number} param0.opacity - Layer opacity.
  * @param {Object} param0.selection - Selection object containing featureKeys, distinctColours, and featureKeyColourIndexPairs.
- * @param {string} [param0.customRoute=defaultRoute] - Custom route for fetching GeoJSON data.
+ * @param {string} [param0.route=defaultRoute] - Custom route for fetching GeoJSON data.
  * @returns {GeoJsonLayer} The created GeoJsonLayer instance.
  *
  * @todo This is only a first draft of the GeoJSON layer implementation.
  *       TODO: Add support for fill styling, point sizes, and other styling options.
  *       TODO: featureIdProperty should be defined and validated in the datasource configuration, not just in geojsonOptions.
+ *       TODO: Delete "xxx" check after url becames optional for geojson.
  */
 export const createGeojsonLayer = ({
 	sourceNode,
@@ -55,22 +56,20 @@ export const createGeojsonLayer = ({
 	key,
 	opacity,
 	selection,
-	customRoute = defaultRoute,
+	route = defaultRoute,
 }: LayerGeneralProps) => {
 	const { documentId, validIntervalIso } = sourceNode;
 	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, false);
 
-	const axiosResult = useAxios(
-		{ fetchUrl: customRoute },
-		undefined,
-		{ documentId, validIntervalIso },
-		{ method: 'POST' }
-	);
+	const axiosResult = useAxios({ fetchUrl: route }, undefined, { documentId, validIntervalIso }, { method: 'POST' });
 
 	let data: unknown;
 	let error: unknown;
 
-	// 'xxx' is just a temporary placeholder to indicate that URL is not provided
+	/**
+	 * The "xxx" value is currently used as a placeholder to indicate that the URL is not available or should not be used.
+	 * Once the url property is truly optional for geojson nodes, remove this workaround and handle data loading more robustly.
+	 */
 	if (url && url !== 'xxx') {
 		data = url;
 		error = undefined;

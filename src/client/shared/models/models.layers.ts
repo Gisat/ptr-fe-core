@@ -14,5 +14,5 @@ export interface RenderingLayer {
 	interaction: Nullable<LayerTreeInteraction>;
 	selectionKey?: string;
 	isInteractive?: boolean;
-	customRoute?: string;
+	route?: string;
 }
