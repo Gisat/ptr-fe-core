@@ -5,6 +5,9 @@ import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { getFeatureId } from '../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../shared/helpers/hexToRgbArray';
 import { SELECTION_DEFAULT_COLOUR } from '../../shared/constants/colors';
+import { useAxios } from '../../shared/hooks/useAxios';
+
+const defaultRoute = '/api/data/geojson';
 
 /**
  * Represents the structure needed for feature identification and property access.
@@ -38,11 +41,13 @@ const defaultLayerStyle = {
  * @param {string} param0.key - Layer identifier.
  * @param {number} param0.opacity - Layer opacity.
  * @param {Object} param0.selection - Selection object containing featureKeys, distinctColours, and featureKeyColourIndexPairs.
+ * @param {string} [param0.route=defaultRoute] - Custom route for fetching GeoJSON data.
  * @returns {GeoJsonLayer} The created GeoJsonLayer instance.
  *
  * @todo This is only a first draft of the GeoJSON layer implementation.
  *       TODO: Add support for fill styling, point sizes, and other styling options.
  *       TODO: featureIdProperty should be defined and validated in the datasource configuration, not just in geojsonOptions.
+ *       TODO: Delete "xxx" check after url becames optional for geojson.
  */
 export const createGeojsonLayer = ({
 	sourceNode,
@@ -51,8 +56,32 @@ export const createGeojsonLayer = ({
 	key,
 	opacity,
 	selection,
+	route = defaultRoute,
 }: LayerGeneralProps) => {
-	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, true);
+	const { documentId, validIntervalIso } = sourceNode;
+	const { url, configurationJs } = validateDatasource(sourceNode, UsedDatasourceLabels.Geojson, false);
+
+	const axiosResult = useAxios({ fetchUrl: route }, undefined, { documentId, validIntervalIso }, { method: 'POST' });
+
+	let data: unknown;
+	let error: unknown;
+
+	/**
+	 * The "xxx" value is currently used as a placeholder to indicate that the URL is not available or should not be used.
+	 * Once the url property is truly optional for geojson nodes, remove this workaround and handle data loading more robustly.
+	 */
+	if (url && url !== 'xxx') {
+		data = url;
+		error = undefined;
+	} else {
+		data = axiosResult.data;
+		error = axiosResult.error;
+	}
+
+	// Log an error if data fetching fails
+	if (error) {
+		console.error('Error loading map data:', error);
+	}
 
 	const selectedFeatureKeys = selection?.featureKeys ?? [];
 	const distinctColours = selection?.distinctColours ?? [SELECTION_DEFAULT_COLOUR];
@@ -98,7 +127,7 @@ export const createGeojsonLayer = ({
 		id: key,
 		opacity: opacity ?? 1,
 		visible: isActive,
-		data: url,
+		data,
 		updateTriggers: {
 			getLineColor: [layerStyle, selection],
 			getFillColor: [layerStyle, selection],
