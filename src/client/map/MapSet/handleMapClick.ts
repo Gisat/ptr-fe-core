@@ -14,6 +14,18 @@ import { StateActionType } from '../../shared/appState/enum.state.actionType';
 import { parseDatasourceConfiguration } from '../../shared/models/parsers.datasources';
 
 /**
+ * Parameters for handleMapClick function.
+ */
+export interface HandleMapClickParams {
+	event: PickingInfo;
+	sharedState: AppSharedState;
+	sharedStateDispatch: Dispatch<OneOfStateActions>;
+	mapKey: string;
+	controlIsDown: boolean;
+	mapLayers: RenderingLayer[] | undefined;
+}
+
+/**
  * Handles map click events for feature selection logic.
  *
  * Logic:
@@ -22,13 +34,9 @@ import { parseDatasourceConfiguration } from '../../shared/models/parsers.dataso
  * - If only one feature is selected and it's clicked again: remove it from selection.
  * - Otherwise: set the clicked feature as the only selected feature.
  *
- * @param {Object} params - The parameters for the click handler.
- * @param {PickingInfo} params.event - The DeckGL picking event.
- * @param {AppSharedState} params.sharedState - The current shared application state.
- * @param {Dispatch<OneOfStateActions>} params.sharedStateDispatch - The dispatch function for state actions.
- * @param {string} params.mapKey - The key of the map instance.
- * @param {boolean} params.controlIsDown - Whether the Ctrl key is pressed.
- * @param {RenderingLayer[] | undefined} params.mapLayers - The array of map layers.
+ * Selection is only allowed if enabled in the layer configuration.
+ *
+ * @param {HandleMapClickParams} params - The parameters for the click handler.
  */
 export function handleMapClick({
 	event,
@@ -37,19 +45,12 @@ export function handleMapClick({
 	mapKey,
 	controlIsDown,
 	mapLayers,
-}: {
-	event: PickingInfo;
-	sharedState: AppSharedState;
-	sharedStateDispatch: Dispatch<OneOfStateActions>;
-	mapKey: string;
-	controlIsDown: boolean;
-	mapLayers: RenderingLayer[] | undefined;
-}) {
+}: HandleMapClickParams) {
 	// Get the picked feature and layer ID from the event
 	const pickedFeature = event?.object;
 	const layerId = event?.layer?.id;
 
-	// If the user clicks on the map but does not click on a valid feature (there is no PICKABLE feature), exit early
+	// If the user clicks on the map but does not click on a valid feature, exit early
 	if (!pickedFeature) return;
 
 	// Find the mapLayer object that was clicked, to access its configuration
@@ -58,13 +59,10 @@ export function handleMapClick({
 		: undefined;
 
 	// Get the configuration from the clicked mapLayer's datasource
-	let config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
+	const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
 
 	// Get the unique feature identifier for selection logic
-	const featureId = getFeatureId(
-		event?.object,
-		typeof config === 'object' && config !== null ? config.geojsonOptions?.featureIdProperty : undefined
-	);
+	const featureId = getFeatureId(pickedFeature, config.geojsonOptions?.featureIdProperty);
 
 	// Warn if featureId or layerId is missing
 	if (!featureId || !layerId) {
@@ -73,8 +71,11 @@ export function handleMapClick({
 	}
 
 	// Safely extract the custom selection style from the configuration object, if available
-	const customSelectionStyle =
-		typeof config === 'object' && config !== null ? config.geojsonOptions?.selectionStyle : undefined;
+	const customSelectionStyle = config.geojsonOptions?.selectionStyle;
+
+	// Check if selections are enabled for this layer
+	const selectionsEnabled = !config?.geojsonOptions?.disableSelections;
+	if (!selectionsEnabled) return;
 
 	// Get the current selection state for this layer
 	const layerSelection = getMapLayerSelection(sharedState, mapKey, layerId);
