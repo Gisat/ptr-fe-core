@@ -12,8 +12,10 @@ import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
 import { getSelectionByKey } from '../../shared/appState/selectors/getSelectionByKey';
 import { handleMapClick } from './handleMapClick';
 import { StateActionType } from '../../shared/appState/enum.state.actionType';
-import { handleMapHover } from './handleMapHover';
+import { handleMapHover, TooltipAttribute } from './handleMapHover';
 import { MapTooltip } from './MapTooltip/MapTooltip';
+
+const TOOLTIP_VERTICAL_OFFSET = 10;
 
 export interface BasicMapProps {
 	/** Map set identifier */
@@ -36,7 +38,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
 	const [controlIsDown, setControlIsDown] = useState(false);
-	const [tooltip, setTooltip] = useState<{ x: number; y: number; tooltipProperties: any } | null>(null);
+	const [tooltip, setTooltip] = useState<{ x: number; y: number; tooltipProperties: TooltipAttribute[] } | null>(null);
 
 	/** Get the current map state and layers from shared state */
 	const mapState = getMapByKey(sharedState, mapKey);
@@ -152,7 +154,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 			{tooltip && (
 				<MapTooltip
 					x={tooltip.x}
-					y={layerIsHovered ? tooltip.y : tooltip.y - 10}
+					y={layerIsHovered ? tooltip.y : tooltip.y - TOOLTIP_VERTICAL_OFFSET}
 					tooltipProperties={tooltip.tooltipProperties}
 				/>
 			)}

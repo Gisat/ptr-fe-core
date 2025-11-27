@@ -5,10 +5,10 @@ import { parseDatasourceConfiguration } from '../../shared/models/parsers.dataso
 /**
  * Tooltip attribute definition.
  */
-interface TooltipAttribute {
+export interface TooltipAttribute {
 	key: string;
 	label?: string;
-	value?: any;
+	value?: string | number;
 	unit?: string;
 	decimalPlaces?: number;
 }

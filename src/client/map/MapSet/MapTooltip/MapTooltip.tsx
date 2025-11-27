@@ -1,16 +1,17 @@
 import React from 'react';
+import { TooltipAttribute } from '../handleMapHover';
 import './MapTooltip.css';
 
 /**
  * Props for the MapTooltip component.
  * @property {number} x - The x (horizontal) position for the tooltip (in pixels).
  * @property {number} y - The y (vertical) position for the tooltip (in pixels).
- * @property {Array<{ key: string; label: string; value: any; unit?: string }>} tooltipProperties - Array of tooltip attribute objects to display.
+ * @property {Array<TooltipAttribute>} tooltipProperties - Array of tooltip attribute objects to display.
  */
 export interface MapTooltipProps {
 	x: number;
 	y: number;
-	tooltipProperties: Array<{ key: string; label: string; value: any; unit?: string }>;
+	tooltipProperties: TooltipAttribute[];
 }
 
 /**
