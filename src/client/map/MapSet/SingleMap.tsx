@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DeckGL } from '@deck.gl/react';
 import { LayersList, PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
@@ -22,6 +22,8 @@ export interface BasicMapProps {
 	mapKey: string;
 	/** Map view state to sync with other maps */
 	syncedView: Partial<MapView>;
+	/** Custom tooltip component */
+	CustomTooltip?: React.ElementType;
 }
 
 /**
@@ -34,7 +36,7 @@ export interface BasicMapProps {
  * @param {Partial<MapView>} props.syncedView - Part of map view state that is synced with other maps.
  * @returns {JSX.Element} DeckGL map component.
  */
-export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
+export const SingleMap = ({ mapKey, syncedView, CustomTooltip }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
 	const [controlIsDown, setControlIsDown] = useState(false);
@@ -107,6 +109,7 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 	 * @param {ViewStateChangeParameters} params - The parameters describing the view state change.
 	 */
 	const onViewStateChange = ({ viewState, oldViewState }: ViewStateChangeParameters) => {
+		// If a tooltip is shown, hide it during view changes, otherwise it would be mispositioned because of map movement
 		setTooltip(null);
 		// Get changed view params
 		const change = getViewChange(oldViewState, viewState);
@@ -151,13 +154,20 @@ export const SingleMap = ({ mapKey, syncedView }: BasicMapProps) => {
 				onHover={onHover}
 				getCursor={({ isDragging }) => (isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab')}
 			/>
-			{tooltip && (
-				<MapTooltip
-					x={tooltip.x}
-					y={layerIsHovered ? tooltip.y : tooltip.y - TOOLTIP_VERTICAL_OFFSET}
-					tooltipProperties={tooltip.tooltipProperties}
-				/>
-			)}
+			{tooltip &&
+				(CustomTooltip ? (
+					React.createElement(CustomTooltip, {
+						x: tooltip.x,
+						y: tooltip.y,
+						tooltipProperties: tooltip.tooltipProperties,
+					})
+				) : (
+					<MapTooltip
+						x={tooltip.x}
+						y={layerIsHovered ? tooltip.y : tooltip.y - TOOLTIP_VERTICAL_OFFSET}
+						tooltipProperties={tooltip.tooltipProperties}
+					/>
+				))}
 		</>
 	);
 };
