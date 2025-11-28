@@ -92,17 +92,6 @@ export function handleMapHover({ event, mapLayers, setTooltip, setLayerIsHovered
 			})
 			.filter((attr) => attr.value !== undefined && attr.value !== null);
 	}
-	// If no attributes, use 'value' property if present
-	else if (featureProperties?.value !== undefined) {
-		tooltipProperties = [
-			{
-				key: 'value',
-				label: 'Value',
-				value: featureProperties.value,
-				unit: '',
-			},
-		];
-	}
 
 	// If no tooltipProperties found, don't show tooltip
 	if (!tooltipProperties || tooltipProperties.length === 0) {
