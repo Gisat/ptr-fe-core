@@ -15,12 +15,12 @@ export interface MapTooltipProps {
 }
 
 /**
- * MapTooltip component displays a styled tooltip at a given position with provided properties.
+ * Memoized MapTooltip component displays a styled tooltip at a given position with provided properties.
  *
  * @param {MapTooltipProps} props - The props for the tooltip.
  * @returns {JSX.Element} Tooltip element positioned absolutely.
  */
-export const MapTooltip: React.FC<MapTooltipProps> = ({ x, y, tooltipProperties }) => (
+export const MapTooltip: React.FC<MapTooltipProps> = React.memo(({ x, y, tooltipProperties }) => (
 	<div
 		className="ptr-MapTooltip"
 		style={{
@@ -28,13 +28,14 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ x, y, tooltipProperties 
 			top: y,
 		}}
 	>
-		{tooltipProperties.map(({ key, label, value, unit }) => (
-			<div key={key} className="ptr-MapTooltip-row">
-				<span className="ptr-MapTooltip-label">{label}:</span>{' '}
-				<span className="ptr-MapTooltip-value">{String(value)}</span>{' '}
-				{unit && <span className="ptr-MapTooltip-unit">{unit}</span>}
-			</div>
-		))}
+		{Array.isArray(tooltipProperties) &&
+			tooltipProperties.slice(0, 3).map(({ key, label, value, unit }) => (
+				<div key={key} className="ptr-MapTooltip-row">
+					<span className="ptr-MapTooltip-label">{label}:</span>{' '}
+					<span className="ptr-MapTooltip-value">{String(value)}</span>{' '}
+					{unit && <span className="ptr-MapTooltip-unit">{unit}</span>}
+				</div>
+			))}
 		<div className="ptr-MapTooltip-indicator" />
 	</div>
-);
+));

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { DeckGL } from '@deck.gl/react';
 import { LayersList, PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
@@ -16,6 +16,7 @@ import { handleMapHover, TooltipAttribute } from './handleMapHover';
 import { MapTooltip } from './MapTooltip/MapTooltip';
 
 const TOOLTIP_VERTICAL_OFFSET = 10;
+const TOOLTIP_DEBOUNCE_MS = 0; // Show tooltip after 80ms of no movement
 
 export interface BasicMapProps {
 	/** Map set identifier */
@@ -38,9 +39,11 @@ export interface BasicMapProps {
  */
 export const SingleMap = ({ mapKey, syncedView, CustomTooltip }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
-	const [layerIsHovered, setLayerIsHovered] = useState(false);
 	const [controlIsDown, setControlIsDown] = useState(false);
 	const [tooltip, setTooltip] = useState<{ x: number; y: number; tooltipProperties: TooltipAttribute[] } | null>(null);
+	const [layerIsHovered, setLayerIsHovered] = useState(false);
+	const hoverTimeoutRef = useRef<number | null>(null);
+	const lastHoverEventRef = useRef<PickingInfo | null>(null);
 
 	/** Get the current map state and layers from shared state */
 	const mapState = getMapByKey(sharedState, mapKey);
@@ -94,15 +97,31 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip }: BasicMapProps) 
 	 *
 	 * @param {PickingInfo} event - The DeckGL picking event containing information about the hovered object.
 	 */
+	const rafRef = useRef<number | null>(null);
+
 	const onHover = (event: PickingInfo) => {
-		handleMapHover({
-			event,
-			mapLayers,
-			setTooltip,
-			setLayerIsHovered,
-		});
+		if (rafRef.current) {
+			cancelAnimationFrame(rafRef.current);
+		}
+		setTooltip(null);
+		lastHoverEventRef.current = event;
+		if (lastHoverEventRef.current) {
+			handleMapHover({
+				event: lastHoverEventRef.current,
+				mapLayers,
+				setTooltip,
+				setLayerIsHovered,
+			});
+		}
 	};
 
+	useEffect(() => {
+		return () => {
+			if (hoverTimeoutRef.current) {
+				window.clearTimeout(hoverTimeoutRef.current);
+			}
+		};
+	}, []);
 	/**
 	 * Handles changes to the map view state (e.g., pan, zoom).
 	 *

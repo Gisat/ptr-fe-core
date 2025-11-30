@@ -51,58 +51,67 @@ export function handleMapHover({ event, mapLayers, setTooltip, setLayerIsHovered
 		return;
 	}
 
-	// Find the layer configuration for the hovered feature
-	const layerId = event?.layer?.id;
-	const mapLayer = Array.isArray(mapLayers)
-		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
-		: undefined;
-	const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
-
-	// Check if selections are enabled for cursor feedback
-	const selectionsEnabled = !config?.geojsonOptions?.disableSelections;
-	setLayerIsHovered(selectionsEnabled && !!layerId);
-
-	// Check if tooltip is enabled
-	const tooltipEnabled = !config?.geojsonOptions?.disableTooltip;
-	if (!tooltipEnabled) {
-		setTooltip(null);
-		return;
-	}
-
-	const tooltipSettings = config?.geojsonOptions?.tooltipSettings;
 	const featureProperties = event.object?.properties;
+	const featureId = event.object?.id ?? featureProperties?.id ?? JSON.stringify(featureProperties);
 
-	let tooltipProperties: TooltipAttribute[] | undefined;
+	// Early exit: if featureId is the same, just update position and skip calculations
+	setTooltip((prev) => {
+		if (prev && prev.tooltipProperties.length > 0 && prev.tooltipProperties[0].key === featureId) {
+			return {
+				...prev,
+				x: event.x,
+				y: event.y,
+			};
+		}
 
-	// If tooltip attributes are defined in settings, use them
-	if (tooltipSettings?.attributes && Array.isArray(tooltipSettings.attributes)) {
-		tooltipProperties = tooltipSettings.attributes
-			.map((attribute: TooltipAttribute) => {
-				let value = featureProperties[attribute.key];
-				// Round value if decimalPlaces is specified and value is a number
-				if (typeof value === 'number' && typeof attribute.decimalPlaces === 'number') {
-					value = Number(value.toFixed(attribute.decimalPlaces));
-				}
-				return {
-					key: attribute.key,
-					label: attribute.label ?? 'Value',
-					value,
-					unit: attribute.unit ?? '',
-				};
-			})
-			.filter((attr) => attr.value !== undefined && attr.value !== null);
-	}
+		// Find the layer configuration for the hovered feature
+		const layerId = event?.layer?.id;
+		const mapLayer = Array.isArray(mapLayers)
+			? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
+			: undefined;
+		const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
 
-	// If no tooltipProperties found, don't show tooltip
-	if (!tooltipProperties || tooltipProperties.length === 0) {
-		setTooltip(null);
-		return;
-	}
+		// Check if selections are enabled for cursor feedback
+		const selectionsEnabled = !config?.geojsonOptions?.disableSelections;
+		setLayerIsHovered(selectionsEnabled && !!layerId);
 
-	// Set tooltip state with position and properties
-	setTooltip({
-		x: event.x,
-		y: event.y,
-		tooltipProperties,
+		// Check if tooltip is enabled
+		const tooltipEnabled = !config?.geojsonOptions?.disableTooltip;
+		if (!tooltipEnabled) {
+			return null;
+		}
+
+		const tooltipSettings = config?.geojsonOptions?.tooltipSettings;
+
+		let tooltipProperties: TooltipAttribute[] | undefined;
+
+		// If tooltip attributes are defined in settings, use them
+		if (tooltipSettings?.attributes && Array.isArray(tooltipSettings.attributes)) {
+			tooltipProperties = tooltipSettings.attributes
+				.map((attribute: TooltipAttribute) => {
+					let value = featureProperties[attribute.key];
+					if (typeof value === 'number' && typeof attribute.decimalPlaces === 'number') {
+						value = Number(value.toFixed(attribute.decimalPlaces));
+					}
+					return {
+						key: attribute.key,
+						label: attribute.label ?? 'Value',
+						value,
+						unit: attribute.unit ?? '',
+					};
+				})
+				.filter((attr) => attr.value !== undefined && attr.value !== null);
+		}
+
+		if (!tooltipProperties || tooltipProperties.length === 0) {
+			return null;
+		}
+
+		// Otherwise, update both position and content
+		return {
+			x: event.x,
+			y: event.y,
+			tooltipProperties,
+		};
 	});
 }
