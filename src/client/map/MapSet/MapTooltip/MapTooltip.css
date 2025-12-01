@@ -1,16 +1,8 @@
-.ptr-MapTooltip {
-	position: absolute;
-	width: max-content;
-	max-width: 300px;
-	background: var(--base25);
-	padding: 6px 10px;
-	border-radius: 6px;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+div.ptr-MapTooltip {
+	background-color: var(--base25);
 	font-size: var(--font-size-sm);
 	font-family: var(--defaultFontFamily);
 	pointer-events: none;
-	z-index: 100;
-	transform: translate(-50%, -120%);
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -26,6 +18,7 @@
 }
 
 .ptr-MapTooltip-value {
+	color: var(--base950);
 	font-weight: 500;
 }
 
