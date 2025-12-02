@@ -28,14 +28,13 @@ export const MapTooltip: React.FC<MapTooltipProps> = React.memo(({ x, y, tooltip
 			top: y,
 		}}
 	>
-		{Array.isArray(tooltipProperties) &&
-			tooltipProperties.slice(0, 3).map(({ key, label, value, unit }) => (
-				<div key={key} className="ptr-MapTooltip-row">
-					<span className="ptr-MapTooltip-label">{label}:</span>{' '}
-					<span className="ptr-MapTooltip-value">{String(value)}</span>{' '}
-					{unit && <span className="ptr-MapTooltip-unit">{unit}</span>}
-				</div>
-			))}
+		{tooltipProperties.map(({ key, label, value, unit }) => (
+			<div key={key} className="ptr-MapTooltip-row">
+				<span className="ptr-MapTooltip-label">{label}:</span>{' '}
+				<span className="ptr-MapTooltip-value">{String(value)}</span>{' '}
+				{unit && <span className="ptr-MapTooltip-unit">{unit}</span>}
+			</div>
+		))}
 		<div className="ptr-MapTooltip-indicator" />
 	</div>
 ));

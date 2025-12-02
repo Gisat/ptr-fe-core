@@ -136,7 +136,9 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip, disableDeckGLTool
 	const onViewStateChange = ({ viewState, oldViewState }: ViewStateChangeParameters) => {
 		// Hide tooltip during view changes to avoid mispositioning
 		setTooltip(null);
+		// Get changed view params
 		const change = getViewChange(oldViewState, viewState);
+		// Apply changes to map view if there are any
 		if (Object.keys(change).length > 0) {
 			sharedStateDispatch({
 				type: StateActionType.MAP_VIEW_CHANGE,

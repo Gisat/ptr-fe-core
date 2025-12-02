@@ -5,12 +5,12 @@ import { TooltipAttribute } from '../handleMapHover';
 import './getMapTooltip.css';
 
 /**
- * Generates a DeckGL tooltip object for a hovered map feature.
+ * Generates a DeckGL tooltip object for a hovered map feature if enabled (via layer configuration = disableTooltip).
  * - Uses layer configuration to determine tooltip attributes and formatting.
  * - Tooltip can be customized via geojsonOptions in datasource configuration with tooltipSettings.
  * 		- attributes: array of attribute definitions (key, label, unit, decimalPlaces).
- * 		- styles: custom CSS styles for tooltip container.
- * 		- className: additional CSS class names for tooltip container.
+ * 		- nativeStyles: custom CSS styles for tooltip container.
+ * 		- nativeClassName: additional CSS class names for tooltip container.
  * - If no attributes are defined, tooltip will not be shown.
  * - Returns null if no feature or tooltip is disabled.
  * - Tooltip is styled and includes an indicator triangle.
@@ -42,8 +42,8 @@ export const getMapTooltip = ({
 	if (!tooltipEnabled) return null;
 
 	const tooltipSettings = config?.geojsonOptions?.tooltipSettings;
-	const tooltipStyles = tooltipSettings.styles || {};
-	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings.className}`;
+	const tooltipStyles = tooltipSettings?.nativeStyles || {};
+	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`;
 	const featureProperties = info.object?.properties || {};
 
 	let tooltipProperties: TooltipAttribute[] | undefined;
@@ -93,7 +93,7 @@ export const getMapTooltip = ({
 	return {
 		html: tooltipHtml,
 		className: tooltipClassNames,
-		// Inline styles for positioning and appearance (is overidding default inline styles from deck.gl)
+		// Inline styles for positioning and appearance (is overriding default inline styles from deck.gl)
 		style: {
 			backgroundColor: 'var(--base50)',
 			padding: '6px 10px',

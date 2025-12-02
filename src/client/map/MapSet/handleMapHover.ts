@@ -54,7 +54,6 @@ interface HandleMapHoverParams {
  * - If no attributes are defined, uses 'value' property if present.
  * - Tooltip is hidden if not enabled or no valid properties found.
  * - Also updates layer hover state for cursor feedback.
- * - Optimized: skips expensive calculations if hovered feature did not change.
  *
  * @param {HandleMapHoverParams} params - Parameters for hover handling.
  * @returns {void}
@@ -93,6 +92,7 @@ export function handleMapHover({
 	// Check if tooltip is enabled in config
 	const tooltipEnabled = !config?.geojsonOptions?.disableTooltip;
 	if (!tooltipEnabled) {
+		setTooltip(null);
 		return;
 	}
 
@@ -107,13 +107,13 @@ export function handleMapHover({
 		tooltipProperties = tooltipSettings.attributes
 			.map((attribute: TooltipAttribute) => {
 				let value = featureProperties[attribute.key];
-				// Round value if decimalPlaces is specified
+				// Round value if decimalPlaces is specified and value is a number
 				if (typeof value === 'number' && typeof attribute.decimalPlaces === 'number') {
 					value = Number(value.toFixed(attribute.decimalPlaces));
 				}
 				return {
 					key: attribute.key,
-					label: attribute.label ?? attribute.key,
+					label: attribute.label ?? 'Value',
 					value,
 					unit: attribute.unit ?? '',
 				};
