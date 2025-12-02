@@ -31,12 +31,15 @@ export const MapSetWrapper = ({ children }: MapSetWrapperProps) => {
  * @property {string} sharedStateKey - The key used to retrieve the map set from the shared state.
  * @property {React.ElementType} [SingleMapTools] - Optional tools component to render alongside each map.
  * @property {React.ElementType} [MapSetTools] - Optional tools component to render for the entire map set.
+ * @property {React.ElementType} [CustomTooltip] - Optional custom tooltip component for the maps.
+ * @property {boolean} [disableDeckGLTooltip] - If true, disables DeckGL's built-in tooltip and uses custom tooltip.
  */
 export interface MapSetProps {
 	sharedStateKey: string;
 	SingleMapTools?: React.ElementType;
 	MapSetTools?: React.ElementType;
 	CustomTooltip?: React.ElementType;
+	disableDeckGLTooltip?: boolean;
 }
 
 /**
@@ -45,7 +48,13 @@ export interface MapSetProps {
  * @param {MapSetProps} props - The props for the MapSet component.
  * @returns {JSX.Element | null} The rendered MapSet or null if no maps are found.
  */
-export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTooltip }: MapSetProps) => {
+export const MapSet = ({
+	sharedStateKey,
+	SingleMapTools,
+	MapSetTools,
+	CustomTooltip,
+	disableDeckGLTooltip,
+}: MapSetProps) => {
 	// Retrieve shared state and map set using the provided key
 	const [sharedState] = useSharedState();
 	const mapSet = getMapSetByKey(sharedState, sharedStateKey);
@@ -79,7 +88,12 @@ export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTool
 					itemOne={
 						<div key={maps[0]} className="ptr-MapSet-map">
 							{/* Render individual map */}
-							<SingleMap mapKey={maps[0]} syncedView={syncedView} CustomTooltip={CustomTooltip} />
+							<SingleMap
+								mapKey={maps[0]}
+								syncedView={syncedView}
+								CustomTooltip={CustomTooltip}
+								disableDeckGLTooltip={disableDeckGLTooltip}
+							/>
 							{/* Optionally render tools for the map */}
 							{SingleMapTools &&
 								React.createElement(SingleMapTools, {
@@ -92,7 +106,12 @@ export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTool
 					itemTwo={
 						<div key={maps[1]} className="ptr-MapSet-map">
 							{/* Render individual map */}
-							<SingleMap mapKey={maps[1]} syncedView={syncedView} CustomTooltip={CustomTooltip} />
+							<SingleMap
+								mapKey={maps[1]}
+								syncedView={syncedView}
+								CustomTooltip={CustomTooltip}
+								disableDeckGLTooltip={disableDeckGLTooltip}
+							/>
 							{/* Optionally render tools for the map */}
 							{SingleMapTools &&
 								React.createElement(SingleMapTools, {
@@ -127,7 +146,12 @@ export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTool
 				{maps.map((mapKey: string) => (
 					<div key={mapKey} className="ptr-MapSet-map">
 						{/* Render individual map */}
-						<SingleMap mapKey={mapKey} syncedView={syncedView} CustomTooltip={CustomTooltip} />
+						<SingleMap
+							mapKey={mapKey}
+							syncedView={syncedView}
+							CustomTooltip={CustomTooltip}
+							disableDeckGLTooltip={disableDeckGLTooltip}
+						/>
 						{/* Optionally render tools for the map */}
 						{SingleMapTools && React.createElement(SingleMapTools, { mapKey, mapSetKey: sharedStateKey })}
 					</div>

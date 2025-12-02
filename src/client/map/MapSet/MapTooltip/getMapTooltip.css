@@ -1,39 +1,38 @@
-.ptr-MapTooltip {
+.ptr-NativeMapTooltip {
 	z-index: 100;
-	transform: translate(-50%, -100%);
-	position: absolute;
-	width: max-content;
-	max-width: 300px;
-	background: var(--base25);
-	padding: 6px 10px;
-	border-radius: 4px;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+	background-color: var(--base25);
 	font-size: var(--font-size-sm);
 	font-family: var(--defaultFontFamily);
 	pointer-events: none;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+	max-width: 300px;
+	width: max-content;
 }
 
-.ptr-MapTooltip-row {
+.ptr-NativeMapTooltip-row {
+	font-size: var(--font-size-sm);
 	margin-bottom: 2px;
 }
 
-.ptr-MapTooltip-label {
+.ptr-NativeMapTooltip-label {
 	color: var(--base950);
 	font-weight: 600;
 }
 
-.ptr-MapTooltip-value {
+.ptr-NativeMapTooltip-value {
+	color: var(--base950);
 	font-weight: 500;
 }
 
-.ptr-MapTooltip-unit {
+.ptr-NativeMapTooltip-unit {
 	color: var(--base950);
 }
 
-.ptr-MapTooltip-indicator {
+.ptr-NativeMapTooltip-indicator {
 	z-index: 101;
 	position: absolute;
 	left: 50%;
