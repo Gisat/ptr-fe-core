@@ -34,7 +34,9 @@ export const getMapTooltip = ({
 
 	// Find the layer configuration for the hovered feature
 	const layerId = info.layer.id;
-	const mapLayer = Array.isArray(mapLayers) ? mapLayers.find((layer: any) => layer.key === layerId) : undefined;
+	const mapLayer = Array.isArray(mapLayers)
+		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
+		: undefined;
 	const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
 
 	// Check if tooltip is enabled in layer config
@@ -59,7 +61,7 @@ export const getMapTooltip = ({
 				}
 				return {
 					key: attribute.key,
-					label: attribute.label ?? attribute.key,
+					label: attribute.label ?? 'Value',
 					value,
 					unit: attribute.unit ?? '',
 				};
