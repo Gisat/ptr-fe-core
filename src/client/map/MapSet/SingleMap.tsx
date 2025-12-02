@@ -12,9 +12,10 @@ import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
 import { getSelectionByKey } from '../../shared/appState/selectors/getSelectionByKey';
 import { handleMapClick } from './handleMapClick';
 import { StateActionType } from '../../shared/appState/enum.state.actionType';
-import { handleMapHover, TooltipAttribute } from './handleMapHover';
+import { handleMapHover } from './handleMapHover';
 import { getMapTooltip } from './MapTooltip/getMapTooltip';
 import { MapTooltip } from './MapTooltip/MapTooltip';
+import { TooltipAttribute } from '../../story/utils/getTooltipAttributes';
 
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = 10;
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = 20;

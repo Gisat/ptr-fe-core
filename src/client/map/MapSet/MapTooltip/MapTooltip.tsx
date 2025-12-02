@@ -1,5 +1,5 @@
 import React from 'react';
-import { TooltipAttribute } from '../handleMapHover';
+import { TooltipAttribute } from 'src/client/story/utils/getTooltipAttributes';
 import './MapTooltip.css';
 
 /**

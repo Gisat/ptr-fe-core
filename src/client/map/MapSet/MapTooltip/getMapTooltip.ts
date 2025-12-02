@@ -1,7 +1,7 @@
 import { PickingInfo } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-import { TooltipAttribute } from '../handleMapHover';
+import { getTooltipAttributes, TooltipAttribute } from '../../../story/utils/getTooltipAttributes';
 import './getMapTooltip.css';
 
 /**
@@ -52,23 +52,8 @@ export const getMapTooltip = ({
 
 	// Use configured attributes if available
 	if (tooltipSettings?.attributes && Array.isArray(tooltipSettings.attributes)) {
-		tooltipProperties = tooltipSettings.attributes
-			.map((attribute: TooltipAttribute) => {
-				let value = featureProperties[attribute.key];
-				// Round value if decimalPlaces is specified
-				if (typeof value === 'number' && typeof attribute.decimalPlaces === 'number') {
-					value = Number(value.toFixed(attribute.decimalPlaces));
-				}
-				return {
-					key: attribute.key,
-					label: attribute.label ?? 'Value',
-					value,
-					unit: attribute.unit ?? '',
-				};
-			})
-			.filter((attr) => attr.value !== undefined && attr.value !== null);
+		tooltipProperties = getTooltipAttributes(tooltipSettings.attributes, featureProperties);
 	}
-
 	// If no valid tooltip properties, do not show tooltip
 	if (!tooltipProperties || tooltipProperties.length === 0) {
 		return null;
