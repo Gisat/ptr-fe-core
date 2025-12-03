@@ -12,10 +12,13 @@ import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
 import { getSelectionByKey } from '../../shared/appState/selectors/getSelectionByKey';
 import { handleMapClick } from './handleMapClick';
 import { StateActionType } from '../../shared/appState/enum.state.actionType';
-import { handleMapHover, TooltipAttribute } from './handleMapHover';
+import { handleMapHover } from './handleMapHover';
+import { getMapTooltip } from './MapTooltip/getMapTooltip';
 import { MapTooltip } from './MapTooltip/MapTooltip';
+import { TooltipAttribute } from '../../story/utils/getTooltipAttributes';
 
-const TOOLTIP_VERTICAL_OFFSET = 10;
+const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = 10;
+const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = 20;
 
 export interface BasicMapProps {
 	/** Map set identifier */
@@ -23,7 +26,7 @@ export interface BasicMapProps {
 	/** Map view state to sync with other maps */
 	syncedView: Partial<MapView>;
 	/** Custom tooltip component */
-	CustomTooltip?: React.ElementType;
+	CustomTooltip?: React.ElementType | boolean;
 }
 
 /**
@@ -32,20 +35,32 @@ export interface BasicMapProps {
  * Renders a DeckGL map instance with selection, hover, and view state sync logic.
  *
  * @param {BasicMapProps} props - The props for the map.
- * @param {string} props.mapKey - Map identifier.
- * @param {Partial<MapView>} props.syncedView - Part of map view state that is synced with other maps.
  * @returns {JSX.Element} DeckGL map component.
  */
-export const SingleMap = ({ mapKey, syncedView, CustomTooltip }: BasicMapProps) => {
+export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
-	const [layerIsHovered, setLayerIsHovered] = useState(false);
 	const [controlIsDown, setControlIsDown] = useState(false);
 	const [tooltip, setTooltip] = useState<{ x: number; y: number; tooltipProperties: TooltipAttribute[] } | null>(null);
+	const [layerIsHovered, setLayerIsHovered] = useState(false);
 
 	/** Get the current map state and layers from shared state */
 	const mapState = getMapByKey(sharedState, mapKey);
 	const mapViewState = mergeViews(syncedView, mapState?.view ?? {});
 	const mapLayers = getLayersByMapKey(sharedState, mapKey);
+
+	/** Determines if custom tooltip logic should be used */
+	const useCustomTooltip = Boolean(CustomTooltip);
+
+	/**
+	 * Returns the selection object for a given selectionKey.
+	 * This is a selector callback passed to layer parsing logic.
+	 *
+	 * @param {string} selectionKey - The key identifying the selection.
+	 * @returns {Selection | undefined} The selection object, or undefined if not found.
+	 */
+	const getSelection = (selectionKey: string) => {
+		return getSelectionByKey(sharedState, selectionKey);
+	};
 
 	/**
 	 * On mount: sync the map view and set up keyboard listeners for Ctrl key.
@@ -100,8 +115,17 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip }: BasicMapProps) 
 			mapLayers,
 			setTooltip,
 			setLayerIsHovered,
+			useCustomTooltip,
 		});
 	};
+
+	/** Parse layers for DeckGL rendering */
+	const layers: LayersList = mapLayers
+		? parseLayersFromSharedState({
+				sharedStateLayers: [...mapLayers],
+				getSelectionForLayer: getSelection,
+			})
+		: [];
 
 	/**
 	 * Handles changes to the map view state (e.g., pan, zoom).
@@ -109,7 +133,7 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip }: BasicMapProps) 
 	 * @param {ViewStateChangeParameters} params - The parameters describing the view state change.
 	 */
 	const onViewStateChange = ({ viewState, oldViewState }: ViewStateChangeParameters) => {
-		// If a tooltip is shown, hide it during view changes, otherwise it would be mispositioned because of map movement
+		// Hide tooltip during view changes to avoid mispositioning
 		setTooltip(null);
 		// Get changed view params
 		const change = getViewChange(oldViewState, viewState);
@@ -122,24 +146,10 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip }: BasicMapProps) 
 		}
 	};
 
-	/**
-	 * Returns the selection object for a given selectionKey.
-	 * This is a selector callback passed to layer parsing logic.
-	 *
-	 * @param {string} selectionKey - The key identifying the selection.
-	 * @returns {Selection | undefined} The selection object, or undefined if not found.
-	 */
-	const getSelection = (selectionKey: string) => {
-		return getSelectionByKey(sharedState, selectionKey);
-	};
-
-	/** Parse layers for DeckGL rendering */
-	const layers: LayersList = mapLayers
-		? parseLayersFromSharedState({
-				sharedStateLayers: [...mapLayers],
-				getSelectionForLayer: getSelection,
-			})
-		: [];
+	/** Tooltip vertical offset based on cursor style */
+	const verticalOffset = layerIsHovered
+		? TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER
+		: TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER;
 
 	return (
 		<>
@@ -153,20 +163,25 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip }: BasicMapProps) 
 				onClick={onClick}
 				onHover={onHover}
 				getCursor={({ isDragging }) => (isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab')}
+				getTooltip={(info) => {
+					if (useCustomTooltip) return null;
+					return getMapTooltip({
+						info,
+						mapLayers,
+						verticalOffset,
+					});
+				}}
 			/>
-			{tooltip &&
-				(CustomTooltip ? (
+			{useCustomTooltip &&
+				tooltip &&
+				(typeof CustomTooltip === 'object' ? (
 					React.createElement(CustomTooltip, {
 						x: tooltip.x,
 						y: tooltip.y,
 						tooltipProperties: tooltip.tooltipProperties,
 					})
 				) : (
-					<MapTooltip
-						x={tooltip.x}
-						y={layerIsHovered ? tooltip.y : tooltip.y - TOOLTIP_VERTICAL_OFFSET}
-						tooltipProperties={tooltip.tooltipProperties}
-					/>
+					<MapTooltip x={tooltip.x} y={tooltip.y - verticalOffset} tooltipProperties={tooltip.tooltipProperties} />
 				))}
 		</>
 	);
