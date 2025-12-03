@@ -26,9 +26,7 @@ export interface BasicMapProps {
 	/** Map view state to sync with other maps */
 	syncedView: Partial<MapView>;
 	/** Custom tooltip component */
-	CustomTooltip?: React.ElementType;
-	/** If true, disables DeckGL's built-in tooltip and uses custom tooltip */
-	disableDeckGLTooltip?: boolean;
+	CustomTooltip?: React.ElementType | boolean;
 }
 
 /**
@@ -39,7 +37,7 @@ export interface BasicMapProps {
  * @param {BasicMapProps} props - The props for the map.
  * @returns {JSX.Element} DeckGL map component.
  */
-export const SingleMap = ({ mapKey, syncedView, CustomTooltip, disableDeckGLTooltip = false }: BasicMapProps) => {
+export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [controlIsDown, setControlIsDown] = useState(false);
 	const [tooltip, setTooltip] = useState<{ x: number; y: number; tooltipProperties: TooltipAttribute[] } | null>(null);
@@ -51,7 +49,7 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip, disableDeckGLTool
 	const mapLayers = getLayersByMapKey(sharedState, mapKey);
 
 	/** Determines if custom tooltip logic should be used */
-	const useCustomTooltip = Boolean(CustomTooltip) || disableDeckGLTooltip;
+	const useCustomTooltip = Boolean(CustomTooltip);
 
 	/**
 	 * Returns the selection object for a given selectionKey.
@@ -176,7 +174,7 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip, disableDeckGLTool
 			/>
 			{useCustomTooltip &&
 				tooltip &&
-				(CustomTooltip ? (
+				(typeof CustomTooltip === 'object' ? (
 					React.createElement(CustomTooltip, {
 						x: tooltip.x,
 						y: tooltip.y,
