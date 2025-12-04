@@ -1,153 +1,255 @@
 import classnames from 'classnames';
-import { StorySidePanel } from './components/sidePanel/StorySidePanel';
-import React, { Children, cloneElement, useCallback, useState } from 'react';
+import React, { Children, useCallback, useEffect, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
-//import { storySmallScreenWidth, storySmallScreenHeight } from '@features/story/variables';
-import './style.css';
+import { StorySidePanel, StorySidePanelInternal } from './components/sidePanel/StorySidePanel';
+import { StoryNavPanel } from './components/sidePanel/navPanel/StoryNavPanel';
+import { StoryPanelLayout } from './enums/enum.story.panelLayout';
+import { StoryPanelType } from './enums/enum.story.panelType';
+import {
+	DEFAULT_STORY_SMALL_SCREEN_WIDTH,
+	DEFAULT_STORY_SMALL_SCREEN_HEIGHT,
+	DEFAULT_STORY_MEDIUM_SCREEN_WIDTH,
+	DEFAULT_STORY_MEDIUM_SCREEN_HEIGHT,
+} from './constants/defaults';
+import { computePanelLayout } from './utils/computePanelLayout';
+import { handleSidePanelScroll } from './utils/handleSidePanelScroll';
+import { useStorySwipe } from './utils/useStorySwipe';
+import { StoryPanelToggle } from './components/toggle/StoryPanelToggle';
+import { StoryMainPanelInternal } from './components/mainPanel/StoryMainPanel';
 import './variables.css';
+import './Story.css';
 
 /**
- * Props for the Story component.
+ * Props for Story component.
  */
 type StoryProps = {
-	/** Callback when the active section changes */
-	onStepChange?: (section: number) => void;
-	/** Default step to start with */
-	defaultStep?: number;
-	/** Additional class names for styling */
+	/** Custom class name for root element */
 	className?: string;
-	/** Child components */
+	/** Story children (main panel, side panel, etc.) */
 	children: React.ReactNode;
-	storySmallScreenWidth: number;
-	storySmallScreenHeight: number;
+	/** Callback fired when active section changes */
+	onStepChange?: (sectionIndex: number) => void;
+	/** Initial active section index */
+	defaultStep?: number;
+	/** Responsive breakpoints for small screens */
+	storySmallScreenWidth?: number;
+	storySmallScreenHeight?: number;
+	/** Responsive breakpoints for medium screens */
+	storyMediumScreenWidth?: number;
+	storyMediumScreenHeight?: number;
+	/** Custom navigation icons */
+	navigationIcons?: {
+		home?: React.ReactNode;
+		case?: React.ReactNode;
+		footer?: React.ReactNode;
+	};
+	/** Show full navigation panel */
+	fullNavigation?: boolean;
+	/** Hide navigation panel */
+	hideNavigation?: boolean;
+	/** Duration of the animation in milliseconds */
+	animationDuration?: number;
+	/** Pause duration between slides in milliseconds */
+	pauseBetweenSlides?: number;
 };
 
-/** Reference to the side panel */
-type SidePanelRef = React.RefObject<HTMLDivElement | undefined>;
-
 /**
- * Story Component
- *
- * This component provides a structured layout for presenting information in a narrative format.
- * It dynamically adjusts its layout and content based on the screen size and user interactions.
- *
- * @param {StoryProps} props - The props for the component.
- * @returns {JSX.Element} The rendered Story component.
+ * Story component orchestrates responsive panel layout and section navigation.
+ * It wraps main/side panels, manages layout, swipe, and navigation logic.
  */
-export const Story: React.FC<StoryProps> = ({ className, children, defaultStep = 0, onStepChange, storySmallScreenWidth, storySmallScreenHeight }) => {
-	const [activeStep, setActiveStep] = useState<number>(defaultStep); // Current active section
-	const [jumpSection, setJumpSection] = useState<number | null>(null); // Section to jump to
-	const [sidePanelRef, setSidePanelRef] = useState<SidePanelRef | undefined>(undefined); // Reference to the side panel
-	const [contentSize, setContentSize] = useState<[number, number] | undefined>(undefined); // Size of the content area
-	const [panelLayout, setPanelLayout] = useState<string>('horizontal'); // Layout of the panel
+export const Story: React.FC<StoryProps> = ({
+	className,
+	children,
+	defaultStep = 0,
+	onStepChange,
+	storySmallScreenWidth = DEFAULT_STORY_SMALL_SCREEN_WIDTH,
+	storySmallScreenHeight = DEFAULT_STORY_SMALL_SCREEN_HEIGHT,
+	storyMediumScreenWidth = DEFAULT_STORY_MEDIUM_SCREEN_WIDTH,
+	storyMediumScreenHeight = DEFAULT_STORY_MEDIUM_SCREEN_HEIGHT,
+	navigationIcons,
+	fullNavigation = true,
+	hideNavigation = false,
+	animationDuration = 400,
+	pauseBetweenSlides = 0,
+}) => {
+	/** Currently active section index */
+	const [activeStep, setActiveStep] = useState<number>(defaultStep);
+	/** Section index to jump to (for scroll sync) */
+	const [jumpSection, setJumpSection] = useState<number | null>(null);
+	/** Number of children in side panel */
+	const [sidePanelChildrenCount, setSidePanelChildrenCount] = useState<number>(0);
+	/** Content area size ([width, height]) */
+	const [contentSize, setContentSize] = useState<[number, number] | undefined>(undefined);
+	/** Current layout mode (responsive) */
+	const [panelLayout, setPanelLayout] = useState<StoryPanelLayout>(StoryPanelLayout.HORIZONTAL);
+	/** Which panel is visible in single layout */
+	const [visiblePanelType, setVisiblePanelType] = useState<StoryPanelType>(StoryPanelType.MAIN);
 
-	// Generate dynamic class names
-	const classes = classnames('ptr-Story', {}, `is-${panelLayout}-layout`, className);
+	/** Returns the max valid section index for navigation */
+	const getMaxSectionIndex = () => (sidePanelChildrenCount > 0 ? sidePanelChildrenCount - 1 : 0);
+
+	// Swipe navigation handlers
+	const { handleTouchStart, handleTouchMove, handleTouchEnd } = useStorySwipe(setActiveStep, getMaxSectionIndex);
+
+	/** Ref to the side panel DOM node */
+	const sidePanelRef = React.useRef<HTMLDivElement | null>(null);
 
 	/**
-	 * Handles resizing of the component and updates the layout.
-	 * @param {{ width: number | null; height: number | null }} dimensions - The new dimensions of the component.
+	 * Handles resize events to update layout and content size.
 	 */
-	const onResize = useCallback(({ width, height }: { width: number | null; height: number | null }) => {
-		if (width !== null && height !== null) {
+	const onResize = useCallback(
+		({ width, height }: { width: number | null; height: number | null }) => {
+			if (width === null || height === null) return;
 			setContentSize([width, height]);
-			setPanelLayout(width > storySmallScreenWidth || height < storySmallScreenHeight ? 'horizontal' : 'vertical');
-		}
-	}, []);
+			const layout = computePanelLayout(
+				width,
+				height,
+				storySmallScreenWidth,
+				storySmallScreenHeight,
+				storyMediumScreenWidth,
+				storyMediumScreenHeight
+			);
+			setPanelLayout(layout);
+		},
+		[storySmallScreenWidth, storySmallScreenHeight, storyMediumScreenWidth, storyMediumScreenHeight]
+	);
 
-	// Hook to detect resizing
+	// Attach resize detector to root
 	const { ref } = useResizeDetector({
 		handleHeight: true,
 		onResize,
 	});
 
+	// Fire external callback on step change
+	useEffect(() => {
+		onStepChange?.(activeStep);
+	}, [activeStep, onStepChange]);
+
+	// Detect if side panel is present
+	const hasSidePanel = Children.toArray(children).some(
+		(child) => React.isValidElement(child) && child.type === StorySidePanel
+	);
+
 	/**
-	 * Handles scrolling within the side panel and updates the active section.
-	 * @param {React.UIEvent<HTMLDivElement>} event - The scroll event.
+	 * Renders each child, replacing public wrappers with internal logic components.
 	 */
-	const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
-		if (!sidePanelRef?.current) return;
+	function renderStoryChildElement(child: React.ReactNode) {
+		if (!React.isValidElement(child)) return null;
 
-		const sidePanelNodes = Array.from(sidePanelRef.current.childNodes) as HTMLElement[];
-		const userReachedBottom =
-			sidePanelRef.current.offsetHeight + sidePanelRef.current.scrollTop >= sidePanelRef.current.scrollHeight - 10;
+		/**
+		 * Checks if the child is a public side panel or main panel wrapper.
+		 *
+		 * This uses a static marker property (__PTR_STORY_SIDE_PANEL or __PTR_STORY_MAIN_PANEL)
+		 * that is set on the public wrapper component function. When React creates an element,
+		 * its type property refers to the component function. By attaching a static property to the function,
+		 * we can identify public wrappers at runtime and swap them for internal logic components.
+		 */
+		const isPublicSidePanel = (child.type as any)?.__PTR_STORY_SIDE_PANEL === true;
+		const isPublicMainPanel = (child.type as any)?.__PTR_STORY_MAIN_PANEL === true;
 
-		sidePanelNodes.forEach((node, index) => {
-			const userReachedSection =
-				node.offsetTop - 100 <= event.currentTarget.scrollTop &&
-				node.offsetTop + node.offsetHeight - 100 > event.currentTarget.scrollTop;
+		const childElement = child as React.ReactElement<any>;
 
-			if (userReachedSection) {
-				if (jumpSection === null) {
-					// User is scrolling
-					if (userReachedBottom) {
-						setActiveStep(sidePanelNodes.length - 1);
-						onStepChange?.(sidePanelNodes.length - 1);
-					} else {
-						setActiveStep(index);
-						onStepChange?.(index);
+		// Replace public side panel wrapper with internal logic
+		if (isPublicSidePanel) {
+			return (
+				<StorySidePanelInternal
+					onScroll={(e: React.UIEvent<HTMLDivElement>) =>
+						handleSidePanelScroll(
+							e,
+							sidePanelRef,
+							panelLayout,
+							jumpSection,
+							setActiveStep,
+							setJumpSection,
+							onStepChange
+						)
 					}
-				} else {
-					// User used navigation
-					setActiveStep(jumpSection);
-					onStepChange?.(jumpSection);
-					const userJumpedToBottom = jumpSection === sidePanelNodes.length - 1;
-					const userReachedJumpedSection =
-						sidePanelNodes[jumpSection].offsetTop > event.currentTarget.scrollTop - 5 &&
-						sidePanelNodes[jumpSection].offsetTop < event.currentTarget.scrollTop + 5;
-
-					if (userReachedBottom && userJumpedToBottom) {
-						setJumpSection(null);
-					} else if (userReachedJumpedSection) {
-						setJumpSection(null);
-					}
-				}
-			}
-		});
-	};
-
-	/**
-	 * Determines if the side panel is present.
-	 * @returns {boolean} True if the side panel exists, false otherwise.
-	 */
-	const noSidePanel = !Children.map(children, (child) => {
-		return React.isValidElement(child) && child.type === StorySidePanel;
-	})?.some((isSidePanel) => isSidePanel === true);
-
-	/**
-	 * Renders a child component with additional props.
-	 * @param {React.ReactNode} child - The child component to render.
-	 * @returns {React.ReactNode | null} The rendered child component or null if invalid.
-	 */
-	const renderChild = (child: React.ReactNode) => {
-		if (React.isValidElement(child)) {
-			if (child.type === StorySidePanel) {
-				// Handle StorySidePanel children
-				return cloneElement(child as React.ReactElement<any>, {
-					onScroll,
-					setSidePanelRef,
-					panelLayout,
-					activeStep,
-					setJumpSection,
-					contentSize,
-				});
-			} else if (sidePanelRef !== undefined || noSidePanel) {
-				// Handle other children when sidePanelRef is defined or noSidePanel is true
-				return cloneElement(child as React.ReactElement<any>, {
-					activeStep,
-					setJumpSection,
-					sidePanelRef,
-					panelLayout,
-					noSidePanel,
-				});
-			}
+					sidePanelRef={sidePanelRef}
+					setSidePanelChildrenCount={setSidePanelChildrenCount}
+					sidePanelChildrenCount={sidePanelChildrenCount}
+					panelLayout={panelLayout}
+					activeStep={activeStep}
+					setActiveStep={setActiveStep}
+					setJumpSection={setJumpSection}
+					contentSize={contentSize}
+					visiblePanelType={visiblePanelType}
+					fullNavigation={fullNavigation}
+					navigationIcons={navigationIcons}
+					hideNavigation={hideNavigation}
+					className={childElement.props.className}
+					animationDuration={animationDuration}
+					pauseBetweenSlides={pauseBetweenSlides}
+				>
+					{childElement.props.children}
+				</StorySidePanelInternal>
+			);
 		}
-		return null; // Return null for invalid elements
-	};
+
+		// Replace public main panel wrapper with internal logic
+		if (isPublicMainPanel) {
+			if (panelLayout !== StoryPanelLayout.SINGLE || visiblePanelType === StoryPanelType.MAIN) {
+				return (
+					<StoryMainPanelInternal
+						className={childElement.props.className}
+						activeStep={activeStep}
+						setActiveStep={setActiveStep}
+						sidePanelRef={sidePanelRef}
+						panelLayout={panelLayout}
+						noSidePanel={!hasSidePanel}
+						sidePanelChildrenCount={sidePanelChildrenCount}
+						animationDuration={animationDuration}
+						pauseBetweenSlides={pauseBetweenSlides}
+					>
+						{childElement.props.children}
+					</StoryMainPanelInternal>
+				);
+			}
+			return null;
+		}
+
+		// Fallback: warn if child is not wrapped properly
+		console.warn('Story: Children should be wrapped inside StoryMainPanel or StorySidePanel.');
+		return childElement;
+	}
+
+	const rootClassNames = classnames(
+		'ptr-Story',
+		`is-${panelLayout}-layout`,
+		`is-${visiblePanelType}-visible`,
+		className
+	);
 
 	return (
-		<div className={classes} ref={ref}>
-			{Children.map(children, renderChild)}
+		<div
+			className={rootClassNames}
+			ref={ref}
+			onTouchStart={handleTouchStart}
+			onTouchMove={handleTouchMove}
+			onTouchEnd={handleTouchEnd}
+		>
+			{/* Render main/side panels and other children */}
+			{Children.map(children, renderStoryChildElement)}
+
+			{/* Panel navigation and toggle for single layout */}
+			<div className={classnames('ptr-StoryPanelWrapper', `is-${panelLayout}-layout`)}>
+				{panelLayout === StoryPanelLayout.SINGLE && (
+					<StoryPanelToggle value={visiblePanelType} onChange={(val) => setVisiblePanelType(val)} />
+				)}
+
+				{panelLayout === StoryPanelLayout.SINGLE && !hideNavigation && (
+					<StoryNavPanel
+						activeStep={activeStep}
+						setActiveStep={setActiveStep}
+						setJumpSection={setJumpSection}
+						sidePanelRef={sidePanelRef}
+						sidePanelChildrenCount={sidePanelChildrenCount}
+						contentSize={contentSize}
+						navigationIcons={navigationIcons}
+						fullNavigation={fullNavigation}
+						panelLayout={panelLayout}
+					/>
+				)}
+			</div>
 		</div>
 	);
 };

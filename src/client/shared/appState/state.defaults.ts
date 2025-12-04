@@ -1,4 +1,4 @@
-import { UsedNodeLabels } from '../../../globals/shared/panther/enums.panther';
+import { UsedNodeLabels } from '@gisatcz/ptr-be-core/browser';
 import { AppSharedState } from './state.models';
 
 /**
@@ -13,7 +13,7 @@ export const defaultStateValue = () => {
 			lastUpdatedAt: Date.now(),
 			nameDisplay: 'Default App Node',
 			nameInternal: 'defaultAppNode',
-			configuration: {},
+			configuration: JSON.stringify({}),
 			labels: [UsedNodeLabels.Application],
 		},
 		renderingLayers: [],
@@ -23,6 +23,7 @@ export const defaultStateValue = () => {
 		maps: [],
 		styles: [],
 		periods: [],
+		selections: [],
 	};
 
 	return defaultState;

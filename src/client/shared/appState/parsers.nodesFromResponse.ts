@@ -1,16 +1,14 @@
 import { isArray } from 'lodash';
-import { UsedNodeLabels } from '../../../globals/shared/panther/enums.panther';
+import { NodeWithNeighbours, UsedNodeLabels } from '@gisatcz/ptr-be-core/browser';
+import { FullPantherEntity, Nullable } from '@gisatcz/ptr-be-core/browser';
 import {
-	ApplicationNode,
-	Datasource,
-	Place,
-	PantherEntity,
-	FullPantherEntity,
-	FullPantherEntityWithNeighbours,
-	Style,
-	Period,
-} from '../../../globals/shared/panther/models.nodes';
-import { Nullable } from '../../../globals/shared/coding/code.types';
+	ApplicationNodeWithNeighbours,
+	DatasourceWithNeighbours,
+	FullPantherEntityWithNeighboursAsProp,
+	PantherEntityWithNeighbours,
+	PeriodWithNeighbours,
+	PlaceWithNeighbours,
+} from '../models/models.metadata';
 
 /**
  * Get unique items from an array of objects based on a specific key
@@ -32,7 +30,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 	// TODO: Add more node types here
 	// TODO: what if one of the main nodes is in neighbours as well?
 	const { applicationsNode, datasourceNodes, layerNodes, placeNodes, styleNodes, periodNodes } = (
-		data as FullPantherEntity[] | FullPantherEntityWithNeighbours[]
+		data as FullPantherEntity[] | NodeWithNeighbours<FullPantherEntity>[]
 	).reduce(
 		(acc, node) => {
 			let nodes: FullPantherEntity[] = [];
@@ -54,39 +52,39 @@ export const parseNodesFromPanther = (data: unknown) => {
 			// Iterate through each node and categorize it based on its labels
 			nodes.forEach((n) => {
 				if (n.labels.includes(UsedNodeLabels.Application)) {
-					acc.applicationsNode = n as ApplicationNode;
+					acc.applicationsNode = n as ApplicationNodeWithNeighbours;
 				} else if (n.labels.includes(UsedNodeLabels.Datasource)) {
-					acc.datasourceNodes.push(n as Datasource);
+					acc.datasourceNodes.push(n as DatasourceWithNeighbours);
 				} else if (n.labels.includes(UsedNodeLabels.Layer)) {
-					acc.layerNodes.push(n as PantherEntity);
+					acc.layerNodes.push(n as PantherEntityWithNeighbours);
 				} else if (n.labels.includes(UsedNodeLabels.Place)) {
-					acc.placeNodes.push(n as Place);
+					acc.placeNodes.push(n as PlaceWithNeighbours);
 				} else if (n.labels.includes(UsedNodeLabels.Style)) {
-					acc.styleNodes.push(n as Style);
+					acc.styleNodes.push(n as FullPantherEntityWithNeighboursAsProp);
 				} else if (n.labels.includes(UsedNodeLabels.Period)) {
-					acc.periodNodes.push(n as Period);
+					acc.periodNodes.push(n as PeriodWithNeighbours);
 				}
 			});
 
 			return acc;
 		},
 		{
-			applicationsNode: null as Nullable<ApplicationNode>,
-			datasourceNodes: [] as Datasource[],
-			layerNodes: [] as PantherEntity[],
-			placeNodes: [] as Place[],
-			styleNodes: [] as Style[],
-			periodNodes: [] as Period[],
+			applicationsNode: null as Nullable<ApplicationNodeWithNeighbours>,
+			datasourceNodes: [] as DatasourceWithNeighbours[],
+			layerNodes: [] as PantherEntityWithNeighbours[],
+			placeNodes: [] as PlaceWithNeighbours[],
+			styleNodes: [] as FullPantherEntityWithNeighboursAsProp[],
+			periodNodes: [] as PeriodWithNeighbours[],
 		}
 	);
 
 	// Get unique items by key for each type of node
 	return {
-		applicationsNode: applicationsNode as ApplicationNode,
-		datasourceNodes: uniqueItemsByKey(datasourceNodes) as Datasource[],
-		layerNodes: uniqueItemsByKey(layerNodes) as PantherEntity[],
-		placeNodes: uniqueItemsByKey(placeNodes) as Place[],
-		styleNodes: uniqueItemsByKey(styleNodes) as Style[],
-		periodNodes: uniqueItemsByKey(periodNodes) as Period[],
+		applicationsNode: applicationsNode as ApplicationNodeWithNeighbours,
+		datasourceNodes: uniqueItemsByKey(datasourceNodes) as DatasourceWithNeighbours[],
+		layerNodes: uniqueItemsByKey(layerNodes) as PantherEntityWithNeighbours[],
+		placeNodes: uniqueItemsByKey(placeNodes) as PlaceWithNeighbours[],
+		styleNodes: uniqueItemsByKey(styleNodes) as FullPantherEntityWithNeighboursAsProp[],
+		periodNodes: uniqueItemsByKey(periodNodes) as PeriodWithNeighbours[],
 	};
 };

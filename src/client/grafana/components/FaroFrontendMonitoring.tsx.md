@@ -1,6 +1,6 @@
 'use client';
 
-import { swrFetcher } from '@features/(shared)/\_logic/utils';
+import { swrFetcher } from '@features/(shared)/\_logic/swrFetcher';
 import { faro, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 import useSWR from 'swr';

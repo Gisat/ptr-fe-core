@@ -1,11 +1,3 @@
-import {
-	ApplicationNode,
-	Datasource,
-	PantherEntity,
-	Period,
-	Place,
-	Style,
-} from '../../../globals/shared/panther/models.nodes';
 import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
@@ -13,13 +5,22 @@ import { MapSetSync } from '../models/models.mapSetSync';
 import { RenderingLayer } from '../models/models.layers';
 import { StateActionType } from './enum.state.actionType'; // Import the ActionType enum
 import { AppSpecificAction } from './state.models.reducer';
+import { Selection } from '../models/models.selections';
+import {
+	ApplicationNodeWithNeighbours,
+	DatasourceWithNeighbours,
+	FullPantherEntityWithNeighboursAsProp,
+	PantherEntityWithNeighbours,
+	PeriodWithNeighbours,
+	PlaceWithNeighbours,
+} from '../models/models.metadata';
 
 /**
  * When we set up application node
  */
 export interface ActionSetApplicationNode extends AppSpecificAction {
 	type: StateActionType.APP_NODE;
-	payload: ApplicationNode;
+	payload: ApplicationNodeWithNeighbours;
 }
 
 /**
@@ -27,7 +28,7 @@ export interface ActionSetApplicationNode extends AppSpecificAction {
  */
 export interface ActionChangeLayerSources extends AppSpecificAction {
 	type: StateActionType.FETCH_SOURCES;
-	payload: Datasource[];
+	payload: DatasourceWithNeighbours[];
 }
 
 /**
@@ -35,7 +36,7 @@ export interface ActionChangeLayerSources extends AppSpecificAction {
  */
 export interface ActionChangeLayers extends AppSpecificAction {
 	type: StateActionType.FETCH_LAYERS;
-	payload: PantherEntity[];
+	payload: PantherEntityWithNeighbours[];
 }
 
 /**
@@ -43,7 +44,7 @@ export interface ActionChangeLayers extends AppSpecificAction {
  */
 export interface ActionChangePlaces extends AppSpecificAction {
 	type: StateActionType.FETCH_PLACES;
-	payload: Place[];
+	payload: PlaceWithNeighbours[];
 }
 
 /**
@@ -51,7 +52,7 @@ export interface ActionChangePlaces extends AppSpecificAction {
  */
 export interface ActionChangePeriods extends AppSpecificAction {
 	type: StateActionType.FETCH_PERIODS;
-	payload: Period[];
+	payload: PeriodWithNeighbours[];
 }
 
 /**
@@ -59,7 +60,7 @@ export interface ActionChangePeriods extends AppSpecificAction {
  */
 export interface ActionChangeStyles extends AppSpecificAction {
 	type: StateActionType.FETCH_STYLES;
-	payload: Style[];
+	payload: FullPantherEntityWithNeighboursAsProp[];
 }
 
 /**
@@ -76,6 +77,14 @@ export interface ActionLayerActiveChange extends AppSpecificAction {
 export interface ActionMapLayerActiveChange extends AppSpecificAction {
 	type: StateActionType.MAP_LAYER_ACTIVE_CHANGE;
 	payload: { mapKey: string; layerKey: string; isActive: boolean };
+}
+
+/**
+ * Change map layer interactivity
+ */
+export interface ActionMapLayerInteractivityChange extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_INTERACTIVITY_CHANGE;
+	payload: { mapKey: string; layerKey: string; isInteractive: boolean };
 }
 
 /**
@@ -100,6 +109,36 @@ export interface ActionMapLayerAdd extends AppSpecificAction {
 export interface ActionMapLayerRemove extends AppSpecificAction {
 	type: StateActionType.MAP_LAYER_REMOVE;
 	payload: { mapKey: string; layerKey: string };
+}
+
+/**
+ * Set feature key for vector layer in map's rendering layers
+ */
+export interface ActionMapLayerSetFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_SET_FEATURE_KEY;
+	payload: {
+		mapKey: string;
+		layerKey: string;
+		featureKey: string | number;
+		customSelectionStyle?: Partial<Selection>;
+	};
+}
+
+/** Add feature key to map layer selections */
+export interface ActionMapLayerAddFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY;
+	payload: {
+		mapKey: string;
+		layerKey: string;
+		featureKey: string | number;
+		customSelectionStyle?: Partial<Selection>;
+	};
+}
+
+/** Remove feature key from map layer selections */
+export interface ActionMapLayerRemoveFeatureKey extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY;
+	payload: { mapKey: string; layerKey: string; featureKey: string | number };
 }
 
 /**
@@ -131,7 +170,12 @@ export interface ActionMapSetRemoveMapsByKeys extends AppSpecificAction {
  */
 export interface ActionGlobalStateUpdate extends AppSpecificAction {
 	type: StateActionType.GLOBAL_STATE_UPDATE;
-	payload: { mapSets: MapSetModel[]; maps: SingleMapModel[]; renderingLayers: RenderingLayer[] };
+	payload: {
+		mapSets: MapSetModel[];
+		maps: SingleMapModel[];
+		renderingLayers: RenderingLayer[];
+		selections: Selection[];
+	};
 }
 
 /**
@@ -184,6 +228,14 @@ export interface ActionMapSetRemove extends AppSpecificAction {
 }
 
 /**
+ * Add map to state
+ */
+export interface ActionMapAdd extends AppSpecificAction {
+	type: StateActionType.MAP_ADD;
+	payload: SingleMapModel;
+}
+
+/**
  * One of any of possible actions
  */
 export type OneOfStateActions = AppSpecificAction &
@@ -195,12 +247,16 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionChangePeriods
 		| ActionSetApplicationNode
 		| ActionLayerActiveChange
+		| ActionMapLayerActiveChange
+		| ActionMapLayerInteractivityChange
 		| ActionMapAddToMapSet
 		| ActionMapRemoveFromMapSet
 		| ActionMapSetRemoveMapsByKeys
-		| ActionMapLayerActiveChange
 		| ActionMapLayerAdd
 		| ActionMapLayerRemove
+		| ActionMapLayerSetFeatureKey
+		| ActionMapLayerAddFeatureKey
+		| ActionMapLayerRemoveFeatureKey
 		| ActionMapLayerOpacityChange
 		| ActionMapViewChange
 		| ActionMapSetSyncChange
@@ -209,4 +265,5 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionApplyPersistentState
 		| ActionMapSetAdd
 		| ActionMapSetRemove
+		| ActionMapAdd
 	);

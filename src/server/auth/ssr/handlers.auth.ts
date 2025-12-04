@@ -1,5 +1,5 @@
 import { Issuer } from 'openid-client';
-import { Unsure } from '../../../globals/shared/coding/code.types';
+import { Unsure } from '@gisatcz/ptr-be-core/browser';
 import { ErrorBehavior } from '../../../globals/shared/errors/enums.errorBehavior';
 import { HttpStatusCode } from '../../../globals/shared/errors/enums.httpStatusCode';
 import { BaseHttpError } from '../../../globals/shared/errors/models.error';

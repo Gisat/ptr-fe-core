@@ -1,6 +1,6 @@
-import { Datasource } from '../../../globals/shared/panther/models.nodes';
+import { Nullable } from '@gisatcz/ptr-be-core/browser';
 import { LayerTreeInteraction } from '../layers/models.layers';
-import { Nullable } from '../../../globals/shared/coding/code.types';
+import { DatasourceWithNeighbours } from './models.metadata';
 
 /**
  * Layer in rendering context, but still undepedent to specific rendering framework
@@ -10,6 +10,9 @@ export interface RenderingLayer {
 	level: number;
 	key: string;
 	opacity?: number;
-	datasource: Datasource;
+	datasource: DatasourceWithNeighbours;
 	interaction: Nullable<LayerTreeInteraction>;
+	selectionKey?: string;
+	isInteractive?: boolean;
+	route?: string;
 }

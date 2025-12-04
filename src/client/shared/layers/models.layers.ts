@@ -1,4 +1,4 @@
-import { Nullable } from '../../../globals/shared/coding/code.types';
+import { Nullable } from '@gisatcz/ptr-be-core/browser';
 
 /**
  * Type of interaction in layer tree

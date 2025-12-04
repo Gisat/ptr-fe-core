@@ -3,7 +3,6 @@
 	display: flex;
 	flex-flow: row;
 	box-shadow: 3px 0 3px rgb(0 0 0 / 15%);
-	order: 1;
 	z-index: 2;
 	/* Gets rid of the top shadow */
 	clip-path: inset(0px -10px -10px -10px);
@@ -11,7 +10,8 @@
 
 .ptr-StorySidePanel {
 	width: var(--StoryLayoutPanelWidth);
-	overflow: auto;
+	overflow-y: auto;
+	overflow-x: hidden;
 	display: flex;
 	flex-flow: column;
 	scroll-behavior: smooth;
@@ -25,13 +25,25 @@
 }
 
 .ptr-StorySidePanel.is-vertical-layout {
-	width: calc(100% - var(--StoryNavPanelWidth));
+	width: 100%;
 }
 
 .ptr-StorySidePanel-container.is-vertical-layout {
+	order: 1;
 	width: 100%;
 	height: 40%;
-	order: 2;
+}
+
+.ptr-StorySidePanel-container.is-single-layout {
+	width: 100%;
+	order: 0;
+	height: calc(100% - 5rem);
+	overflow-x: hidden;
+}
+
+.ptr-StorySidePanel.is-single-layout {
+	width: 100%;
+	padding: 0 0 1.5rem 1.5rem;
 }
 
 .ptr-StorySidePanelIntro, .ptr-StorySidePanelFooter, .ptr-StorySidePanelCase {

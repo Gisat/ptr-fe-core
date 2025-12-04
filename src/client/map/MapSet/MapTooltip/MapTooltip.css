@@ -1,0 +1,47 @@
+.ptr-MapTooltip {
+	z-index: 100;
+	transform: translate(-50%, -100%);
+	position: absolute;
+	width: max-content;
+	max-width: 300px;
+	background: var(--base25);
+	padding: 6px 10px;
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+	font-size: var(--font-size-sm);
+	font-family: var(--defaultFontFamily);
+	pointer-events: none;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.ptr-MapTooltip-row {
+	margin-bottom: 2px;
+}
+
+.ptr-MapTooltip-label {
+	color: var(--base950);
+	font-weight: 600;
+}
+
+.ptr-MapTooltip-value {
+	font-weight: 500;
+}
+
+.ptr-MapTooltip-unit {
+	color: var(--base950);
+}
+
+.ptr-MapTooltip-indicator {
+	z-index: 101;
+	position: absolute;
+	left: 50%;
+	bottom: -7px;
+	transform: translateX(-50%);
+	width: 0;
+	height: 0;
+	border-left: 7px solid transparent;
+	border-right: 7px solid transparent;
+	border-top: 8px solid var(--base25);
+}

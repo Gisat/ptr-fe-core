@@ -1,6 +1,6 @@
 import { Modal, Table } from '@mantine/core';
 import React from 'react';
-import { Nullable } from '../../../globals/shared/coding/code.types';
+import { Nullable } from '@gisatcz/ptr-be-core/browser';
 
 /**
  * State of the modal window with feature detail

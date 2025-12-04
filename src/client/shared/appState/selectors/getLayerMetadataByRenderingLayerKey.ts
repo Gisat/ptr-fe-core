@@ -1,6 +1,6 @@
 import { AppSharedState } from '../state.models';
-import { PantherEntity } from '../../../../globals/shared/panther/models.nodes';
 import { getAllLayers } from './getAllLayers';
+import { PantherEntityWithNeighbours } from '../../models/models.metadata';
 
 /**
  * Retrieves metadata for a layer based on the rendering layer key.
@@ -11,12 +11,12 @@ import { getAllLayers } from './getAllLayers';
  *
  * @param {AppSharedState} state - The shared application state containing rendering layers and other data.
  * @param {string | undefined} key - The key of the rendering layer to search for.
- * @returns {PantherEntity | undefined} The metadata of the layer associated with the rendering layer key, or `undefined` if not found.
+ * @returns {PantherEntityWithNeighbours | undefined} The metadata of the layer associated with the rendering layer key, or `undefined` if not found.
  */
 export const getLayerMetadataByRenderingLayerKey = (
 	state: AppSharedState,
 	key: string | undefined
-): PantherEntity | undefined => {
+): PantherEntityWithNeighbours | undefined => {
 	// Check if the key is provided
 	if (!key) {
 		console.warn('getLayerMetadataByRenderingLayerKey: rendering layer key is undefined');
