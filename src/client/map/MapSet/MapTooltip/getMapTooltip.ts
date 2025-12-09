@@ -46,6 +46,7 @@ export const getMapTooltip = ({
 	const tooltipSettings = config?.geojsonOptions?.tooltipSettings;
 	const tooltipStyles = tooltipSettings?.nativeStyles || {};
 	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`;
+	const tooltipTitle = tooltipSettings?.title || '';
 	const featureProperties = info.object?.properties || {};
 
 	let tooltipProperties: TooltipAttribute[] | undefined;
@@ -61,20 +62,31 @@ export const getMapTooltip = ({
 
 	// Build HTML for tooltip content and indicator
 	const tooltipHtml = `
-        <div>
-            ${tooltipProperties
-							.map(
-								({ key, label, value, unit }) =>
-									`<div class="ptr-NativeMapTooltip-row" key="${key}">
-                            <span class="ptr-NativeMapTooltip-label">${label}:</span>
-                            <span class="ptr-NativeMapTooltip-value">${String(value)}</span>
-                            ${unit ? `<span class="ptr-NativeMapTooltip-unit">${unit}</span>` : ''}
-										</div>`
-							)
-							.join('')}
-            <div class="ptr-NativeMapTooltip-indicator"></div>
-        </div>
-    `;
+    <div>
+				${tooltipTitle ? `<div class="ptr-NativeMapTooltip-title">${tooltipTitle}</div>` : ''}
+        ${tooltipProperties
+					.map(({ key, label, value, unit }) => {
+						const valueStr = value == null ? '' : String(value);
+
+						// Replace all [key] patterns in the label with the corresponding featureProperties value
+						let displayLabel = label;
+						if (typeof label === 'string') {
+							displayLabel = label.replace(/\[([^\]]+)\]/g, (_, k) =>
+								featureProperties[k] != null ? featureProperties[k] : `[${k}]`
+							);
+						}
+
+						return `<div class="ptr-NativeMapTooltip-row" key="${key}">
+											<span class="ptr-NativeMapTooltip-label">${displayLabel + (valueStr ? ':' : '')}</span>
+											<span class="ptr-NativeMapTooltip-value">
+													${valueStr}${unit ? ` ${unit}` : ''}
+											</span>
+										</div>`;
+					})
+					.join('')}
+        <div class="ptr-NativeMapTooltip-indicator"></div>
+    </div>
+`;
 
 	// Return DeckGL tooltip object with styling and indicator
 	return {
@@ -82,7 +94,7 @@ export const getMapTooltip = ({
 		className: tooltipClassNames,
 		// Inline styles for positioning and appearance (is overriding default inline styles from deck.gl)
 		style: {
-			backgroundColor: 'var(--base50)',
+			backgroundColor: 'var(--base0)',
 			padding: '6px 10px',
 			left: `${info.x}px`,
 			top: `${info.y - verticalOffset}px`,

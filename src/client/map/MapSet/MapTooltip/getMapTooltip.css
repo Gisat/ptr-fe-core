@@ -13,6 +13,13 @@
 	width: max-content;
 }
 
+.ptr-NativeMapTooltip-title {
+	font-size: var(--font-size-sm);
+	font-weight: 700;
+	color: var(--base950);
+	margin-bottom: 6px;
+}
+
 .ptr-NativeMapTooltip-row {
 	font-size: var(--font-size-sm);
 	margin-bottom: 2px;
@@ -26,6 +33,7 @@
 .ptr-NativeMapTooltip-value {
 	color: var(--base950);
 	font-weight: 500;
+	white-space: nowrap;
 }
 
 .ptr-NativeMapTooltip-unit {
@@ -42,5 +50,5 @@
 	height: 0;
 	border-left: 7px solid transparent;
 	border-right: 7px solid transparent;
-	border-top: 8px solid var(--base25);
+	border-top: 8px solid var(--base0);
 }
