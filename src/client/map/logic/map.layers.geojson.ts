@@ -65,7 +65,7 @@ export const createGeojsonLayer = ({
 
 	let data: unknown;
 	let error: unknown;
-	let loading: boolean;
+	let loading: boolean = false;
 
 	/**
 	 * The "xxx" value is currently used as a placeholder to indicate that the URL is not available or should not be used.
