@@ -65,6 +65,7 @@ export const createGeojsonLayer = ({
 
 	let data: unknown;
 	let error: unknown;
+	let loading: boolean;
 
 	/**
 	 * The "xxx" value is currently used as a placeholder to indicate that the URL is not available or should not be used.
@@ -73,9 +74,16 @@ export const createGeojsonLayer = ({
 	if (url && url !== 'xxx') {
 		data = url;
 		error = undefined;
+		loading = false;
 	} else {
 		data = axiosResult.data;
 		error = axiosResult.error;
+		loading = axiosResult.isLoading;
+	}
+
+	// While data is loading, do not render the layer
+	if (loading) {
+		return null;
 	}
 
 	// Log an error if data fetching fails
