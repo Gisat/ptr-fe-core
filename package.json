@@ -2,6 +2,10 @@
 	"name": "@gisatcz/ptr-fe-core",
 	"version": "0.1.1",
 	"description": "",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Gisat/ptr-fe-core.git"
+	},
 	"type": "module",
 	"main": "./dist/client/index.js",
 	"module": "./dist/client/index.esm.js",
