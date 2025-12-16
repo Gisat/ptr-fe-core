@@ -1,24 +1,27 @@
 name: Build & Publish NPM Package
-description: This workflow builds and publishes the NPM package when a version tag is pushed.
+description: Build and publish to npm (prod/dev) using Trusted Publishers.
 
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v*.*.*'          # prod releases, e.g. v1.2.3
+      - 'v*.*.*-dev.*'    # dev releases, e.g. v1.2.3-dev.4
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # Required for npm Trusted Publishers (OIDC)
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4 # Latest version to set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*' # Use the latest LTS version of Node.js
-          registry-url: 'https://registry.npmjs.org/' # Important: Specify the npm registry
+          node-version: 'lts/*'
 
       - name: Install dependencies
         run: npm install
@@ -26,9 +29,10 @@ jobs:
       - name: Build package
         run: npm run build
 
-      - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          # for public packages, include --access public
-          npm publish --access public
+      - name: Publish dev tag to npm (Trusted Publishers)
+        if: contains(github.ref_name, '-dev.')
+        run: npm publish --provenance --access public --tag dev
+
+      - name: Publish latest to npm (Trusted Publishers)
+        if: ${{ !contains(github.ref_name, '-dev.') }}
+        run: npm publish --provenance --access public
