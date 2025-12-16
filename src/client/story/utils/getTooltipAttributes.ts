@@ -35,7 +35,7 @@ export function getTooltipAttributes(
 			}
 			return {
 				key: attribute.key,
-				label: attribute.label ?? 'Value',
+				label: attribute.label ?? '',
 				value,
 				unit: attribute.unit ?? '',
 			};
