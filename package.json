@@ -3,6 +3,10 @@
 	"version": "0.1.3-dev.0",
 	"description": "",
 	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Gisat/ptr-fe-core.git"
+	},
 	"main": "./dist/client/index.js",
 	"module": "./dist/client/index.esm.js",
 	"browser": "./dist/client/index.esm.js",
