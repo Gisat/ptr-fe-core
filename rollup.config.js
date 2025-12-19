@@ -21,8 +21,8 @@ export default [
   {
     input: 'src/client/index.ts', // Entry point of the library
     output: [
-      {file: pkg.main, format: 'cjs', sourcemap: true}, // CommonJS output
-      {file: pkg.module, format: 'esm', sourcemap: true} // ES module output
+      {file: pkg.main, format: 'cjs', sourcemap: true, banner: "'use client';"}, // CommonJS output
+      {file: pkg.module, format: 'esm', sourcemap: true, banner: "'use client';"} // ES module output
     ],
     external: id => {
       const externals = [

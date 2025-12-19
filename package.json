@@ -37,7 +37,7 @@
 	},
 	"scripts": {
 		"build:remove": "rimraf dist && rimraf src/client/index.ts && rimraf src/client/styles.css && rimraf src/server/index.ts && rimraf src/globals/index.ts",
-		"build:barrels": "npm run build:remove && barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-server.scripts.json && barrelsby -c barrels-globals.scripts.json",
+		"build:barrels": "npm run build:remove && barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-server.scripts.json && barrelsby -c barrels-globals.scripts.json && node add-use-client.mjs",
 		"build:styles": "node barrels.styles.mjs && node update-barrels.mjs",
 		"build:types": "tsc --project tsconfig.build.json",
 		"build:prebuild": "npm run build:barrels && npm run build:styles && npm run build:types",
