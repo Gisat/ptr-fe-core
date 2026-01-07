@@ -45,7 +45,6 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceP
 	 */
 	const layerInstance: Layer = useMemo(() => {
 		if (!cogBitmapOptions) {
-			console.warn(`No COG bitmap options found for layer ${key}. Ensure the datasource is configured correctly.`);
 			return null;
 		}
 		return new CogBitmapLayer({
