@@ -59,11 +59,9 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSou
 
 	// Parse the datasource configuration
 	const config = parseDatasourceConfiguration(configuration);
-	if (!config) {
-		console.warn(`GeojsonLayerSource: Missing configuration in datasource: ${key}`);
-	}
 
 	// Extract GeoJSON options from the parsed configuration
+	// TODO geojsonOptions are currently used for styling and featureIdProperty, solve this properly in the future
 	const geojsonOptions = config?.geojsonOptions;
 	if (!geojsonOptions) {
 		console.warn(`GeojsonLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
