@@ -19,6 +19,7 @@ export interface ParseLayersProps {
 }
 
 /**
+ * @deprecated Used by RenderingMap which is deprecated and will be removed in future versions.
  * Parses rendering layers from shared state and returns an array of DeckGL layers.
  * Uses a selector callback to retrieve selection objects for each layer.
  *
