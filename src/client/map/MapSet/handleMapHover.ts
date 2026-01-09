@@ -35,7 +35,7 @@ interface HandleMapHoverParams {
  * Handles hover events on the map and sets tooltip if enabled.
  *
  * - Shows tooltip with feature properties if enabled in layer configuration.
- * - Tooltip attributes and formatting are defined in geojsonOptions.tooltipSettings.
+ * - Tooltip attributes and formatting are defined in geojsonOptions.tooltipSettings (attributes, labelTemplate, excludeKeys).
  * - If no attributes are defined, uses 'value' property if present.
  * - Tooltip is hidden if not enabled or no valid properties found.
  * - Also updates layer hover state for cursor feedback.
@@ -63,7 +63,7 @@ export function handleMapHover({
 		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
 		: undefined;
 
-	const featureProperties = event.object?.properties;
+	const featureProperties = event.object?.properties || {};
 
 	const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
 
@@ -89,7 +89,10 @@ export function handleMapHover({
 	 * Otherwise, tooltip will not be shown.
 	 */
 	if (tooltipSettings?.attributes && Array.isArray(tooltipSettings.attributes)) {
-		tooltipProperties = getTooltipAttributes(tooltipSettings.attributes, featureProperties);
+		tooltipProperties = getTooltipAttributes(tooltipSettings.attributes, featureProperties, {
+			labelTemplate: tooltipSettings?.labelTemplate,
+			excludeKeys: tooltipSettings?.excludeKeys,
+		});
 	}
 
 	/**

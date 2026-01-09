@@ -10,6 +10,8 @@ import './getMapTooltip.css';
  * - Uses layer configuration to determine tooltip attributes and formatting.
  * - Tooltip can be customized via geojsonOptions in datasource configuration with tooltipSettings:
  *    - attributes: array of attribute definitions (key, label, unit, decimalPlaces).
+ *    - labelTemplate: optional template applied to all labels (supports [key] substitution).
+ *    - excludeKeys: optional array of attribute keys to exclude from the tooltip.
  *    - nativeStyles: custom CSS styles for tooltip container.
  *    - nativeClassName: additional CSS class names for tooltip container.
  *    - title: optional tooltip title.
@@ -57,7 +59,10 @@ export const getMapTooltip = ({
 
 	// Use configured attributes if available
 	if (tooltipSettings?.attributes && Array.isArray(tooltipSettings.attributes)) {
-		tooltipProperties = getTooltipAttributes(tooltipSettings.attributes, featureProperties);
+		tooltipProperties = getTooltipAttributes(tooltipSettings.attributes, featureProperties, {
+			labelTemplate: tooltipSettings?.labelTemplate,
+			excludeKeys: tooltipSettings?.excludeKeys,
+		});
 	}
 	// If no valid tooltip properties, do not show tooltip
 	if (!tooltipProperties || tooltipProperties.length === 0) {
@@ -72,16 +77,8 @@ export const getMapTooltip = ({
 					.map(({ key, label, value, unit }) => {
 						const valueStr = value == null ? '' : String(value);
 
-						// Replace all [key] patterns in the label with the corresponding featureProperties value
-						let displayLabel = label;
-						if (typeof label === 'string') {
-							displayLabel = label.replace(/\[([^\]]+)\]/g, (_, k) =>
-								featureProperties[k] != null ? featureProperties[k] : `[${k}]`
-							);
-						}
-
 						return `<div class="ptr-NativeMapTooltip-row" key="${key}">
-											<span class="ptr-NativeMapTooltip-label">${displayLabel + (valueStr ? ':' : '')}</span>
+											<span class="ptr-NativeMapTooltip-label">${label + (valueStr ? ':' : '')}</span>
 											<span class="ptr-NativeMapTooltip-value">
 													${valueStr}${unit ? ` ${unit}` : ''}
 											</span>
