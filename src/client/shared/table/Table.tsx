@@ -4,21 +4,27 @@ import { TableHeader } from './_components/TableHeader';
 
 /**
  * Table header definition.
+ * @property key - The column key.
+ * @property nameDisplay - Optional display name for the column.
  */
 export type HeaderType = { key: string; nameDisplay?: string };
 
 /**
  * Table row values: array of objects with value and key.
+ * Each object represents a cell in the row.
  */
 export type TableRowValues = { value: string | number | React.ReactNode; key: string }[];
 
 /**
- * Table row details: record of string keys to unknown.
+ * Table row details: record of string keys to string | number | React.ReactNode.
+ * Used for expandable details section.
  */
 export type TableRowDetails = Record<string, string | number | React.ReactNode>;
 
 /**
  * Table row data: values and details.
+ * @property values - The main row cell values.
+ * @property details - The expandable details for the row.
  */
 export type TableRowData = {
 	values: TableRowValues;
