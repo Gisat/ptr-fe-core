@@ -1,79 +1,102 @@
-import { ActionIcon, Table, Tooltip } from '@mantine/core';
+import React, { useState } from 'react';
+import { ActionIcon, Group, Table, Tooltip } from '@mantine/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { TableDetails } from './TableDetails';
-import React, { JSX, useState } from 'react';
+import { TableRowData, TableRowTools } from '../Table';
 
-type TableProps = {
-	data: {
-		values: Array<string>;
-		details: object;
-	};
+/**
+ * TableRow props.
+ * @property data - Row data, including cell values and details for expansion.
+ * @property tools - Optional React node or function for rendering row tools.
+ * @property expandable - If true, row can be expanded to show details.
+ * @property expandButtonTooltip - Tooltip text for the expand/collapse button.
+ */
+export type TableRowProps = {
+	data: TableRowData;
+	tools?: TableRowTools;
+	expandable?: boolean;
+	expandButtonTooltip?: string;
 };
 
 /**
- * TableRow component renders a row of the table with expandable details.
+ * Formats a cell value for rendering.
  *
- * @param {TableProps} props - The props for the TableRow component.
- * @param {Array<string>} props.data.values - The values to be displayed in the table row.
- * @param {Object} props.data.details - The details to be displayed when the row is expanded.
+ * Handles undefined values, React elements, and other types.
+ * - If value is undefined, returns 'unknown'.
+ * - If value is a valid React element, returns it directly.
+ * - Otherwise, converts value to string.
  *
- * @returns {JSX.Element} The rendered TableRow component.
+ * @param value - The cell value.
+ * @returns {React.ReactNode} The formatted cell value.
  */
-export const TableRow: React.FC<TableProps> = ({ data }) => {
+export const formatCellValue = (value: unknown): React.ReactNode => {
+	if (value === undefined) return 'unknown';
+	if (React.isValidElement(value)) return value;
+	return String(value);
+};
+
+/**
+ * TableRow renders a single table row, with optional tools and expandable details.
+ *
+ * @param {TableRowProps} props - The props for the TableRow component.
+ * @returns {JSX.Element} The rendered table row.
+ */
+export const TableRow: React.FC<TableRowProps> = ({ data, tools, expandable, expandButtonTooltip }) => {
 	const [isExpanded, setIsExpanded] = useState(false);
 
 	/**
-	 * Renders a single table cell.
-	 *
-	 * @param {string} item - The cell value.
-	 * @param {number} index - The index of the cell.
+	 * Renders a single cell in the row.
+	 * @param item - Cell data with value and key.
+	 * @param index - Cell index.
 	 * @returns {JSX.Element} The rendered table cell.
 	 */
-	const renderCell = (item: string, index: number): JSX.Element => {
-		return (
-			<React.Fragment key={index}>
-				<Table.Td>{item || 'unknown'}</Table.Td>
-				{index === data.values.length - 1 && renderExpandButton(index)}
-			</React.Fragment>
-		);
-	};
+	const renderCell = (item: { value: unknown; key: string }, index: number) => (
+		<Table.Td key={index}>{formatCellValue(item.value)}</Table.Td>
+	);
 
 	/**
-	 * Renders the expand button cell.
-	 *
-	 * @param {number} index - The index of the cell.
-	 * @returns {JSX.Element} The rendered expand button cell.
+	 * Renders the expand/collapse button.
+	 * @returns {JSX.Element} The rendered expand/collapse button.
 	 */
-	const renderExpandButton = (index: number): JSX.Element => {
-		return (
-			<Table.Td key={`details-${index}`}>
-				<Tooltip label="Show details" openDelay={500}>
-					<ActionIcon radius="md" size="md" variant="subtle" onClick={() => setIsExpanded(!isExpanded)}>
-						{isExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
-					</ActionIcon>
-				</Tooltip>
-			</Table.Td>
-		);
-	};
+	const renderExpandButton = () => (
+		<Tooltip label={expandButtonTooltip} openDelay={500}>
+			<ActionIcon radius="md" size="md" variant="subtle" onClick={() => setIsExpanded(!isExpanded)}>
+				{isExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+			</ActionIcon>
+		</Tooltip>
+	);
+
+	/**
+	 * Renders the tools cell, including the expand button if applicable.
+	 * @returns {JSX.Element} The rendered tools cell.
+	 */
+	const renderTools = () => (
+		<Table.Td>
+			<Group justify="end">
+				{typeof tools === 'function' ? tools(data) : tools}
+				{expandable && renderExpandButton()}
+			</Group>
+		</Table.Td>
+	);
 
 	/**
 	 * Renders the expanded details row.
-	 *
 	 * @returns {JSX.Element} The rendered expanded details row.
 	 */
-	const renderExpandedRow = (): JSX.Element => {
-		return (
-			<Table.Tr>
-				<Table.Td colSpan={7}>
-					<TableDetails data={data.details} />
-				</Table.Td>
-			</Table.Tr>
-		);
-	};
+	const renderExpandedRow = () => (
+		<Table.Tr>
+			<Table.Td colSpan={data.values.length + 1} w="100%">
+				<TableDetails data={data.details} />
+			</Table.Td>
+		</Table.Tr>
+	);
 
 	return (
 		<>
-			<Table.Tr>{data.values.map(renderCell)}</Table.Tr>
+			<Table.Tr>
+				{data.values.map(renderCell)}
+				{(expandable || tools) && renderTools()}
+			</Table.Tr>
 			{isExpanded && renderExpandedRow()}
 		</>
 	);

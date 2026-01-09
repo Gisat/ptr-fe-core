@@ -1,33 +1,31 @@
 import { Table } from '@mantine/core';
 import { TableRow } from './TableRow';
-import React, { JSX } from 'react';
+import { TableRowData, TableRowTools } from '../Table';
 
-type TableProps = {
-	data: Array<{
-		values: Array<string>;
-		details: object;
-	}>;
+/**
+ * TableContent props.
+ * @property data - Array of row data, each with cell values and details.
+ * @property tools - Optional React node or function for rendering row tools.
+ * @property expandable - If true, rows can be expanded to show details.
+ * @property expandButtonTooltip - Tooltip text for the expand/collapse button.
+ */
+export type TableContentProps = {
+	data: TableRowData[];
+	tools?: TableRowTools;
+	expandable?: boolean;
+	expandButtonTooltip?: string;
 };
 
 /**
- * TableContent component renders the content of a table.
+ * TableContent renders all table rows.
  *
  * @param {TableProps} props - The props for the TableContent component.
- * @param {Array<{values: Array<string>, details: Object}>} props.data - The data to be displayed in the table rows.
- *
- * @returns {JSX.Element} The rendered TableContent component.
+ * @returns {JSX.Element} The rendered table body with all rows.
  */
-export const TableContent: React.FC<TableProps> = ({ data }) => {
-	/**
-	 * Renders a single table row.
-	 *
-	 * @param {Object} value - The data for the row.
-	 * @param {number} index - The index of the row.
-	 * @returns {JSX.Element} The rendered table row.
-	 */
-	const renderRow = (value: { values: Array<string>; details: object }, index: number): JSX.Element => {
-		return <TableRow data={value} key={index} />;
-	};
-
-	return <Table.Tbody>{data.map(renderRow)}</Table.Tbody>;
-};
+export const TableContent: React.FC<TableContentProps> = ({ data, tools, expandable, expandButtonTooltip }) => (
+	<Table.Tbody>
+		{data.map((row, idx) => (
+			<TableRow key={idx} data={row} tools={tools} expandable={expandable} expandButtonTooltip={expandButtonTooltip} />
+		))}
+	</Table.Tbody>
+);
