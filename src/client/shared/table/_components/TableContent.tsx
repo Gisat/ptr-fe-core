@@ -1,6 +1,6 @@
 import { Table } from '@mantine/core';
-import { TableRow, TableRowProps } from './TableRow';
-import React from 'react';
+import { TableRow } from './TableRow';
+import { TableRowData, TableTools } from '../Table';
 
 /**
  * TableContent props.
@@ -10,11 +10,8 @@ import React from 'react';
  * @property expandButtonTooltip - Tooltip text for the expand/collapse button.
  */
 export type TableContentProps = {
-	data: Array<{
-		values: Array<{ value: unknown; key: string }>;
-		details: Record<string, unknown>;
-	}>;
-	tools?: React.ReactNode | ((data: TableRowProps['data']) => React.ReactNode);
+	data: TableRowData[];
+	tools?: TableTools;
 	expandable?: boolean;
 	expandButtonTooltip?: string;
 };

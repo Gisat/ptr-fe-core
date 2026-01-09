@@ -1,6 +1,5 @@
 import { Table } from '@mantine/core';
 import { HeaderType } from '../Table';
-import React from 'react';
 
 /**
  * Props for TableHeader component.

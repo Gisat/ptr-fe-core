@@ -1,3 +1,4 @@
+import { TableRowDetails } from '../Table';
 import { formatCellValue } from './TableRow';
 import React from 'react';
 
@@ -5,7 +6,7 @@ import React from 'react';
  * Props for TableDetails component.
  */
 export type TableDetailsProps = {
-	data: Record<string, unknown>;
+	data: TableRowDetails;
 };
 
 /**

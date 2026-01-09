@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ActionIcon, Group, Table, Tooltip } from '@mantine/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { TableDetails } from './TableDetails';
-import { TableContentProps } from './TableContent';
+import { TableRowData, TableTools } from '../Table';
 
 /**
  * TableRow props.
@@ -12,8 +12,8 @@ import { TableContentProps } from './TableContent';
  * @property expandButtonTooltip - Tooltip text for the expand/collapse button.
  */
 export type TableRowProps = {
-	data: TableContentProps['data'][number];
-	tools?: React.ReactNode | ((data: TableRowProps['data']) => React.ReactNode);
+	data: TableRowData;
+	tools?: TableTools;
 	expandable?: boolean;
 	expandButtonTooltip?: string;
 };

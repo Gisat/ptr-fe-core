@@ -1,12 +1,34 @@
 import { TableContent } from './_components/TableContent';
 import { TableHeader } from './_components/TableHeader';
-import { TableRowProps } from './_components/TableRow';
 import { Table } from '@mantine/core';
 
 /**
  * Table header definition.
  */
 export type HeaderType = { key: string; nameDisplay?: string };
+
+/**
+ * Table row values: array of objects with value and key.
+ */
+export type TableRowValues = { value: string | number | React.ReactNode; key: string }[];
+
+/**
+ * Table row details: record of string keys to unknown.
+ */
+export type TableRowDetails = Record<string, string | number | React.ReactNode>;
+
+/**
+ * Table row data: values and details.
+ */
+export type TableRowData = {
+	values: TableRowValues;
+	details: TableRowDetails;
+};
+
+/**
+ * Table tools: React node or function returning a React node for a row.
+ */
+export type TableTools = React.ReactNode | ((data: TableRowData) => React.ReactNode);
 
 /**
  * Generic TableComponent props.
@@ -18,7 +40,7 @@ export type TableProps<T extends Record<string, unknown>> = {
 	expandableSectionKey?: string;
 	expandButtonTooltip?: string;
 	headers?: Array<HeaderType>;
-	tools?: React.ReactNode | ((data: TableRowProps['data']) => React.ReactNode);
+	tools?: TableTools;
 };
 
 /**
@@ -51,23 +73,23 @@ const extractHeaders = <T extends Record<string, unknown>>(
  * @param {Array<T>} data - The table data.
  * @param {Array<HeaderType>} headers - The table headers.
  * @param {string} expandableSectionKey - The key for expandable details.
- * @returns {Array<{ values: Array<{ value: unknown; key: string }>; details: Record<string, unknown> }>} The mapped rows.
+ * @returns {TableRowData[]} The mapped rows.
  */
 const extractRows = <T extends Record<string, unknown>>(
 	data: Array<T>,
 	headers: Array<HeaderType>,
 	expandableSectionKey: string
-): Array<{ values: Array<{ value: unknown; key: string }>; details: Record<string, unknown> }> =>
+): TableRowData[] =>
 	data.map((item) => ({
 		values: headers.map((header) => ({
-			value: item[header.key],
+			value: item[header.key] as string | number | React.ReactNode,
 			key: header.key,
 		})),
 		details:
 			item[expandableSectionKey] &&
 			typeof item[expandableSectionKey] === 'object' &&
 			!Array.isArray(item[expandableSectionKey])
-				? (item[expandableSectionKey] as Record<string, unknown>)
+				? (item[expandableSectionKey] as TableRowDetails)
 				: {},
 	}));
 
