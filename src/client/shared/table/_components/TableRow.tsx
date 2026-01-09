@@ -21,6 +21,17 @@ export type TableRowProps = {
 };
 
 /**
+ * Formats a cell value for rendering.
+ * @param value - The cell value.
+ * @returns {React.ReactNode} The formatted cell value.
+ */
+export const formatCellValue = (value: unknown): React.ReactNode => {
+	if (value === undefined) return 'unknown';
+	if (React.isValidElement(value)) return value;
+	return String(value);
+};
+
+/**
  * TableRow renders a single table row, with optional tools and expandable details.
  *
  * @param {TableRowProps} props - The props for the TableRow component.
@@ -36,9 +47,7 @@ export const TableRow: React.FC<TableRowProps> = ({ data, tools, expandable, exp
 	 * @returns {JSX.Element} The rendered table cell.
 	 */
 	const renderCell = (item: { value: unknown; key: string }, index: number) => (
-		<Table.Td key={index}>
-			{item.value !== undefined ? (React.isValidElement(item.value) ? item.value : String(item.value)) : 'unknown'}
-		</Table.Td>
+		<Table.Td key={index}>{formatCellValue(item.value)}</Table.Td>
 	);
 
 	/**

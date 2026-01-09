@@ -1,3 +1,4 @@
+import { formatCellValue } from './TableRow';
 import React from 'react';
 
 /**
@@ -23,8 +24,7 @@ export const TableDetails: React.FC<TableProps> = ({ data }) => {
 	const renderDetailItem = (name: string) => (
 		<div key={name}>
 			<span>
-				<b>{name.charAt(0).toUpperCase() + name.slice(1)}</b>:{' '}
-				{data[name] !== undefined ? (React.isValidElement(data[name]) ? data[name] : String(data[name])) : 'unknown'}
+				<b>{name.charAt(0).toUpperCase() + name.slice(1)}</b>: {formatCellValue(data[name])}
 			</span>
 		</div>
 	);
