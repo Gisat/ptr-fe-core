@@ -32,9 +32,9 @@ export type TableRowData = {
 };
 
 /**
- * Table tools: React node or function returning a React node for a row.
+ * Table row tools: React node or function returning a React node for a row.
  */
-export type TableTools = React.ReactNode | ((data: TableRowData) => React.ReactNode);
+export type TableRowTools = React.ReactNode | ((data: TableRowData) => React.ReactNode);
 
 /**
  * Generic TableComponent props.
@@ -46,7 +46,7 @@ export type TableProps<T extends Record<string, unknown>> = {
 	expandableSectionKey?: string;
 	expandButtonTooltip?: string;
 	headers?: Array<HeaderType>;
-	tools?: TableTools;
+	rowTools?: TableRowTools;
 };
 
 /**
@@ -117,7 +117,7 @@ export const TableComponent = <T extends Record<string, unknown>>({
 	expandable = false,
 	expandableSectionKey = 'details',
 	expandButtonTooltip = 'Show details',
-	tools,
+	rowTools,
 }: TableProps<T>) => {
 	// Use provided headers or extract from data
 	let computedHeaders: Array<HeaderType> = [];
@@ -133,7 +133,7 @@ export const TableComponent = <T extends Record<string, unknown>>({
 	return (
 		<Table className={className} highlightOnHover striped horizontalSpacing="sm" withTableBorder>
 			<TableHeader data={computedHeaders} />
-			<TableContent data={rows} tools={tools} expandable={expandable} expandButtonTooltip={expandButtonTooltip} />
+			<TableContent data={rows} tools={rowTools} expandable={expandable} expandButtonTooltip={expandButtonTooltip} />
 		</Table>
 	);
 };

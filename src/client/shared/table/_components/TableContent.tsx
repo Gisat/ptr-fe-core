@@ -1,6 +1,6 @@
 import { Table } from '@mantine/core';
 import { TableRow } from './TableRow';
-import { TableRowData, TableTools } from '../Table';
+import { TableRowData, TableRowTools } from '../Table';
 
 /**
  * TableContent props.
@@ -11,7 +11,7 @@ import { TableRowData, TableTools } from '../Table';
  */
 export type TableContentProps = {
 	data: TableRowData[];
-	tools?: TableTools;
+	tools?: TableRowTools;
 	expandable?: boolean;
 	expandButtonTooltip?: string;
 };

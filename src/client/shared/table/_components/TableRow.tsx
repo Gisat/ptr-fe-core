@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ActionIcon, Group, Table, Tooltip } from '@mantine/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { TableDetails } from './TableDetails';
-import { TableRowData, TableTools } from '../Table';
+import { TableRowData, TableRowTools } from '../Table';
 
 /**
  * TableRow props.
@@ -13,7 +13,7 @@ import { TableRowData, TableTools } from '../Table';
  */
 export type TableRowProps = {
 	data: TableRowData;
-	tools?: TableTools;
+	tools?: TableRowTools;
 	expandable?: boolean;
 	expandButtonTooltip?: string;
 };
