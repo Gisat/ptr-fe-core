@@ -1,70 +1,101 @@
 import { TableContent } from './_components/TableContent';
 import { TableHeader } from './_components/TableHeader';
 import { Table } from '@mantine/core';
-import React from 'react';
 
-type TableProps = {
-	data: Array<object>;
-	detailsName: string;
+/**
+ * Table header definition.
+ */
+export type HeaderType = { key: string; nameDisplay?: string };
+
+/**
+ * Generic TableComponent props.
+ */
+export type TableProps<T extends Record<string, unknown>> = {
+	data: Array<T>;
+	className?: string;
+	expandable?: boolean;
+	expandableSectionKey?: string;
+	expandButtonTooltip?: string;
+	headers?: Array<HeaderType>;
+	tools?: any;
 };
 
 /**
- * TableComponent renders a table with headers and content based on the provided data.
+ * TableComponent renders a table with optional expandable rows and custom tools.
  *
- * @param {TableProps} props - The props for the TableComponent.
- * @param {Array<Object>} props.data - The data to be displayed in the table.
- * @param {string} props.detailsName - The name of the property that contains details for each row.
+ * - Uses headers from props if provided, otherwise extracts from data.
+ * - Supports expandable rows with details.
+ * - Tools can be rendered in the last column.
  *
- * @returns {JSX.Element} The rendered TableComponent.
+ * @template T - The type of each row in the table data.
+ * @param {TableProps<T>} props - The props for the TableComponent.
+ * @returns {JSX.Element} The rendered table.
  */
-export const TableComponent: React.FC<TableProps> = ({ data, detailsName }) => {
+export const TableComponent = <T extends Record<string, unknown>>({
+	data,
+	className,
+	headers,
+	expandable = false,
+	expandableSectionKey = 'details',
+	expandButtonTooltip = 'Show details',
+	tools,
+}: TableProps<T>) => {
 	/**
-	 * Extracts headers from the data.
+	 * Extracts headers from data if not provided.
 	 *
-	 * @param {Array<Object>} data - The data to extract headers from.
-	 * @param {string} detailsName - The name of the property that contains details for each row.
-	 * @returns {Array<string>} The extracted headers.
+	 * @param {Array<T>} data - The table data.
+	 * @param {string} expandableSectionKey - The key for expandable details.
+	 * @returns {Array<HeaderType>} The extracted headers.
 	 */
-	const extractHeaders = (data: Array<object>, detailsName: string): Array<string> => {
-		return data.reduce((acc: string[], item: any) => {
+	const extractHeaders = (data: Array<T>, expandableSectionKey: string): Array<HeaderType> =>
+		data.reduce((acc: HeaderType[], item) => {
 			Object.keys(item).forEach((key) => {
-				if (!acc.includes(key) && key !== detailsName) {
-					acc.push(key);
+				const alreadyExists = acc.find((h) => h.key === key);
+				const isDetailsKey = key === expandableSectionKey && expandable;
+				if (!alreadyExists && !isDetailsKey) {
+					acc.push({ key, nameDisplay: key.charAt(0).toUpperCase() + key.slice(1) });
 				}
 			});
 			return acc;
 		}, []);
-	};
 
 	/**
-	 * Extracts rows from the data.
+	 * Maps data to row values and details.
 	 *
-	 * @param {Array<Object>} data - The data to extract rows from.
-	 * @param {Array<string>} headers - The headers to use for extracting row values.
-	 * @param {string} detailsName - The name of the property that contains details for each row.
-	 * @returns {Array<{values: Array<string>, details: Object}>} The extracted rows.
+	 * @param {Array<T>} data - The table data.
+	 * @param {Array<HeaderType>} headers - The table headers.
+	 * @param {string} expandableSectionKey - The key for expandable details.
+	 * @returns {Array<{ values: Array<{ value: unknown; key: string }>; details: Record<string, unknown> }>} The mapped rows.
 	 */
 	const extractRows = (
-		data: Array<object>,
-		headers: Array<string>,
-		detailsName: string
-	): Array<{ values: Array<string>; details: object }> => {
-		return data.map((item: any) => {
-			const values = headers.map((header) => item[header]);
-			const details = item[detailsName];
-			return { values, details };
-		});
-	};
+		data: Array<T>,
+		headers: Array<HeaderType>,
+		expandableSectionKey: string
+	): Array<{ values: Array<{ value: unknown; key: string }>; details: Record<string, unknown> }> =>
+		data.map((item) => ({
+			values: headers.map((header) => ({
+				value: item[header.key],
+				key: header.key,
+			})),
+			details:
+				item[expandableSectionKey] &&
+				typeof item[expandableSectionKey] === 'object' &&
+				!Array.isArray(item[expandableSectionKey])
+					? (item[expandableSectionKey] as Record<string, unknown>)
+					: {},
+		}));
 
-	const headers = data && data.length > 0 ? extractHeaders(data, detailsName) : [];
-	const rows = data && data.length > 0 ? extractRows(data, headers, detailsName) : [];
+	// Use provided headers or extract from data
+	const computedHeaders =
+		headers && headers.length > 0 ? headers : data && data.length > 0 ? extractHeaders(data, expandableSectionKey) : [];
+
+	// Prepare rows for rendering
+	const rows = data && data.length > 0 ? extractRows(data, computedHeaders, expandableSectionKey) : [];
 
 	return (
-		<div>
-			<Table highlightOnHover striped horizontalSpacing="sm" withTableBorder>
-				<TableHeader data={headers} />
-				<TableContent data={rows} />
-			</Table>
-		</div>
+		<Table className={className} highlightOnHover striped horizontalSpacing="sm" withTableBorder>
+			<TableHeader data={computedHeaders} />
+			<TableContent data={rows} tools={tools} expandable={expandable} expandButtonTooltip={expandButtonTooltip} />
+		</Table>
 	);
 };
