@@ -1,5 +1,6 @@
 import { TableContent } from './_components/TableContent';
 import { TableHeader } from './_components/TableHeader';
+import { TableRowProps } from './_components/TableRow';
 import { Table } from '@mantine/core';
 
 /**
@@ -17,7 +18,7 @@ export type TableProps<T extends Record<string, unknown>> = {
 	expandableSectionKey?: string;
 	expandButtonTooltip?: string;
 	headers?: Array<HeaderType>;
-	tools?: any;
+	tools?: React.ReactNode | ((data: TableRowProps['data']) => React.ReactNode);
 };
 
 /**

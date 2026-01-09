@@ -1,5 +1,5 @@
 import { Table } from '@mantine/core';
-import { TableRow } from './TableRow';
+import { TableRow, TableRowProps } from './TableRow';
 import React from 'react';
 
 /**
@@ -14,7 +14,7 @@ type TableProps = {
 		values: Array<{ value: unknown; key: string }>;
 		details: Record<string, unknown>;
 	}>;
-	tools?: React.ReactNode;
+	tools?: React.ReactNode | ((data: TableRowProps['data']) => React.ReactNode);
 	expandable?: boolean;
 	expandButtonTooltip?: string;
 };
