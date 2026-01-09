@@ -1,6 +1,6 @@
+import { Table } from '@mantine/core';
 import { TableContent } from './_components/TableContent';
 import { TableHeader } from './_components/TableHeader';
-import { Table } from '@mantine/core';
 
 /**
  * Table header definition.
