@@ -4,7 +4,7 @@ import React from 'react';
 /**
  * Props for TableDetails component.
  */
-type TableDetailsProps = {
+export type TableDetailsProps = {
 	data: Record<string, unknown>;
 };
 
