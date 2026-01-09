@@ -4,17 +4,17 @@ import React from 'react';
 /**
  * Props for TableDetails component.
  */
-type TableProps = {
+type TableDetailsProps = {
 	data: Record<string, unknown>;
 };
 
 /**
  * TableDetails component renders the details of a table row.
  *
- * @param {TableProps} props - The props for the TableDetails component.
+ * @param {TableDetailsProps} props - The props for the TableDetails component.
  * @returns {JSX.Element} The rendered TableDetails component.
  */
-export const TableDetails: React.FC<TableProps> = ({ data }) => {
+export const TableDetails: React.FC<TableDetailsProps> = ({ data }) => {
 	/**
 	 * Renders a single detail item.
 	 *

@@ -1,7 +1,8 @@
+import React, { useState } from 'react';
 import { ActionIcon, Group, Table, Tooltip } from '@mantine/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { TableDetails } from './TableDetails';
-import React, { useState } from 'react';
+import { TableContentProps } from './TableContent';
 
 /**
  * TableRow props.
@@ -11,10 +12,7 @@ import React, { useState } from 'react';
  * @property expandButtonTooltip - Tooltip text for the expand/collapse button.
  */
 export type TableRowProps = {
-	data: {
-		values: Array<{ value: unknown; key: string }>;
-		details: Record<string, unknown>;
-	};
+	data: TableContentProps['data'][number];
 	tools?: React.ReactNode | ((data: TableRowProps['data']) => React.ReactNode);
 	expandable?: boolean;
 	expandButtonTooltip?: string;
@@ -22,6 +20,12 @@ export type TableRowProps = {
 
 /**
  * Formats a cell value for rendering.
+ *
+ * Handles undefined values, React elements, and other types.
+ * - If value is undefined, returns 'unknown'.
+ * - If value is a valid React element, returns it directly.
+ * - Otherwise, converts value to string.
+ *
  * @param value - The cell value.
  * @returns {React.ReactNode} The formatted cell value.
  */

@@ -1,18 +1,12 @@
 import { Table } from '@mantine/core';
+import { HeaderType } from '../Table';
 import React from 'react';
-
-/**
- * Table header definition.
- * @property key - The key for the column.
- * @property nameDisplay - Optional display name for the column.
- */
-type HeaderType = { key: string; nameDisplay?: string };
 
 /**
  * Props for TableHeader component.
  * @property data - Array of header definitions for the table.
  */
-type TableHeaderProps = {
+export type TableHeaderProps = {
 	data: Array<HeaderType>;
 };
 

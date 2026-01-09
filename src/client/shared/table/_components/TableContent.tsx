@@ -9,7 +9,7 @@ import React from 'react';
  * @property expandable - If true, rows can be expanded to show details.
  * @property expandButtonTooltip - Tooltip text for the expand/collapse button.
  */
-type TableProps = {
+export type TableContentProps = {
 	data: Array<{
 		values: Array<{ value: unknown; key: string }>;
 		details: Record<string, unknown>;
@@ -25,7 +25,7 @@ type TableProps = {
  * @param {TableProps} props - The props for the TableContent component.
  * @returns {JSX.Element} The rendered table body with all rows.
  */
-export const TableContent: React.FC<TableProps> = ({ data, tools, expandable, expandButtonTooltip }) => (
+export const TableContent: React.FC<TableContentProps> = ({ data, tools, expandable, expandButtonTooltip }) => (
 	<Table.Tbody>
 		{data.map((row, idx) => (
 			<TableRow key={idx} data={row} tools={tools} expandable={expandable} expandButtonTooltip={expandButtonTooltip} />
