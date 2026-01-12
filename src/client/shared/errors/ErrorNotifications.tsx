@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect } from 'react';
 import { useError } from './ErrorContext';
 import { HandledError } from './store';
