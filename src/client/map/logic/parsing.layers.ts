@@ -48,7 +48,7 @@ export const parseLayersFromSharedState = ({
 			isInteractive: layer.isInteractive,
 			onClickHandler: layer.interaction && interactionRenderingMap?.get(layer.interaction),
 			selection: selectionForLayer,
-			route: layer.route,
+			route: layer.fetchOptions?.route,
 		};
 
 		// TODO: add other layer types and datasources

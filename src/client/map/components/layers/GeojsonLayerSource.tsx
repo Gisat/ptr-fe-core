@@ -44,12 +44,14 @@ const defaultLayerStyle = {
  */
 export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceProps) => {
 	const [sharedState] = useSharedState();
-	const { isActive, key, opacity, datasource, isInteractive, selectionKey, route } = layer;
+	const { isActive, key, opacity, datasource, isInteractive, selectionKey, fetchOptions } = layer;
 	const { url, documentId, validIntervalIso, configuration } = datasource;
+	const route = fetchOptions?.route;
+	const method = fetchOptions?.method;
 
-	// TODO url parameter should be optional and not needed if the data comes from the data service
-	if (!url) {
-		throw new Error(`GeojsonLayerSource: Missing url in datasource: ${key}`);
+	// We need a fallback URL if no route is provided (e.g. external static GeoJSON file)
+	if (!url && !route) {
+		throw new Error(`GeojsonLayerSource: Missing both route and url in datasource: ${key}`);
 	}
 
 	// Log a warning if the documentId is missing
@@ -82,25 +84,21 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSou
 		error,
 		isLoading,
 	} = useAxios(
-		{ fetchUrl: route ?? '/api/features' }, // if no route is provided, use default
+		{ fetchUrl: route },
 		undefined,
 		{ documentId: documentId, validIntervalIso, url },
-		{ method: 'POST' }
+		{ method, skip: !route }
 	);
 
-	// While data is loading, do not render the layer
-	if (isLoading) {
-		// Handle loading state if necessary
-	}
+	/**
+	 * DATA LOGIC:
+	 * 1. If route is provided and data is successfully fetched, use fetchedData.
+	 * 2. If no route is provided OR there is an error fetching from the route, fallback to url.
+	 */
+	const data = route && fetchedData && !error ? fetchedData : url;
 
-	// Log an error if data fetching fails
-	if (error) {
-		// just warning for now due to backward compatibility for apps which not using route for geojson fetching
-		console.warn('Error loading map data:', error);
-	}
-
-	// Determine the data source for the layer
-	const data = !error ? fetchedData : url;
+	// We only show "loading" if we are actively trying to fetch from a route and haven't failed yet
+	const isDataLoading = !!route && isLoading && !error;
 
 	/**
 	 * Returns the line color for a feature.
@@ -140,8 +138,9 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSou
 	 * The layer instance is recreated only when its dependencies change.
 	 */
 	const layerInstance: GeoJsonLayer | null = useMemo(() => {
-		// Do not render layer if data is still loading and we expect fetched data, or if there's no data at all.
-		if ((isLoading && !error) || !data) {
+		// Prevent rendering only if we are in the middle of a route fetch.
+		// If we have no route, or we have an error, we proceed with 'url' as data.
+		if (isDataLoading || !data) {
 			return null;
 		}
 
@@ -161,7 +160,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSou
 			getLineWidth,
 			pickable: isInteractive ?? layerStyle.pickable,
 		});
-	}, [isActive, key, opacity, isInteractive, layerStyle, selection, data, geojsonOptions, isLoading, error]);
+	}, [isActive, key, opacity, isInteractive, layerStyle, selection, data, geojsonOptions, isDataLoading]);
 
 	/**
 	 * Effect hook to handle layer updates.

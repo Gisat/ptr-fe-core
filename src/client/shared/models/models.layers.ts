@@ -14,5 +14,8 @@ export interface RenderingLayer {
 	interaction: Nullable<LayerTreeInteraction>;
 	selectionKey?: string;
 	isInteractive?: boolean;
-	route?: string;
+	fetchOptions?: {
+		route: string;
+		method: 'GET' | 'POST';
+	};
 }
