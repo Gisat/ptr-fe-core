@@ -49,7 +49,7 @@ export const TableRow: React.FC<TableRowProps> = ({
 	expandButtonTooltip,
 	onExpandButtonClick,
 }) => {
-	const [isExpanded, setIsExpanded] = useState(data.isExpanded || false);
+	const [isExpanded, setIsExpanded] = useState(false);
 
 	useEffect(() => {
 		setIsExpanded(data.isExpanded || false);
