@@ -1,33 +1,34 @@
-import React, { JSX } from 'react';
+import { TableRowDetails } from '../Table';
+import { formatCellValue } from './TableRow';
+import React from 'react';
 
-type TableProps = {
-	data: Record<string, any>;
+/**
+ * Props for TableDetails component.
+ */
+export type TableDetailsProps = {
+	data: TableRowDetails;
 };
 
 /**
  * TableDetails component renders the details of a table row.
  *
- * @param {TableProps} props - The props for the TableDetails component.
- * @param {any} props.data - The details data to be displayed.
- *
+ * @param {TableDetailsProps} props - The props for the TableDetails component.
  * @returns {JSX.Element} The rendered TableDetails component.
  */
-export const TableDetails: React.FC<TableProps> = ({ data }) => {
+export const TableDetails: React.FC<TableDetailsProps> = ({ data }) => {
 	/**
 	 * Renders a single detail item.
 	 *
 	 * @param {string} name - The name of the detail item.
 	 * @returns {JSX.Element} The rendered detail item.
 	 */
-	const renderDetailItem = (name: string): JSX.Element => {
-		return (
-			<div key={name}>
-				<span>
-					<b>{name.charAt(0).toUpperCase() + name.slice(1)}</b>: {data[name] || 'unknown'}
-				</span>
-			</div>
-		);
-	};
+	const renderDetailItem = (name: string) => (
+		<div key={name}>
+			<span>
+				<b>{name.charAt(0).toUpperCase() + name.slice(1)}</b>: {formatCellValue(data[name])}
+			</span>
+		</div>
+	);
 
 	const names = Object.keys(data);
 
