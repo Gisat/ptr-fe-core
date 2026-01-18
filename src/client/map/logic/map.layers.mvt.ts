@@ -4,6 +4,7 @@ import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 
 /**
+ * @deprecated Used by RenderingMap which is deprecated and will be removed in future versions. Use MapSet and related components instead.
  * Creates an MVT (Mapbox Vector Tile) layer using DeckGL.
  *
  * @param {LayerGeneralProps} param0 - The properties for creating the MVT layer.

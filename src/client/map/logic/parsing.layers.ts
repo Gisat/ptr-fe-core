@@ -19,6 +19,7 @@ export interface ParseLayersProps {
 }
 
 /**
+ * @deprecated Used by RenderingMap which is deprecated and will be removed in future versions.
  * Parses rendering layers from shared state and returns an array of DeckGL layers.
  * Uses a selector callback to retrieve selection objects for each layer.
  *
@@ -47,7 +48,7 @@ export const parseLayersFromSharedState = ({
 			isInteractive: layer.isInteractive,
 			onClickHandler: layer.interaction && interactionRenderingMap?.get(layer.interaction),
 			selection: selectionForLayer,
-			route: layer.route,
+			route: layer.fetchOptions?.route,
 		};
 
 		// TODO: add other layer types and datasources

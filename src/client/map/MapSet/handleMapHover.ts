@@ -1,7 +1,8 @@
 import { PickingInfo } from '@deck.gl/core';
 import { RenderingLayer } from '../../shared/models/models.layers';
 import { parseDatasourceConfiguration } from '../../shared/models/parsers.datasources';
-import { getTooltipAttributes, TooltipAttribute } from '../../story/utils/getTooltipAttributes';
+import { getTooltipAttributes } from '../../story/utils/getTooltipAttributes';
+import { TooltipAttribute } from '../../shared/models/models.tooltip';
 
 /**
  * Tooltip state object.
