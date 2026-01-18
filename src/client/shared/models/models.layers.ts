@@ -7,12 +7,15 @@ import { DatasourceWithNeighbours } from './models.metadata';
  */
 export interface RenderingLayer {
 	isActive: boolean;
-	level: number;
+	level?: number;
 	key: string;
 	opacity?: number;
 	datasource: DatasourceWithNeighbours;
 	interaction: Nullable<LayerTreeInteraction>;
 	selectionKey?: string;
 	isInteractive?: boolean;
-	route?: string;
+	fetchOptions?: {
+		route: string;
+		method: 'GET' | 'POST';
+	};
 }

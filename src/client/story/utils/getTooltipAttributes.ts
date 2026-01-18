@@ -1,18 +1,4 @@
-/**
- * Tooltip attribute definition.
- * @property {string} key - Unique key for the attribute.
- * @property {string} [label] - Optional label for display.
- * @property {string|number} [value] - Value to display.
- * @property {string} [unit] - Optional unit for the value.
- * @property {number} [decimalPlaces] - Optional decimal places for number formatting.
- */
-export interface TooltipAttribute {
-	key: string;
-	label?: string;
-	value?: string | number;
-	unit?: string;
-	decimalPlaces?: number;
-}
+import { TooltipAttribute } from '../../shared/models/models.tooltip';
 
 /**
  * Maps feature properties to tooltip attributes based on settings.

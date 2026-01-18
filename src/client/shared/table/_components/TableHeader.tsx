@@ -1,32 +1,26 @@
 import { Table } from '@mantine/core';
-import React, { JSX } from 'react';
+import { HeaderType } from '../Table';
 
-type TableProps = {
-	data: Array<string>;
+/**
+ * Props for TableHeader component.
+ * @property data - Array of header definitions for the table.
+ */
+export type TableHeaderProps = {
+	data: Array<HeaderType>;
 };
 
 /**
- * TableHeader component renders the headers of a table.
+ * TableHeader renders the header row for a table.
  *
- * @param {TableProps} props - The props for the TableHeader component.
- * @param {Array<string>} props.data - The headers to be displayed in the table.
- *
- * @returns {JSX.Element} The rendered TableHeader component.
+ * @param {TableHeaderProps} props - The props for the TableHeader component.
+ * @returns {JSX.Element} The rendered table header.
  */
-export const TableHeader: React.FC<TableProps> = ({ data }) => {
-	/**
-	 * Renders a single table header.
-	 *
-	 * @param {string} value - The header value.
-	 * @returns {JSX.Element} The rendered table header.
-	 */
-	const renderHeader = (value: string): JSX.Element => {
-		return <Table.Th key={value}>{value.charAt(0).toUpperCase() + value.slice(1)}</Table.Th>;
-	};
-
-	return (
-		<Table.Thead>
-			<Table.Tr>{data.map(renderHeader)}</Table.Tr>
-		</Table.Thead>
-	);
-};
+export const TableHeader: React.FC<TableHeaderProps> = ({ data }) => (
+	<Table.Thead>
+		<Table.Tr>
+			{data.map(({ key, nameDisplay }) => (
+				<Table.Th key={key}>{nameDisplay ? nameDisplay : key.charAt(0).toUpperCase() + key.slice(1)}</Table.Th>
+			))}
+		</Table.Tr>
+	</Table.Thead>
+);

@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DeckGL } from '@deck.gl/react';
-import { LayersList, PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
+import { PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
-import { mergeViews } from '../../map/logic/mapView/mergeViews';
-import { ActionMapViewChange } from '../../shared/appState/state.models.actions';
-import { getViewChange } from '../../map/logic/mapView/getViewChange';
-import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMapKey';
-import { parseLayersFromSharedState } from '../../map/logic/parsing.layers';
-import { getSelectionByKey } from '../../shared/appState/selectors/getSelectionByKey';
-import { handleMapClick } from './handleMapClick';
 import { StateActionType } from '../../shared/appState/enum.state.actionType';
+import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMapKey';
+import { ActionMapViewChange } from '../../shared/appState/state.models.actions';
+import { mergeViews } from '../logic/mapView/mergeViews';
+import { getViewChange } from '../logic/mapView/getViewChange';
+import { handleMapClick } from './handleMapClick';
 import { handleMapHover } from './handleMapHover';
 import { getMapTooltip } from './MapTooltip/getMapTooltip';
 import { MapTooltip } from './MapTooltip/MapTooltip';
-import { TooltipAttribute } from '../../story/utils/getTooltipAttributes';
+import { LayerInstance, LayerManager } from '../components/layers/LayerManager';
+import { RenderingLayer } from '../../shared/models/models.layers';
+import { TooltipAttribute } from '../../shared/models/models.tooltip';
 
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = 10;
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = 20;
@@ -28,6 +28,8 @@ export interface BasicMapProps {
 	/** Custom tooltip component */
 	CustomTooltip?: React.ElementType | boolean;
 }
+
+type LayerRegistry = Record<string, LayerInstance>;
 
 /**
  * SingleMap component intended to be used in MapSet component.
@@ -46,21 +48,27 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 	/** Get the current map state and layers from shared state */
 	const mapState = getMapByKey(sharedState, mapKey);
 	const mapViewState = mergeViews(syncedView, mapState?.view ?? {});
-	const mapLayers = getLayersByMapKey(sharedState, mapKey);
+	const mapLayers = getLayersByMapKey(sharedState, mapKey) ?? [];
+
+	// Local registry for actual Deck.gl class instances
+	const [layerRegistry, setLayerRegistry] = useState<LayerRegistry>({});
+
+	const handleLayerUpdate = useCallback((id: string, instance: LayerInstance) => {
+		setLayerRegistry((prev: LayerRegistry) => {
+			if (prev[id] === instance) return prev; // Avoid unnecessary re-renders
+			return { ...prev, [id]: instance };
+		});
+	}, []);
+
+	// Filter and sort layers based on the order in mapLayers
+	const activeLayers: LayerInstance[] = useMemo(() => {
+		return mapLayers
+			.map((layer: RenderingLayer) => layerRegistry[layer.key])
+			.filter((layer: LayerInstance) => layer !== null && layer !== undefined);
+	}, [mapLayers, layerRegistry]);
 
 	/** Determines if custom tooltip logic should be used */
 	const useCustomTooltip = Boolean(CustomTooltip);
-
-	/**
-	 * Returns the selection object for a given selectionKey.
-	 * This is a selector callback passed to layer parsing logic.
-	 *
-	 * @param {string} selectionKey - The key identifying the selection.
-	 * @returns {Selection | undefined} The selection object, or undefined if not found.
-	 */
-	const getSelection = (selectionKey: string) => {
-		return getSelectionByKey(sharedState, selectionKey);
-	};
 
 	/**
 	 * On mount: sync the map view and set up keyboard listeners for Ctrl key.
@@ -119,14 +127,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 		});
 	};
 
-	/** Parse layers for DeckGL rendering */
-	const layers: LayersList = mapLayers
-		? parseLayersFromSharedState({
-				sharedStateLayers: [...mapLayers],
-				getSelectionForLayer: getSelection,
-			})
-		: [];
-
 	/**
 	 * Handles changes to the map view state (e.g., pan, zoom).
 	 *
@@ -153,9 +153,10 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 
 	return (
 		<>
+			<LayerManager layers={mapLayers} onLayerUpdate={handleLayerUpdate} />
 			<DeckGL
 				viewState={mapViewState}
-				layers={layers}
+				layers={activeLayers}
 				controller={true}
 				width="100%"
 				height="100%"
