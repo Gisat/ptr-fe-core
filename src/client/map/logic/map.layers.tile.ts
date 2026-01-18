@@ -5,6 +5,7 @@ import { validateDatasource } from './validate.layers';
 import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 
 /**
+ * @deprecated Used by RenderingMap which is deprecated and will be removed in future versions. Use MapSet and related components instead.
  * Creates a TileLayer for DeckGL using the provided source node and activity status.
  *
  * @param {LayerGeneralProps} param0 - The properties for the layer.
