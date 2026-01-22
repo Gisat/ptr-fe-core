@@ -40,13 +40,15 @@ const defaultLayerStyle = {
  * This component uses the `IconLayer` from `@deck.gl/layers` to render icon markers
  * based on GeoJSON or array data, with support for selection coloring and interactivity.
  *
+ * **Note:** The `layerStyle` object must include both `iconAtlas` (the icon sprite image)
+ * and `iconMapping` (an object mapping icon names to their positions/sizes in the atlas).
+ * If either is missing, the IconLayer will not render.
+ *
  * @param {LayerSourceProps} props - The props for the IconLayerSource component.
  * @param {RenderingLayer} props.layer - The layer configuration object.
  * @param {(id: string, instance: IconLayer | null) => void} props.onLayerUpdate - Callback to handle updates to the layer instance.
  * @returns {null} This component does not render any DOM elements.
  *
- * @example
- * <IconLayerSource layer={layerConfig} onLayerUpdate={handleLayerUpdate} />
  */
 export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceProps) => {
 	const [sharedState] = useSharedState();
@@ -75,6 +77,10 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 		console.warn(`IconLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
 	}
 
+	// Extract iconAtlas and iconMapping from layerStyle
+	const iconAtlas = geojsonOptions?.layerStyle?.iconAtlas;
+	const iconMapping = geojsonOptions?.layerStyle?.iconMapping;
+
 	// Layer style
 	const layerStyle = geojsonOptions?.layerStyle ?? defaultLayerStyle;
 
@@ -100,7 +106,6 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 	 * DATA LOGIC:
 	 * 1. If route is provided and data is successfully fetched, use fetchedData.
 	 * 2. If no route is provided OR there is an error fetching from the route, fallback to url.
-	 * @type {any}
 	 */
 	const data = route && fetchedData && !error ? fetchedData : url;
 
@@ -141,6 +146,11 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 			return null;
 		}
 
+		// Ensure iconAtlas and iconMapping are available before creating the layer
+		if (!iconAtlas || !iconMapping) {
+			return null;
+		}
+
 		return new IconLayer({
 			id: key,
 			opacity: opacity ?? 1,
@@ -148,7 +158,6 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 			data,
 			updateTriggers: {
 				getColor: [layerStyle, selection],
-				getFillColor: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
 			},
 			...layerStyle,
