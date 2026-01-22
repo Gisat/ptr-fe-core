@@ -7,6 +7,7 @@ import { XYZLayerSource } from './XYZLayerSource';
 import { COGLayerSource } from './COGLayerSource';
 import { GeojsonLayerSource } from './GeojsonLayerSource';
 import { WMSLayerSource } from './WMSLayerSource';
+import { IconLayerSource } from './IconLayerSource';
 
 /**
  * Represents the possible types of layer instances that can be managed.
@@ -63,7 +64,15 @@ export const LayerManager = ({ layers, onLayerUpdate }: LayerManagerProps) => {
 				} else if (labels.includes(UsedDatasourceLabels.WMS)) {
 					return <WMSLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
 				} else if (labels.includes(UsedDatasourceLabels.Geojson)) {
-					return <GeojsonLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+					// Determine the specific layer type for GeoJSON data
+					switch (layer.layerType) {
+						case 'icon':
+							return <IconLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+						case 'geojson':
+							return <GeojsonLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+						default:
+							return <GeojsonLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+					}
 				} else {
 					// Log a warning if the datasource type is unknown
 					console.warn(`Datasource Warning - Unknown datasource type for layer ${layer.key}`);
