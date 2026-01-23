@@ -32,6 +32,10 @@ const defaultLayerStyle = {
  * and `iconMapping` (an object mapping icon names to their positions/sizes in the atlas).
  * If either is missing, the IconLayer will not render.
  *
+ * **Note:** Added default `getPosition` accessor to ensure proper icon placement and getSize
+ * for icon sizing. Otherwise there might be issues with icons not appearing.
+ * These can be overridden by providing them in the `layerStyle`.
+ *
  * @param {LayerSourceProps} props - The props for the IconLayerSource component.
  * @param {RenderingLayer} props.layer - The layer configuration object.
  * @param {(id: string, instance: IconLayer | null) => void} props.onLayerUpdate - Callback to handle updates to the layer instance.
@@ -148,6 +152,8 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 				getColor: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
 			},
+			getSize: 40,
+			getPosition: (d: { coordinates: [number, number] }) => d?.coordinates,
 			...layerStyle,
 			getColor,
 			pickable: isInteractive ?? layerStyle.pickable,
