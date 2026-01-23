@@ -148,6 +148,8 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 				getColor: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
 			},
+			getSize: 40,
+			getPosition: (d: { coordinates: [number, number] }) => d?.coordinates,
 			...layerStyle,
 			getColor,
 			pickable: isInteractive ?? layerStyle.pickable,
