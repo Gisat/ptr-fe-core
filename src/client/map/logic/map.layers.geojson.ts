@@ -5,15 +5,7 @@ import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { getFeatureId } from '../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../shared/helpers/hexToRgbArray';
 import { SELECTION_DEFAULT_COLOUR } from '../../shared/constants/colors';
-
-/**
- * Represents the structure needed for feature identification and property access.
- */
-interface Feature {
-	type: 'Feature';
-	id?: string;
-	properties?: { [key: string]: string };
-}
+import { Feature } from '../../shared/models/models.feature';
 
 /**
  * Default layer style for GeoJsonLayer rendering.

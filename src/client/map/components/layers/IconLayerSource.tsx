@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { GeoJsonLayer } from '@deck.gl/layers';
+import { IconLayer } from '@deck.gl/layers';
 import { SELECTION_DEFAULT_COLOUR } from '../../../shared/constants/colors';
 import { getFeatureId } from '../../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../../shared/helpers/hexToRgbArray';
@@ -11,30 +11,34 @@ import { parseDatasourceConfiguration } from '../../../shared/models/parsers.dat
 import { Feature } from '../../../shared/models/models.feature';
 
 /**
- * Default layer style for GeoJsonLayer rendering.
+ * Default layer style for IconLayer rendering.
+ * @type {Object}
  */
 const defaultLayerStyle = {
 	filled: true,
-	stroked: true,
 	pickable: false,
-	pointRadiusScale: 0.2,
-	getPointRadius: 50,
-	getFillColor: [255, 255, 255],
-	getLineColor: [0, 0, 0, 100],
-	getLineWidth: 1,
-	lineWidthUnits: 'pixels' as const,
+	getColor: [0, 0, 0, 100],
+	getSize: 40,
+	getIcon: 'marker',
+	getPosition: (d: { coordinates: [number, number] }) => d.coordinates,
 };
 
 /**
- * A React component that creates and manages a GeoJSON layer.
- * This component uses the `GeoJsonLayer` from `@deck.gl/layers` to render GeoJSON data.
+ * IconLayerSource is a React component that creates and manages a DeckGL IconLayer.
+ * This component uses the `IconLayer` from `@deck.gl/layers` to render icon markers
+ * based on GeoJSON or array data, with support for selection coloring and interactivity.
  *
- * @param {LayerSourceProps} props - The props for the GeojsonLayerSource component.
+ * **Note:** The `layerStyle` object must include both `iconAtlas` (the icon sprite image)
+ * and `iconMapping` (an object mapping icon names to their positions/sizes in the atlas).
+ * If either is missing, the IconLayer will not render.
+ *
+ * @param {LayerSourceProps} props - The props for the IconLayerSource component.
  * @param {RenderingLayer} props.layer - The layer configuration object.
- * @param {(id: string, instance: GeoJsonLayer | null) => void} props.onLayerUpdate - Callback to handle updates to the layer instance.
+ * @param {(id: string, instance: IconLayer | null) => void} props.onLayerUpdate - Callback to handle updates to the layer instance.
  * @returns {null} This component does not render any DOM elements.
+ *
  */
-export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceProps) => {
+export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceProps) => {
 	const [sharedState] = useSharedState();
 	const { isActive, key, opacity, datasource, isInteractive, selectionKey, fetchOptions } = layer;
 	const { url, documentId, validIntervalIso, configuration } = datasource;
@@ -43,12 +47,12 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSou
 
 	// We need a fallback URL if no route is provided (e.g. external static GeoJSON file)
 	if (!url && !route) {
-		throw new Error(`GeojsonLayerSource: Missing both route and url in datasource: ${key}`);
+		throw new Error(`IconLayerSource: Missing both route and url in datasource: ${key}`);
 	}
 
 	// Log a warning if the documentId is missing
 	if (!documentId) {
-		console.warn(`GeojsonLayerSource: Missing documentId in datasource: ${key}`);
+		console.warn(`IconLayerSource: Missing documentId in datasource: ${key}`);
 	}
 
 	// Parse the datasource configuration
@@ -58,8 +62,12 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSou
 	// TODO geojsonOptions are currently used for styling and featureIdProperty, solve this properly in the future
 	const geojsonOptions = config?.geojsonOptions;
 	if (!geojsonOptions) {
-		console.warn(`GeojsonLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
+		console.warn(`IconLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
 	}
+
+	// Extract iconAtlas and iconMapping from layerStyle
+	const iconAtlas = geojsonOptions?.layerStyle?.iconAtlas;
+	const iconMapping = geojsonOptions?.layerStyle?.iconMapping;
 
 	// Layer style
 	const layerStyle = geojsonOptions?.layerStyle ?? defaultLayerStyle;
@@ -99,60 +107,52 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSou
 	 * @param {Feature} feature - The GeoJSON feature object.
 	 * @returns {number[]} The RGBA color array for the feature's line.
 	 */
-	function getLineColor(feature: Feature): number[] {
+	function getColor(feature: Feature): number[] {
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
-			// Convert hex to RGB array and add alpha channel
 			return [...hexToRgbArray(hex), 255];
 		}
-		return layerStyle.getLineColor;
-	}
-
-	/**
-	 * Returns the line width for a feature.
-	 * If the feature is selected, returns a thicker line; otherwise, returns the default.
-	 *
-	 * @param {Feature} feature - The GeoJSON feature object.
-	 * @returns {number} The width of the feature's line.
-	 */
-	function getLineWidth(feature: Feature): number {
-		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
-		if (featureId && selectedFeatureKeys.includes(featureId)) {
-			return 5;
+		// If getColor is a function, call it with the feature
+		if (typeof layerStyle.getColor === 'function') {
+			return layerStyle.getColor(feature);
 		}
-		return layerStyle.getLineWidth;
+		return layerStyle.getColor;
 	}
 
 	/**
-	 * Memoize the creation of the GeoJsonLayer instance to avoid unnecessary re-renders.
+	 * Memoizes the creation of the IconLayer instance to avoid unnecessary re-renders.
 	 * The layer instance is recreated only when its dependencies change.
+	 *
+	 * @returns {IconLayer|null} The DeckGL IconLayer instance or null if loading.
 	 */
-	const layerInstance: GeoJsonLayer | null = useMemo(() => {
+	const layerInstance: IconLayer | null = useMemo(() => {
 		// Prevent rendering only if we are in the middle of a route fetch.
 		// If we have no route, or we have an error, we proceed with 'url' as data.
 		if (isDataLoading || !data) {
 			return null;
 		}
 
-		return new GeoJsonLayer({
+		// Ensure iconAtlas and iconMapping are available before creating the layer
+		if (!iconAtlas || !iconMapping) {
+			return null;
+		}
+
+		return new IconLayer({
 			id: key,
 			opacity: opacity ?? 1,
 			visible: isActive,
 			data,
 			updateTriggers: {
-				getLineColor: [layerStyle, selection],
-				getFillColor: [layerStyle, selection],
-				getLineWidth: [layerStyle, selection],
+				getColor: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
 			},
 			...layerStyle,
-			getLineColor,
-			getLineWidth,
+			getColor,
 			pickable: isInteractive ?? layerStyle.pickable,
 		});
-	}, [isActive, key, opacity, isInteractive, layerStyle, selection, data, geojsonOptions, isDataLoading]);
+	}, [isActive, key, opacity, isInteractive, layerStyle, selection, data, geojsonOptions, isLoading, error]);
 
 	/**
 	 * Effect hook to handle layer updates.

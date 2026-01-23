@@ -14,6 +14,7 @@ export interface RenderingLayer {
 	interaction: Nullable<LayerTreeInteraction>;
 	selectionKey?: string;
 	isInteractive?: boolean;
+	layerType?: 'geojson' | 'icon';
 	fetchOptions?: {
 		route: string;
 		method: 'GET' | 'POST';
