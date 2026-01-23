@@ -8,15 +8,7 @@ import { getSelectionByKey } from '../../../shared/appState/selectors/getSelecti
 import { useAxios } from '../../../shared/hooks/useAxios';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-
-/**
- * Represents the structure needed for feature identification and property access.
- */
-interface Feature {
-	type: 'Feature';
-	id?: string;
-	properties?: { [key: string]: string };
-}
+import { Feature } from '../../../shared/models/models.feature';
 
 /**
  * Default layer style for GeoJsonLayer rendering.

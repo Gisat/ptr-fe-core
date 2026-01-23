@@ -8,19 +8,7 @@ import { getSelectionByKey } from '../../../shared/appState/selectors/getSelecti
 import { useAxios } from '../../../shared/hooks/useAxios';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-
-/**
- * Represents the structure needed for feature identification and property access.
- * @typedef {Object} Feature
- * @property {'Feature'} type - The GeoJSON feature type.
- * @property {string} [id] - Optional feature identifier.
- * @property {Object.<string, string>} [properties] - Optional feature properties.
- */
-interface Feature {
-	type: 'Feature';
-	id?: string;
-	properties?: { [key: string]: string };
-}
+import { Feature } from '../../../shared/models/models.feature';
 
 /**
  * Default layer style for IconLayer rendering.
@@ -120,6 +108,7 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 	 * @returns {number[]} The RGBA color array for the feature's line.
 	 */
 	function getColor(feature: Feature): number[] {
+		console.log(feature, 'feature in IconLayer getColor');
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];

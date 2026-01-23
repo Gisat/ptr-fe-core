@@ -1,12 +1,4 @@
-/**
- * Feature interface for GeoJSON objects.
- * Represents the minimal structure needed for feature identification and property access.
- */
-export interface Feature {
-	type: 'Feature';
-	id?: string | number;
-	properties?: { [key: string]: string | number };
-}
+import { Feature } from '../models/models.feature';
 
 /**
  * Returns the unique identifier for a GeoJSON feature.
