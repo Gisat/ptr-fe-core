@@ -108,7 +108,6 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 	 * @returns {number[]} The RGBA color array for the feature's line.
 	 */
 	function getColor(feature: Feature): number[] {
-		console.log(feature, 'feature in IconLayer getColor');
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
