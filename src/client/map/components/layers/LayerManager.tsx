@@ -42,7 +42,7 @@ export interface LayerSourceProps {
  * @param {LayerManagerProps} props - The props for the `LayerManager` component.
  * @returns {JSX.Element} A React fragment containing the rendered layer components.
  */
-export const LayerManager = ({ layers, onLayerUpdate }: LayerManagerProps) => {
+export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }: LayerManagerProps) => {
 	return (
 		<>
 			{layers.map((layer) => {
@@ -67,7 +67,15 @@ export const LayerManager = ({ layers, onLayerUpdate }: LayerManagerProps) => {
 					// Determine the specific layer type for GeoJSON data
 					switch (layer.layerType) {
 						case 'icon':
-							return <IconLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+							return (
+								<IconLayerSource
+									key={layer.key}
+									layer={layer}
+									onLayerUpdate={onLayerUpdate}
+									viewport={viewport}
+									CustomTooltip={CustomTooltip}
+								/>
+							);
 						case 'geojson':
 							return <GeojsonLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
 						default:

@@ -1,4 +1,4 @@
-import { TooltipAttribute } from '../../shared/models/models.tooltip';
+import { TooltipAttribute } from '../models/models.tooltip';
 
 /**
  * Maps feature properties to tooltip attributes based on settings.

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DeckGL } from '@deck.gl/react';
-import { PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
+import { PickingInfo, ViewStateChangeParameters, WebMercatorViewport } from '@deck.gl/core';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
@@ -44,6 +44,24 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 	const [controlIsDown, setControlIsDown] = useState(false);
 	const [tooltip, setTooltip] = useState<{ x: number; y: number; tooltipProperties: TooltipAttribute[] } | null>(null);
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
+
+	const mapRef = React.useRef<HTMLDivElement>(null);
+	const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
+
+	useEffect(() => {
+		const node = mapRef.current;
+		if (!node) return;
+		const updateSize = () => {
+			setMapSize({
+				width: node.offsetWidth,
+				height: node.offsetHeight,
+			});
+		};
+		updateSize();
+		const resizeObserver = new window.ResizeObserver(updateSize);
+		resizeObserver.observe(node);
+		return () => resizeObserver.disconnect();
+	}, []);
 
 	/** Get the current map state and layers from shared state */
 	const mapState = getMapByKey(sharedState, mapKey);
@@ -151,9 +169,22 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 		? TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER
 		: TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER;
 
+	const viewport = new WebMercatorViewport({
+		...mapViewState,
+		width: mapSize.width,
+		height: mapSize.height,
+	});
+
+	// console.log(mapRef.current, viewport, layerIsHovered);
+
 	return (
-		<>
-			<LayerManager layers={mapLayers} onLayerUpdate={handleLayerUpdate} />
+		<div ref={mapRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+			<LayerManager
+				layers={mapLayers}
+				onLayerUpdate={handleLayerUpdate}
+				viewport={viewport}
+				CustomTooltip={CustomTooltip}
+			/>
 			<DeckGL
 				viewState={mapViewState}
 				layers={activeLayers}
@@ -184,6 +215,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 				) : (
 					<MapTooltip x={tooltip.x} y={tooltip.y - verticalOffset} tooltipProperties={tooltip.tooltipProperties} />
 				))}
-		</>
+		</div>
 	);
 };

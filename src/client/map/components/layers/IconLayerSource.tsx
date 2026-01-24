@@ -9,6 +9,8 @@ import { useAxios } from '../../../shared/hooks/useAxios';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
 import { Feature } from '../../../shared/models/models.feature';
+import { MapTooltip } from '../../MapSet/MapTooltip/MapTooltip';
+import { getTooltipAttributes } from '../../../shared/helpers/getTooltipAttributes';
 
 /**
  * Default layer style for IconLayer rendering.
@@ -42,8 +44,9 @@ const defaultLayerStyle = {
  * @returns {null} This component does not render any DOM elements.
  *
  */
-export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceProps) => {
+export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, CustomTooltip }: LayerSourceProps) => {
 	const [sharedState] = useSharedState();
+	const [tooltipPosition, setTooltipPosition] = React.useState<{ x: number; y: number } | null>(null);
 	const { isActive, key, opacity, datasource, isInteractive, selectionKey, fetchOptions } = layer;
 	const { url, documentId, validIntervalIso, configuration } = datasource;
 	const route = fetchOptions?.route;
@@ -125,6 +128,33 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 		return layerStyle.getColor;
 	}
 
+	let tooltip = null;
+	if (selection && selection.featureKeys?.length && Array.isArray(data) && viewport) {
+		const selectedId = selection.featureKeys[0];
+		const selectedFeature = data.find((f: any) => f.id === selectedId);
+		const coordinates = selectedFeature?.coordinates;
+		const tooltipSettings = geojsonOptions?.tooltipSettings;
+		const tooltipOffsetX = tooltipSettings?.offsetX || 0;
+		const tooltipOffsetY = tooltipSettings?.offsetY || 0;
+		const tooltipAttributes = tooltipSettings?.attributes || [];
+		const tooltipProperties = getTooltipAttributes(tooltipAttributes, selectedFeature);
+		console.log(tooltipProperties, tooltipSettings, selectedFeature);
+		if (selectedFeature && Array.isArray(coordinates) && coordinates.length === 2) {
+			const [x, y] = viewport.project(coordinates);
+			if (CustomTooltip) {
+				tooltip = React.createElement(CustomTooltip, {
+					x: x + tooltipOffsetX,
+					y: y + tooltipOffsetY,
+					tooltipProperties: tooltipProperties,
+				});
+			} else {
+				tooltip = <MapTooltip x={x + tooltipOffsetX} y={y + tooltipOffsetY} tooltipProperties={tooltipProperties} />;
+			}
+		}
+	}
+
+	console.log(tooltip, tooltipPosition);
+
 	/**
 	 * Memoizes the creation of the IconLayer instance to avoid unnecessary re-renders.
 	 * The layer instance is recreated only when its dependencies change.
@@ -132,19 +162,16 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 	 * @returns {IconLayer|null} The DeckGL IconLayer instance or null if loading.
 	 */
 	const layerInstance: IconLayer | null = useMemo(() => {
-		// Prevent rendering only if we are in the middle of a route fetch.
-		// If we have no route, or we have an error, we proceed with 'url' as data.
-		if (isDataLoading || !data) {
+		if (isDataLoading || !data || !iconAtlas || !iconMapping) {
 			return null;
 		}
-
-		// Ensure iconAtlas and iconMapping are available before creating the layer
-		if (!iconAtlas || !iconMapping) {
-			return null;
-		}
-
 		return new IconLayer({
 			id: key,
+
+			onHover: (info) => {
+				setTooltipPosition(info.x != null && info.y != null ? { x: info.x, y: info.y } : null);
+			},
+
 			opacity: opacity ?? 1,
 			visible: isActive,
 			data,
@@ -158,18 +185,27 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSource
 			getColor,
 			pickable: isInteractive ?? layerStyle.pickable,
 		});
-	}, [isActive, key, opacity, isInteractive, layerStyle, selection, data, geojsonOptions, isLoading, error]);
+	}, [
+		isActive,
+		key,
+		opacity,
+		isInteractive,
+		layerStyle,
+		selection,
+		data,
+		geojsonOptions,
+		isLoading,
+		error,
+		iconAtlas,
+		iconMapping,
+		isDataLoading,
+	]);
 
-	/**
-	 * Effect hook to handle layer updates.
-	 * The `onLayerUpdate` callback is called with the layer instance when the component mounts
-	 * and with `null` when the component unmounts.
-	 */
 	useEffect(() => {
 		onLayerUpdate(key, layerInstance);
-		return () => onLayerUpdate(key, null); // cleanup on unmount
+		return () => onLayerUpdate(key, null);
 	}, [layerInstance, key, onLayerUpdate]);
 
-	// This component does not render any DOM elements
-	return null;
+	// --- Render the tooltip directly ---
+	return tooltip;
 });

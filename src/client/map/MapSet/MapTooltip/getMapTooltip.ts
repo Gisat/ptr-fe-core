@@ -1,7 +1,7 @@
 import { PickingInfo } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-import { getTooltipAttributes } from '../../../story/utils/getTooltipAttributes';
+import { getTooltipAttributes } from '../../../shared/helpers/getTooltipAttributes';
 import { TooltipAttribute } from '../../../shared/models/models.tooltip';
 import './getMapTooltip.css';
 
@@ -82,7 +82,7 @@ export const getMapTooltip = ({
 						}
 
 						return `<div class="ptr-NativeMapTooltip-row" key="${key}">
-											<span class="ptr-NativeMapTooltip-label">${displayLabel + (valueStr ? ':' : '')}</span>
+											<span class="ptr-NativeMapTooltip-label">${displayLabel + (displayLabel && valueStr ? ':' : '')}</span>
 											<span class="ptr-NativeMapTooltip-value">
 													${valueStr}${unit ? ` ${unit}` : ''}
 											</span>
