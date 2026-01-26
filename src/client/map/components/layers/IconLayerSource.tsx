@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { IconLayer } from '@deck.gl/layers';
 import { SELECTION_DEFAULT_COLOUR } from '../../../shared/constants/colors';
 import { getFeatureId } from '../../../shared/helpers/getFeatureId';
@@ -28,55 +28,45 @@ const defaultLayerStyle = {
 /**
  * IconLayerSource is a React component that creates and manages a DeckGL IconLayer.
  * This component uses the `IconLayer` from `@deck.gl/layers` to render icon markers
- * based on GeoJSON or array data, with support for selection coloring and interactivity.
- *
- * **Note:** The `layerStyle` object must include both `iconAtlas` (the icon sprite image)
- * and `iconMapping` (an object mapping icon names to their positions/sizes in the atlas).
- * If either is missing, the IconLayer will not render.
- *
- * **Note:** Added default `getPosition` accessor to ensure proper icon placement and getSize
- * for icon sizing. Otherwise there might be issues with icons not appearing.
- * These can be overridden by providing them in the `layerStyle`.
+ * based on array data, with support for selection coloring and interactivity.
  *
  * @param {LayerSourceProps} props - The props for the IconLayerSource component.
  * @param {RenderingLayer} props.layer - The layer configuration object.
  * @param {(id: string, instance: IconLayer | null) => void} props.onLayerUpdate - Callback to handle updates to the layer instance.
- * @returns {null} This component does not render any DOM elements.
- *
+ * @returns {React.ReactNode} Tooltip element for this layer (if any), no DOM for the layer itself.
  */
 export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, CustomTooltip }: LayerSourceProps) => {
 	const [sharedState] = useSharedState();
-	const [tooltipPosition, setTooltipPosition] = React.useState<{ x: number; y: number } | null>(null);
+
 	const { isActive, key, opacity, datasource, isInteractive, selectionKey, fetchOptions } = layer;
 	const { url, documentId, validIntervalIso, configuration } = datasource;
 	const route = fetchOptions?.route;
 	const method = fetchOptions?.method;
 
-	// We need a fallback URL if no route is provided (e.g. external static GeoJSON file)
+	// Hover info for hover-based tooltip
+	const [featureInfo, setFeatureInfo] = useState<{ feature: any; x: number; y: number } | null>(null);
+
+	// Basic datasource checks
 	if (!url && !route) {
 		throw new Error(`IconLayerSource: Missing both route and url in datasource: ${key}`);
 	}
 
-	// Log a warning if the documentId is missing
 	if (!documentId) {
 		console.warn(`IconLayerSource: Missing documentId in datasource: ${key}`);
 	}
 
-	// Parse the datasource configuration
+	// Parse datasource configuration
 	const config = parseDatasourceConfiguration(configuration);
-
-	// Extract GeoJSON options from the parsed configuration
-	// TODO geojsonOptions are currently used for styling and featureIdProperty, solve this properly in the future
 	const geojsonOptions = config?.geojsonOptions;
 	if (!geojsonOptions) {
 		console.warn(`IconLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
 	}
 
-	// Extract iconAtlas and iconMapping from layerStyle
+	// Icon atlas / mapping from style (sprite mode)
 	const iconAtlas = geojsonOptions?.layerStyle?.iconAtlas;
 	const iconMapping = geojsonOptions?.layerStyle?.iconMapping;
 
-	// Layer style
+	// Layer style with defaults
 	const layerStyle = geojsonOptions?.layerStyle ?? defaultLayerStyle;
 
 	// Selection
@@ -85,8 +75,12 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 	const distinctColours = selection?.distinctColours ?? [SELECTION_DEFAULT_COLOUR];
 	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
 
-	// Load the data from route
-	let {
+	// Tooltip settings
+	const tooltipSettings = geojsonOptions?.tooltipSettings;
+	const tooltipType = tooltipSettings?.type || 'native'; // 'native' | 'hover' | 'click' | 'selection'
+
+	// Fetch data (memoization of args recommended if useAxios depends on object identity)
+	const {
 		data: fetchedData,
 		error,
 		isLoading,
@@ -104,15 +98,11 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 	 */
 	const data = route && fetchedData && !error ? fetchedData : url;
 
-	// We only show "loading" if we are actively trying to fetch from a route and haven't failed yet
+	// Show "loading" only when fetching from route and not failed yet
 	const isDataLoading = !!route && isLoading && !error;
 
 	/**
-	 * Returns the line color for a feature.
-	 * If the feature is selected, returns its assigned color; otherwise, returns the default.
-	 *
-	 * @param {Feature} feature - The GeoJSON feature object.
-	 * @returns {number[]} The RGBA color array for the feature's line.
+	 * Returns the color for a feature. If selected, returns selection color, otherwise layer default.
 	 */
 	function getColor(feature: Feature): number[] {
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
@@ -121,64 +111,105 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
 			return [...hexToRgbArray(hex), 255];
 		}
-		// If getColor is a function, call it with the feature
 		if (typeof layerStyle.getColor === 'function') {
 			return layerStyle.getColor(feature);
 		}
 		return layerStyle.getColor;
 	}
 
-	let tooltip = null;
-	if (selection && selection.featureKeys?.length && Array.isArray(data) && viewport) {
-		const selectedId = selection.featureKeys[0];
-		const selectedFeature = data.find((f: any) => f.id === selectedId);
-		const coordinates = selectedFeature?.coordinates;
-		const tooltipSettings = geojsonOptions?.tooltipSettings;
+	// ---------- Tooltip creation ----------
+	let tooltip: React.ReactNode = null;
+
+	if (tooltipSettings && tooltipType !== 'native') {
 		const tooltipOffsetX = tooltipSettings?.offsetX || 0;
-		const tooltipOffsetY = tooltipSettings?.offsetY || 0;
-		const tooltipAttributes = tooltipSettings?.attributes || [];
-		const tooltipProperties = getTooltipAttributes(tooltipAttributes, selectedFeature);
-		console.log(tooltipProperties, tooltipSettings, selectedFeature);
-		if (selectedFeature && Array.isArray(coordinates) && coordinates.length === 2) {
-			const [x, y] = viewport.project(coordinates);
-			if (CustomTooltip) {
+		const tooltipOffsetY = tooltipSettings?.offsetY || -10;
+		const tooltipAttributes = tooltipSettings.attributes || [];
+
+		// Hover-based tooltip (independent of selection)
+		if ((tooltipType === 'hover' || tooltipType === 'click') && featureInfo) {
+			const { feature, x, y } = featureInfo;
+			const tooltipProperties = getTooltipAttributes(tooltipAttributes, feature);
+			const xPos = x + tooltipOffsetX;
+			const yPos = y + tooltipOffsetY;
+
+			if (CustomTooltip && typeof CustomTooltip === 'function') {
 				tooltip = React.createElement(CustomTooltip, {
-					x: x + tooltipOffsetX,
-					y: y + tooltipOffsetY,
-					tooltipProperties: tooltipProperties,
+					x: xPos,
+					y: yPos,
+					tooltipProperties,
 				});
 			} else {
-				tooltip = <MapTooltip x={x + tooltipOffsetX} y={y + tooltipOffsetY} tooltipProperties={tooltipProperties} />;
+				tooltip = <MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />;
+			}
+		}
+
+		// Click/selection-based tooltip: tied to selection
+		if (tooltipType === 'selection' && Array.isArray(data) && selection && selection.featureKeys?.length && viewport) {
+			const selectedId = selection.featureKeys[0];
+			const selectedFeature = data.find((f: any) => f.id === selectedId);
+			const coordinates = selectedFeature?.coordinates;
+			if (selectedFeature && Array.isArray(coordinates) && coordinates.length === 2) {
+				const [px, py] = viewport.project(coordinates);
+				const xPos = px + tooltipOffsetX;
+				const yPos = py + tooltipOffsetY;
+				const tooltipProperties = getTooltipAttributes(tooltipAttributes, selectedFeature);
+
+				if (CustomTooltip && typeof CustomTooltip === 'function') {
+					tooltip = React.createElement(CustomTooltip, {
+						x: xPos,
+						y: yPos,
+						tooltipProperties,
+					});
+				} else {
+					tooltip = <MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />;
+				}
 			}
 		}
 	}
 
-	console.log(tooltip, tooltipPosition);
+	console.log(featureInfo, tooltip, CustomTooltip, typeof CustomTooltip, featureInfo);
 
 	/**
-	 * Memoizes the creation of the IconLayer instance to avoid unnecessary re-renders.
-	 * The layer instance is recreated only when its dependencies change.
-	 *
-	 * @returns {IconLayer|null} The DeckGL IconLayer instance or null if loading.
+	 * Memoizes the creation of the IconLayer instance to avoid unnecessary re-creation.
 	 */
 	const layerInstance: IconLayer | null = useMemo(() => {
 		if (isDataLoading || !data || !iconAtlas || !iconMapping) {
 			return null;
 		}
+
 		return new IconLayer({
 			id: key,
-
-			onHover: (info) => {
-				setTooltipPosition(info.x != null && info.y != null ? { x: info.x, y: info.y } : null);
-			},
-
 			opacity: opacity ?? 1,
 			visible: isActive,
 			data,
+			iconAtlas,
+			iconMapping,
 			updateTriggers: {
 				getColor: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
 			},
+			// Only track hover when tooltipType === 'hover'
+			onHover: (info) => {
+				if (tooltipType !== 'hover') return;
+				if (info.object && info.x != null && info.y != null) {
+					setFeatureInfo({ feature: info.object, x: info.x, y: info.y });
+				} else {
+					setFeatureInfo(null);
+				}
+			},
+			onClick: (info) => {
+				if (tooltipType !== 'click') return;
+				if (!featureInfo || featureInfo.feature !== info.object) {
+					setFeatureInfo({ feature: info.object, x: info.x, y: info.y });
+				} else {
+					setFeatureInfo(null);
+				}
+			},
+			onDrag: () => {
+				// Clear tooltip on drag to avoid mispositioning
+				setFeatureInfo(null);
+			},
+
 			getSize: 40,
 			getPosition: (d: { coordinates: [number, number] }) => d?.coordinates,
 			...layerStyle,
@@ -193,12 +224,10 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 		layerStyle,
 		selection,
 		data,
-		geojsonOptions,
-		isLoading,
-		error,
 		iconAtlas,
 		iconMapping,
 		isDataLoading,
+		tooltipType,
 	]);
 
 	useEffect(() => {
@@ -206,6 +235,6 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 		return () => onLayerUpdate(key, null);
 	}, [layerInstance, key, onLayerUpdate]);
 
-	// --- Render the tooltip directly ---
+	// Render tooltip for this layer (if any); layer itself is managed via onLayerUpdate
 	return tooltip;
 });

@@ -52,7 +52,10 @@ export const getMapTooltip = ({
 	const tooltipStyles = tooltipSettings?.nativeStyles || {};
 	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`;
 	const tooltipTitle = tooltipSettings?.title || '';
+	const tooltipType = tooltipSettings?.type || 'native';
 	const featureProperties = info.object?.properties || {};
+
+	if (tooltipType !== 'native') return null;
 
 	let tooltipProperties: TooltipAttribute[] | undefined;
 

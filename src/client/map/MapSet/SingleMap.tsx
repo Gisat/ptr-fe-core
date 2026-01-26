@@ -42,7 +42,6 @@ type LayerRegistry = Record<string, LayerInstance>;
 export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [controlIsDown, setControlIsDown] = useState(false);
-	const [tooltip, setTooltip] = useState<{ x: number; y: number; tooltipProperties: TooltipAttribute[] } | null>(null);
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
 
 	const mapRef = React.useRef<HTMLDivElement>(null);
@@ -139,9 +138,7 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 		handleMapHover({
 			event,
 			mapLayers,
-			setTooltip,
 			setLayerIsHovered,
-			useCustomTooltip,
 		});
 	};
 
@@ -152,7 +149,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 	 */
 	const onViewStateChange = ({ viewState, oldViewState }: ViewStateChangeParameters) => {
 		// Hide tooltip during view changes to avoid mispositioning
-		setTooltip(null);
 		// Get changed view params
 		const change = getViewChange(oldViewState, viewState);
 		// Apply changes to map view if there are any
@@ -204,17 +200,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 					});
 				}}
 			/>
-			{useCustomTooltip &&
-				tooltip &&
-				(typeof CustomTooltip === 'object' ? (
-					React.createElement(CustomTooltip, {
-						x: tooltip.x,
-						y: tooltip.y,
-						tooltipProperties: tooltip.tooltipProperties,
-					})
-				) : (
-					<MapTooltip x={tooltip.x} y={tooltip.y - verticalOffset} tooltipProperties={tooltip.tooltipProperties} />
-				))}
 		</div>
 	);
 };

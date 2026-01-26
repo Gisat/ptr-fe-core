@@ -44,16 +44,9 @@ interface HandleMapHoverParams {
  * @param {HandleMapHoverParams} params - Parameters for hover handling.
  * @returns {void}
  */
-export function handleMapHover({
-	event,
-	mapLayers,
-	setTooltip,
-	setLayerIsHovered,
-	useCustomTooltip,
-}: HandleMapHoverParams): void {
+export function handleMapHover({ event, mapLayers, setLayerIsHovered }: HandleMapHoverParams): void {
 	// Early exit: no feature hovered or missing coordinates
 	if (!event.object || event.x == null || event.y == null) {
-		setTooltip(null);
 		setLayerIsHovered(false);
 		return;
 	}
@@ -71,42 +64,4 @@ export function handleMapHover({
 	// Update hover state for cursor feedback
 	const selectionsEnabled = !config?.geojsonOptions?.disableSelections;
 	setLayerIsHovered(selectionsEnabled && !!layerId);
-
-	// If using DeckGL's native tooltip, skip custom tooltip logic
-	if (!useCustomTooltip) return;
-
-	// Check if tooltip is enabled in config
-	const tooltipEnabled = !config?.geojsonOptions?.disableTooltip;
-	if (!tooltipEnabled) {
-		setTooltip(null);
-		return;
-	}
-
-	const tooltipSettings = config?.geojsonOptions?.tooltipSettings;
-	let tooltipProperties: TooltipAttribute[] | undefined;
-
-	/**
-	 * If tooltip attributes are defined in settings, use them.
-	 * Otherwise, tooltip will not be shown.
-	 */
-	if (tooltipSettings?.attributes && Array.isArray(tooltipSettings.attributes)) {
-		tooltipProperties = getTooltipAttributes(tooltipSettings.attributes, featureProperties);
-	}
-
-	/**
-	 * If no valid tooltip properties, do not show tooltip.
-	 */
-	if (!tooltipProperties || tooltipProperties.length === 0) {
-		setTooltip(null);
-		return;
-	}
-
-	/**
-	 * Update both position and content of the tooltip.
-	 */
-	setTooltip({
-		x: event.x,
-		y: event.y,
-		tooltipProperties,
-	});
 }

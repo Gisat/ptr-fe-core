@@ -77,9 +77,25 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 								/>
 							);
 						case 'geojson':
-							return <GeojsonLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+							return (
+								<GeojsonLayerSource
+									key={layer.key}
+									layer={layer}
+									onLayerUpdate={onLayerUpdate}
+									viewport={viewport}
+									CustomTooltip={CustomTooltip}
+								/>
+							);
 						default:
-							return <GeojsonLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+							return (
+								<GeojsonLayerSource
+									key={layer.key}
+									layer={layer}
+									onLayerUpdate={onLayerUpdate}
+									viewport={viewport}
+									CustomTooltip={CustomTooltip}
+								/>
+							);
 					}
 				} else {
 					// Log a warning if the datasource type is unknown
