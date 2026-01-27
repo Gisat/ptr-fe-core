@@ -39,6 +39,7 @@ const defaultLayerStyle = {
 /**
  * A React component that creates and manages a GeoJSON layer.
  * This component uses the `GeoJsonLayer` from `@deck.gl/layers` to render GeoJSON data.
+ * It also integrates tooltip functionality for hover, click, and selection-based tooltips.
  *
  * @param {LayerSourceProps} props - The props for the GeojsonLayerSource component.
  * @param {RenderingLayer} props.layer - The layer configuration object.

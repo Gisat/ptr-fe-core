@@ -15,13 +15,9 @@ interface HandleMapHoverParams {
 }
 
 /**
- * Handles hover events on the map and sets tooltip if enabled.
+ * Handles hover events on the map.
  *
- * - Shows tooltip with feature properties if enabled in layer configuration.
- * - Tooltip attributes and formatting are defined in geojsonOptions.tooltipSettings.
- * - If no attributes are defined, uses 'value' property if present.
- * - Tooltip is hidden if not enabled or no valid properties found.
- * - Also updates layer hover state for cursor feedback.
+ * - Checks if a feature is hovered and retrieves layer configuration.
  *
  * @param {HandleMapHoverParams} params - Parameters for hover handling.
  * @returns {void}

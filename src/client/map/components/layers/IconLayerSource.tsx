@@ -28,7 +28,16 @@ const defaultLayerStyle = {
 /**
  * IconLayerSource is a React component that creates and manages a DeckGL IconLayer.
  * This component uses the `IconLayer` from `@deck.gl/layers` to render icon markers
- * based on array data, with support for selection coloring and interactivity.
+ * based on GeoJSON or array data, with support for selection coloring and interactivity.
+ * It also integrates tooltip functionality for hover, click, and selection-based tooltips.
+ *
+ * **Note:** The `layerStyle` object must include both `iconAtlas` (the icon sprite image)
+ * and `iconMapping` (an object mapping icon names to their positions/sizes in the atlas).
+ * If either is missing, the IconLayer will not render.
+ *
+ * **Note:** Added default `getPosition` accessor to ensure proper icon placement and getSize
+ * for icon sizing. Otherwise there might be issues with icons not appearing.
+ * These can be overridden by providing them in the `layerStyle`.
  *
  * @param {LayerSourceProps} props - The props for the IconLayerSource component.
  * @param {RenderingLayer} props.layer - The layer configuration object.
@@ -50,23 +59,26 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 		y: number;
 	} | null>(null);
 
-	// Basic datasource checks
+	// We need a fallback URL if no route is provided (e.g. external static GeoJSON file)
 	if (!url && !route) {
 		throw new Error(`IconLayerSource: Missing both route and url in datasource: ${key}`);
 	}
 
+	// Log a warning if the documentId is missing
 	if (!documentId) {
 		console.warn(`IconLayerSource: Missing documentId in datasource: ${key}`);
 	}
 
 	// Parse datasource configuration
 	const config = parseDatasourceConfiguration(configuration);
+	// Extract GeoJSON options from the parsed configuration
+	// TODO geojsonOptions are currently used for styling and featureIdProperty, solve this properly in the future
 	const geojsonOptions = config?.geojsonOptions;
 	if (!geojsonOptions) {
 		console.warn(`IconLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
 	}
 
-	// Icon atlas / mapping from style (sprite mode)
+	// Extract iconAtlas and iconMapping from layerStyle
 	const iconAtlas = geojsonOptions?.layerStyle?.iconAtlas;
 	const iconMapping = geojsonOptions?.layerStyle?.iconMapping;
 
@@ -84,7 +96,7 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 	const tooltipType = tooltipSettings?.type || (CustomTooltip ? TooltipType.Hover : TooltipType.Native);
 	const tooltipEnabled = !geojsonOptions?.disableTooltip;
 
-	// Fetch data (memoization of args recommended if useAxios depends on object identity)
+	// Load the data from route
 	const {
 		data: fetchedData,
 		error,
@@ -218,24 +230,16 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 			getColor,
 			pickable: isInteractive ?? layerStyle.pickable,
 		});
-	}, [
-		isActive,
-		key,
-		opacity,
-		isInteractive,
-		layerStyle,
-		selection,
-		data,
-		iconAtlas,
-		iconMapping,
-		isDataLoading,
-		tooltipType,
-		featureInfo,
-	]);
+	}, [isActive, key, opacity, isInteractive, layerStyle, selection, data, iconAtlas, iconMapping, isDataLoading]);
 
+	/**
+	 * Effect hook to handle layer updates.
+	 * The `onLayerUpdate` callback is called with the layer instance when the component mounts
+	 * and with `null` when the component unmounts.
+	 */
 	useEffect(() => {
 		onLayerUpdate(key, layerInstance);
-		return () => onLayerUpdate(key, null);
+		return () => onLayerUpdate(key, null); // cleanup on unmount
 	}, [layerInstance, key, onLayerUpdate]);
 
 	// Render tooltip for this layer (if any); layer itself is managed via onLayerUpdate
