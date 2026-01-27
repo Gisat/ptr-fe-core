@@ -34,6 +34,7 @@ export const getMapTooltip = ({
 	mapLayers: RenderingLayer[] | undefined;
 	verticalOffset: number;
 }) => {
+	console.log('[getMapTooltip] Generating tooltip for picking info:', info);
 	// Early exit if no feature is hovered or layer is missing
 	if (!info.object || !info.layer) return null;
 
@@ -53,7 +54,9 @@ export const getMapTooltip = ({
 	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`;
 	const tooltipTitle = tooltipSettings?.title || '';
 	const tooltipType = tooltipSettings?.type || 'native';
-	const featureProperties = info.object?.properties || {};
+	const offsetX = tooltipSettings?.offsetX || 0;
+	const offsetY = tooltipSettings?.offsetY || verticalOffset;
+	const featureProperties = info.object?.properties || info.object || {};
 
 	if (tooltipType !== 'native') return null;
 
@@ -65,6 +68,10 @@ export const getMapTooltip = ({
 	}
 	// If no valid tooltip properties, do not show tooltip
 	if (!tooltipProperties || tooltipProperties.length === 0) {
+		console.warn('[getMapTooltip] No valid tooltip attributes found for feature.', {
+			featureProperties,
+			tooltipSettings,
+		});
 		return null;
 	}
 
@@ -104,8 +111,8 @@ export const getMapTooltip = ({
 		style: {
 			backgroundColor: 'var(--base0)',
 			padding: '6px 10px',
-			left: `${info.x}px`,
-			top: `${info.y - verticalOffset}px`,
+			left: `${info.x + offsetX}px`,
+			top: `${info.y + offsetY}px`,
 			transform: 'translate(-50%, -100%)',
 			...tooltipStyles,
 		},

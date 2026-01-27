@@ -1,7 +1,7 @@
 import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { MVTLayer, TileLayer, _WMSLayer as WMSLayer } from '@deck.gl/geo-layers';
 import { GeoJsonLayer } from '@deck.gl/layers';
-import { Layer } from '@deck.gl/core';
+import { Layer, Viewport } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { XYZLayerSource } from './XYZLayerSource';
 import { COGLayerSource } from './COGLayerSource';
@@ -23,6 +23,8 @@ export type LayerInstance = TileLayer<ImageBitmap> | GeoJsonLayer | WMSLayer | M
 interface LayerManagerProps {
 	layers: RenderingLayer[];
 	onLayerUpdate: (id: string, instance: LayerInstance) => void;
+	viewport: Viewport | null;
+	CustomTooltip?: React.ElementType | boolean;
 }
 
 /**
@@ -33,6 +35,8 @@ interface LayerManagerProps {
 export interface LayerSourceProps {
 	layer: RenderingLayer;
 	onLayerUpdate: (id: string, instance: LayerInstance) => void;
+	viewport?: Viewport | null;
+	CustomTooltip?: React.ElementType | boolean;
 }
 
 /**

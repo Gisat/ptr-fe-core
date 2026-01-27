@@ -10,41 +10,17 @@ import { useAxios } from '../../../shared/hooks/useAxios';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
 import { Feature } from '../../../shared/models/models.feature';
-import { getTooltipAttributes } from '../../../shared/helpers/getTooltipAttributes';
-import { MapTooltip } from '../../MapSet/MapTooltip/MapTooltip';
+import { getFeatureCentroid } from '../../../shared/helpers/getFeatureCentroid';
+import { getLayerTooltip } from '../../MapSet/MapTooltip/getLayerTooltip';
 
-// Accepts Feature or Geometry, Polygon or MultiPolygon
-function getPolygonCenter(feature) {
-	let geometry = feature.geometry || feature;
-	let polygonFeature;
-
-	if (geometry.type === 'Polygon') {
-		polygonFeature = {
-			type: 'Feature',
-			geometry: {
-				type: 'Polygon',
-				coordinates: geometry.coordinates,
-			},
-			properties: feature.properties || {},
-		};
-	} else if (geometry.type === 'MultiPolygon') {
-		// Use the first polygon in MultiPolygon for center calculation
-		polygonFeature = {
-			type: 'Feature',
-			geometry: {
-				type: 'Polygon',
-				coordinates: geometry.coordinates[0],
-			},
-			properties: feature.properties || {},
-		};
-	} else {
-		// Fallback: treat as Point or LineString
-		return geometry.coordinates;
-	}
-
-	const centerPoint = center(polygonFeature);
-	return centerPoint.geometry.coordinates; // [lng, lat]
+/** What our API returns when we call the route. */
+export interface GeojsonFeatureCollection {
+	type: 'FeatureCollection';
+	features: Feature[];
 }
+
+/** All shapes we *might* pass to deck.gl GeoJsonLayer `data` prop. */
+type DeckGeoJsonData = string | GeojsonFeatureCollection | Feature | Feature[];
 
 /**
  * Default layer style for GeoJsonLayer rendering.
@@ -78,7 +54,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	const method = fetchOptions?.method;
 
 	// Hover info for hover-based tooltip
-	const [featureInfo, setFeatureInfo] = useState<{ feature: any; x: number; y: number } | null>(null);
+	const [featureInfo, setFeatureInfo] = useState<{ feature: Feature; x: number; y: number } | null>(null);
 
 	// We need a fallback URL if no route is provided (e.g. external static GeoJSON file)
 	if (!url && !route) {
@@ -111,17 +87,18 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 
 	// Tooltip settings
 	const tooltipSettings = geojsonOptions?.tooltipSettings;
-	const tooltipType = tooltipSettings?.type || 'native'; // 'native' | 'hover' | 'click' | 'selection'
+	const tooltipType = tooltipSettings?.type || (CustomTooltip ? 'hover' : 'native'); // 'native' | 'hover' | 'click' | 'selection'
+	const tooltipEnabled = !geojsonOptions?.disableTooltip;
 
 	// Load the data from route
-	let {
+	const {
 		data: fetchedData,
 		error,
 		isLoading,
-	} = useAxios(
+	} = useAxios<DeckGeoJsonData>(
 		{ fetchUrl: route },
 		undefined,
-		{ documentId: documentId, validIntervalIso, url },
+		{ documentId, validIntervalIso, url },
 		{ method, skip: !route }
 	);
 
@@ -131,7 +108,25 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	 * 2. If no route is provided OR there is an error fetching from the route, fallback to url.
 	 */
 	const data = route && fetchedData && !error ? fetchedData : url;
-	const features = data?.features;
+
+	// Always normalize to an array for features used in selection & tooltips
+	let features: Feature[] = [];
+
+	if (Array.isArray(data)) {
+		// Array of features
+		features = data as Feature[];
+	}
+	if (typeof data === 'object' && data !== null) {
+		if (
+			(data as GeojsonFeatureCollection).type === 'FeatureCollection' &&
+			Array.isArray((data as GeojsonFeatureCollection).features)
+		) {
+			features = (data as GeojsonFeatureCollection).features;
+		}
+		if ((data as Feature).type === 'Feature') {
+			features = [data as Feature];
+		}
+	}
 
 	// We only show "loading" if we are actively trying to fetch from a route and haven't failed yet
 	const isDataLoading = !!route && isLoading && !error;
@@ -170,70 +165,21 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	}
 
 	// ---------- Tooltip creation ----------
-	let tooltip: React.ReactNode = null;
+	const tooltip =
+		tooltipEnabled &&
+		getLayerTooltip({
+			tooltipSettings,
+			featureInfo,
+			data: features,
+			selection,
+			viewport,
+			CustomTooltip,
+			getCoordinates: (selectedFeature: Feature) => {
+				return getFeatureCentroid(selectedFeature);
+			},
+		});
 
-	if (tooltipSettings && tooltipType !== 'native') {
-		const tooltipOffsetX = tooltipSettings?.offsetX || 0;
-		const tooltipOffsetY = tooltipSettings?.offsetY || 0;
-		const tooltipAttributes = tooltipSettings.attributes || [];
-
-		// Hover-based tooltip (independent of selection)
-		if ((tooltipType === 'hover' || tooltipType === 'click') && featureInfo) {
-			const { feature, x, y } = featureInfo;
-			const tooltipProperties = getTooltipAttributes(tooltipAttributes, feature?.properties);
-
-			const xPos = x + tooltipOffsetX;
-			const yPos = y + tooltipOffsetY;
-
-			if (CustomTooltip && typeof CustomTooltip === 'function') {
-				tooltip = React.createElement(CustomTooltip, {
-					x: xPos,
-					y: yPos,
-					tooltipProperties,
-				});
-			} else {
-				tooltip = <MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />;
-			}
-		}
-
-		// Click/selection-based tooltip: tied to selection
-		if (
-			tooltipType === 'selection' &&
-			Array.isArray(features) &&
-			selection &&
-			selection.featureKeys?.length &&
-			viewport
-		) {
-			const selectedId = selection.featureKeys[0];
-			const selectedFeature = features.find((f: any) => f.id === selectedId);
-			let coordinates;
-			// For Polygon geometries, calculate center for tooltip placement
-			if (selectedFeature?.geometry?.type === 'Polygon' || selectedFeature?.geometry?.type === 'MultiPolygon') {
-				coordinates = getPolygonCenter(selectedFeature);
-			} else {
-				coordinates = selectedFeature?.geometry?.coordinates;
-			}
-			console.log(coordinates);
-			if (selectedFeature && Array.isArray(coordinates) && coordinates.length === 2) {
-				const [px, py] = viewport.project(coordinates);
-				const xPos = px + tooltipOffsetX;
-				const yPos = py + tooltipOffsetY;
-				const tooltipProperties = getTooltipAttributes(tooltipAttributes, selectedFeature?.properties);
-
-				if (CustomTooltip && typeof CustomTooltip === 'function') {
-					tooltip = React.createElement(CustomTooltip, {
-						x: xPos,
-						y: yPos,
-						tooltipProperties,
-					});
-				} else {
-					tooltip = <MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />;
-				}
-			}
-		}
-	}
-
-	console.log(featureInfo, tooltip, CustomTooltip, typeof CustomTooltip, featureInfo, tooltipType, features);
+	// console.log(featureInfo, tooltip, CustomTooltip, typeof CustomTooltip, featureInfo, tooltipType, features);
 
 	/**
 	 * Memoize the creation of the GeoJsonLayer instance to avoid unnecessary re-renders.
@@ -275,7 +221,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 			},
 			onDrag: () => {
 				// Clear tooltip on drag to avoid mispositioning
-				setFeatureInfo(null);
+				tooltipEnabled && setFeatureInfo(null);
 			},
 			...layerStyle,
 			getLineColor,

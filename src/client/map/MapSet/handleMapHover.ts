@@ -1,35 +1,17 @@
 import { PickingInfo } from '@deck.gl/core';
 import { RenderingLayer } from '../../shared/models/models.layers';
 import { parseDatasourceConfiguration } from '../../shared/models/parsers.datasources';
-import { getTooltipAttributes } from '../../shared/helpers/getTooltipAttributes';
-import { TooltipAttribute } from '../../shared/models/models.tooltip';
-
-/**
- * Tooltip state object.
- * @property {number} x - X position for tooltip (screen coordinates).
- * @property {number} y - Y position for tooltip (screen coordinates).
- * @property {TooltipAttribute[]} tooltipProperties - Array of tooltip attributes to display.
- */
-interface TooltipState {
-	x: number;
-	y: number;
-	tooltipProperties: TooltipAttribute[];
-}
 
 /**
  * Parameters for handleMapHover function.
  * @property {PickingInfo} event - DeckGL picking event.
  * @property {RenderingLayer[] | undefined} mapLayers - Array of map layers.
- * @property {(tooltip: TooltipState | null) => void} setTooltip - Function to set tooltip state.
  * @property {(isHovered: boolean) => void} setLayerIsHovered - Function to set hover state.
- * @property {boolean} useCustomTooltip - Whether to use custom tooltip logic.
  */
 interface HandleMapHoverParams {
 	event: PickingInfo;
 	mapLayers: RenderingLayer[] | undefined;
-	setTooltip: (tooltip: TooltipState | null) => void;
 	setLayerIsHovered: (isHovered: boolean) => void;
-	useCustomTooltip: boolean;
 }
 
 /**
@@ -56,8 +38,6 @@ export function handleMapHover({ event, mapLayers, setLayerIsHovered }: HandleMa
 	const mapLayer = Array.isArray(mapLayers)
 		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
 		: undefined;
-
-	const featureProperties = event.object?.properties;
 
 	const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
 

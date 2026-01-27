@@ -1,12 +1,14 @@
+import type { Geometry, GeometryCollection, GeoJsonProperties, Feature as GeoJSONFeature } from 'geojson';
+
 /**
- * Represents the structure needed for feature identification and property access.
- * @typedef {Object} Feature
- * @property {'Feature'} type - The GeoJSON feature type.
- * @property {string} [id] - Optional feature identifier.
- * @property {Object.<string, string>} [properties] - Optional feature properties.
+ * Application-wide Feature type.
+ * - Fully compatible with standard GeoJSON Feature.
+ * - Optionally extended with a flat [lng, lat] helper coordinate.
  */
-export interface Feature {
-	type: 'Feature';
-	id?: string;
-	properties?: { [key: string]: string };
-}
+export type Feature = GeoJSONFeature<Exclude<Geometry, GeometryCollection>, GeoJsonProperties> & {
+	/**
+	 * Optional flat [lng, lat] coordinates for non-GeoJSON / simplified cases.
+	 * For true GeoJSON, prefer `geometry.coordinates`.
+	 */
+	coordinates?: [number, number];
+};

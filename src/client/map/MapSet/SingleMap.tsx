@@ -12,13 +12,11 @@ import { getViewChange } from '../logic/mapView/getViewChange';
 import { handleMapClick } from './handleMapClick';
 import { handleMapHover } from './handleMapHover';
 import { getMapTooltip } from './MapTooltip/getMapTooltip';
-import { MapTooltip } from './MapTooltip/MapTooltip';
 import { LayerInstance, LayerManager } from '../components/layers/LayerManager';
 import { RenderingLayer } from '../../shared/models/models.layers';
-import { TooltipAttribute } from '../../shared/models/models.tooltip';
 
-const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = 10;
-const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = 20;
+const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = -10;
+const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = -20;
 
 export interface BasicMapProps {
 	/** Map set identifier */
@@ -45,17 +43,17 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
 
 	const mapRef = React.useRef<HTMLDivElement>(null);
-	const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
+	const [mapSize, setMapSize] = useState<{ width: number; height: number } | null>(null);
 
 	useEffect(() => {
 		const node = mapRef.current;
 		if (!node) return;
+
 		const updateSize = () => {
-			setMapSize({
-				width: node.offsetWidth,
-				height: node.offsetHeight,
-			});
+			const next = { width: node.offsetWidth, height: node.offsetHeight };
+			setMapSize((prev) => (!prev || prev.width !== next.width || prev.height !== next.height ? next : prev));
 		};
+
 		updateSize();
 		const resizeObserver = new window.ResizeObserver(updateSize);
 		resizeObserver.observe(node);
@@ -83,9 +81,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 			.map((layer: RenderingLayer) => layerRegistry[layer.key])
 			.filter((layer: LayerInstance) => layer !== null && layer !== undefined);
 	}, [mapLayers, layerRegistry]);
-
-	/** Determines if custom tooltip logic should be used */
-	const useCustomTooltip = Boolean(CustomTooltip);
 
 	/**
 	 * On mount: sync the map view and set up keyboard listeners for Ctrl key.
@@ -148,7 +143,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 	 * @param {ViewStateChangeParameters} params - The parameters describing the view state change.
 	 */
 	const onViewStateChange = ({ viewState, oldViewState }: ViewStateChangeParameters) => {
-		// Hide tooltip during view changes to avoid mispositioning
 		// Get changed view params
 		const change = getViewChange(oldViewState, viewState);
 		// Apply changes to map view if there are any
@@ -165,16 +159,20 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 		? TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER
 		: TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER;
 
-	const viewport = new WebMercatorViewport({
-		...mapViewState,
-		width: mapSize.width,
-		height: mapSize.height,
-	});
-
-	// console.log(mapRef.current, viewport, layerIsHovered);
+	const viewport = useMemo(
+		() =>
+			mapSize
+				? new WebMercatorViewport({
+						...mapViewState,
+						width: mapSize.width,
+						height: mapSize.height,
+					})
+				: null,
+		[mapViewState, mapSize]
+	);
 
 	return (
-		<div ref={mapRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+		<div className="ptr-SingleMap" ref={mapRef}>
 			<LayerManager
 				layers={mapLayers}
 				onLayerUpdate={handleLayerUpdate}
@@ -192,7 +190,7 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 				onHover={onHover}
 				getCursor={({ isDragging }) => (isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab')}
 				getTooltip={(info) => {
-					if (useCustomTooltip) return null;
+					if (CustomTooltip) return null;
 					return getMapTooltip({
 						info,
 						mapLayers,
