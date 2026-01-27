@@ -43,7 +43,8 @@ export interface LayerTooltipParams {
  * Shared logic for rendering hover/click/selection tooltips for map layers.
  *
  * - Uses `featureInfo` for hover/click tooltips (screen-space x/y already known).
- * - Uses `selection` + `viewport` + `getCoordinates` for selection tooltips.
+ * - Uses `selection.featureKeys` (potentially multiple) + `viewport` + `getCoordinates`
+ *   for selection tooltips, rendering one tooltip per selected feature.
  * - Falls back to "native" tooltips when requested and no CustomTooltip is provided.
  *
  * @param params Tooltip configuration and layer state.
@@ -87,6 +88,7 @@ export function getLayerTooltip({
 
 		if (CustomTooltip && typeof CustomTooltip === 'function') {
 			tooltip = React.createElement(CustomTooltip, {
+				feature,
 				x: xPos,
 				y: yPos,
 				tooltipProperties,
@@ -97,55 +99,63 @@ export function getLayerTooltip({
 	}
 
 	// ---------------------------------------------------------------------
-	// Selection tooltip (feature centroid -> project through viewport)
+	// Selection tooltip(s) (feature centroid(s) -> project through viewport)
+	// Renders one tooltip per selected feature key in `selection.featureKeys`.
 	// ---------------------------------------------------------------------
 	if (tooltipType === TooltipType.Selection) {
 		if (!viewport) {
 			console.warn('getLayerTooltip: selection tooltip requested but no viewport provided. Tooltip will not be shown.');
-		} else if (!selection?.featureKeys?.length) {
-			// No selection made, no tooltip to show, no need to warn
+		} else if (!selection || !selection.featureKeys?.length) {
+			// No selection – nothing to render
 			return null;
 		} else if (!data.length) {
 			console.warn(
 				'getLayerTooltip: selection tooltip requested but no (fetched) data available. Tooltip will not be shown.'
 			);
 		} else {
-			const selectedId = selection.featureKeys[0];
-			const selectedFeature = data.find((f) => f.id === selectedId);
+			const selectedIds = selection.featureKeys;
+			const tooltips: React.ReactNode[] = [];
 
-			if (!selectedFeature) {
-				console.warn('getLayerTooltip: selection tooltip requested but selected feature not found in data.', {
-					selectedId,
-					featureKeys: selection.featureKeys,
-				});
-			} else {
-				// Delegate coordinate computation to layer-specific function.
+			for (const selectedId of selectedIds) {
+				const selectedFeature = data.find((f) => f.id === selectedId);
+				if (!selectedFeature) {
+					console.warn('getLayerTooltip: selected feature not found in data for selection tooltip.', { selectedId });
+					continue;
+				}
+
 				const coordinates = getCoordinates(selectedFeature);
-
 				if (!coordinates) {
 					console.warn(
-						'getLayerTooltip: getCoordinates returned no coordinate for selected feature. Tooltip will not be shown.',
+						'getLayerTooltip: getCoordinates returned no coordinate for selected feature. Tooltip will not be shown for this feature.',
 						selectedFeature
 					);
-				} else {
-					const [px, py] = viewport.project(coordinates);
-					const xPos = px + tooltipOffsetX;
-					const yPos = py + tooltipOffsetY;
-					const tooltipProperties = getTooltipAttributes(
-						tooltipAttributes,
-						selectedFeature.properties ?? selectedFeature
-					);
+					continue;
+				}
 
-					if (CustomTooltip && typeof CustomTooltip === 'function') {
-						tooltip = React.createElement(CustomTooltip, {
+				const [px, py] = viewport.project(coordinates);
+				const xPos = px + tooltipOffsetX;
+				const yPos = py + tooltipOffsetY;
+				const tooltipProperties = getTooltipAttributes(
+					tooltipAttributes,
+					selectedFeature.properties ?? selectedFeature
+				);
+
+				if (CustomTooltip && typeof CustomTooltip === 'function') {
+					tooltips.push(
+						React.createElement(CustomTooltip, {
+							feature: selectedFeature,
 							x: xPos,
 							y: yPos,
 							tooltipProperties,
-						});
-					} else {
-						tooltip = <MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />;
-					}
+						})
+					);
+				} else {
+					tooltips.push(<MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />);
 				}
+			}
+
+			if (tooltips.length) {
+				tooltip = tooltips;
 			}
 		}
 	}

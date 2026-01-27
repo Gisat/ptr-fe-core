@@ -19,7 +19,6 @@ import type { Geometry, GeometryCollection, GeoJsonProperties, Feature as GeoJSO
  * // With helper coordinates (for IconLayer, etc.)
  * const iconFeature: MapFeature = {
  *   type: 'Feature',
- *   geometry: { type: 'Point', coordinates: [14.42, 50.08] },
  *   properties: { name: 'Prague' },
  *   coordinates: [14.42, 50.08]
  * };
