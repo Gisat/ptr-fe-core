@@ -5,7 +5,7 @@ import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { getFeatureId } from '../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../shared/helpers/hexToRgbArray';
 import { SELECTION_DEFAULT_COLOUR } from '../../shared/constants/colors';
-import { Feature } from '../../shared/models/models.feature';
+import { Feature } from '../../shared/models/models.mapFeature';
 
 /**
  * Default layer style for GeoJsonLayer rendering.

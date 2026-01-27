@@ -8,8 +8,9 @@ import { getSelectionByKey } from '../../../shared/appState/selectors/getSelecti
 import { useAxios } from '../../../shared/hooks/useAxios';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-import { Feature } from '../../../shared/models/models.feature';
+import { MapFeature } from '../../../shared/models/models.mapFeature';
 import { getLayerTooltip } from '../../MapSet/MapTooltip/getLayerTooltip';
+import { TooltipType } from '../../../shared/models/models.tooltip';
 
 /**
  * Default layer style for IconLayer rendering.
@@ -42,8 +43,12 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 	const route = fetchOptions?.route;
 	const method = fetchOptions?.method;
 
-	// Hover/click info for tooltip
-	const [featureInfo, setFeatureInfo] = useState<{ feature: any; x: number; y: number } | null>(null);
+	// Hover info for hover-based tooltip
+	const [featureInfo, setFeatureInfo] = useState<{
+		feature: MapFeature;
+		x: number;
+		y: number;
+	} | null>(null);
 
 	// Basic datasource checks
 	if (!url && !route) {
@@ -74,9 +79,9 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 	const distinctColours = selection?.distinctColours ?? [SELECTION_DEFAULT_COLOUR];
 	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
 
-	// Tooltip settings
+	// Tooltip settings from geojsonOptions (styling & behavior)
 	const tooltipSettings = geojsonOptions?.tooltipSettings;
-	const tooltipType = tooltipSettings?.type || (CustomTooltip ? 'hover' : 'native'); // 'native' | 'hover' | 'click' | 'selection'
+	const tooltipType = tooltipSettings?.type || (CustomTooltip ? TooltipType.Hover : TooltipType.Native); // TooltipType.Native | TooltipType.Hover | TooltipType.Click | TooltipType.Selection
 	const tooltipEnabled = !geojsonOptions?.disableTooltip;
 
 	// Fetch data (memoization of args recommended if useAxios depends on object identity)
@@ -98,13 +103,16 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 	 */
 	const data = route && fetchedData && !error ? fetchedData : url;
 
+	// Normalize to MapFeature[] for selection & tooltips
+	const features: MapFeature[] = Array.isArray(data) ? (data as MapFeature[]) : [];
+
 	// Show "loading" only when fetching from route and not failed yet
 	const isDataLoading = !!route && isLoading && !error;
 
 	/**
 	 * Returns the color for a feature. If selected, returns selection color, otherwise layer default.
 	 */
-	function getColor(feature: Feature): number[] {
+	function getColor(feature: MapFeature): number[] {
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
@@ -117,17 +125,23 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 		return layerStyle.getColor;
 	}
 
-	// ---------- Tooltip creation (shared logic) ----------
+	// ---------- Tooltip creation ----------
+	/**
+	 * Compute tooltip React node based on:
+	 * - hover/click featureInfo (screen-space tooltip)
+	 * - or selection + viewport + feature.coordinates (map-space tooltip)
+	 */
 	const tooltip =
 		tooltipEnabled &&
 		getLayerTooltip({
 			tooltipSettings,
 			featureInfo,
-			data: Array.isArray(data) ? data : [],
+			data: features,
 			selection,
 			viewport,
 			CustomTooltip,
-			getCoordinates: (feature: Feature) => feature?.coordinates,
+			// For IconLayer, position comes from the helper `coordinates` field.
+			getCoordinates: (feature: MapFeature) => feature?.coordinates,
 		});
 
 	/**
@@ -149,28 +163,45 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 				getColor: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
 			},
-			// Only track hover when tooltipType === 'hover'
+			/**
+			 * Hover handler:
+			 * - updates `featureInfo` only when hover tooltips are enabled and active
+			 * - cleared when nothing is hovered or tooltips are disabled
+			 */
 			onHover: (info) => {
-				if (tooltipType !== 'hover') return;
+				if (!tooltipEnabled || tooltipType !== TooltipType.Hover) return;
 				if (info.object && info.x != null && info.y != null) {
-					setFeatureInfo({ feature: info.object, x: info.x, y: info.y });
+					setFeatureInfo({ feature: info.object as MapFeature, x: info.x, y: info.y });
 				} else {
 					setFeatureInfo(null);
 				}
-			},
-			onClick: (info) => {
-				if (tooltipType !== 'click') return;
-				if (!featureInfo || featureInfo.feature !== info.object) {
-					setFeatureInfo({ feature: info.object, x: info.x, y: info.y });
-				} else {
-					setFeatureInfo(null);
-				}
-			},
-			onDrag: () => {
-				// Clear tooltip on drag to avoid mispositioning
-				tooltipEnabled && setFeatureInfo(null);
 			},
 
+			/**
+			 * Click handler:
+			 * - toggles `featureInfo` when click tooltips are enabled and active
+			 * - clicking the same feature again hides the tooltip
+			 */
+			onClick: (info) => {
+				if (!tooltipEnabled || tooltipType !== TooltipType.Click) return;
+				if (!featureInfo || featureInfo.feature !== info.object) {
+					if (info.object && info.x != null && info.y != null) {
+						setFeatureInfo({ feature: info.object as MapFeature, x: info.x, y: info.y });
+					}
+				} else {
+					setFeatureInfo(null);
+				}
+			},
+
+			/**
+			 * Drag handler:
+			 * - clears tooltip state when map is dragged to avoid stale positions.
+			 */
+			onDrag: () => {
+				if (tooltipEnabled) {
+					setFeatureInfo(null);
+				}
+			},
 			getSize: 40,
 			getPosition: (d: { coordinates: [number, number] }) => d?.coordinates,
 			...layerStyle,

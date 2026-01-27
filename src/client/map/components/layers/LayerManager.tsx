@@ -19,6 +19,8 @@ export type LayerInstance = TileLayer<ImageBitmap> | GeoJsonLayer | WMSLayer | M
  * Props for the `LayerManager` component.
  * @property {RenderingLayer[]} layers - Array of layers to be rendered and managed.
  * @property {(id: string, instance: LayerInstance) => void} onLayerUpdate - Callback function to handle updates to layer instances.
+ * @property {Viewport | null} viewport - Current DeckGL viewport used for rendering.
+ * @property {React.ElementType | boolean} [CustomTooltip] - Optional custom tooltip React component; when false, default tooltips are used.
  */
 interface LayerManagerProps {
 	layers: RenderingLayer[];
@@ -31,6 +33,8 @@ interface LayerManagerProps {
  * Props for individual layer source components.
  * @property {RenderingLayer} layer - The configuration object for the layer.
  * @property {(id: string, instance: LayerInstance) => void} onLayerUpdate - Callback function to handle updates to the layer instance.
+ * @property {Viewport | null} [viewport] - Current DeckGL viewport used for rendering.
+ * @property {React.ElementType | boolean} [CustomTooltip] - Optional custom tooltip React component; when false, default tooltips are used.
  */
 export interface LayerSourceProps {
 	layer: RenderingLayer;

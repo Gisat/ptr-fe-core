@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GeoJsonLayer } from '@deck.gl/layers';
-import center from '@turf/center';
 import { SELECTION_DEFAULT_COLOUR } from '../../../shared/constants/colors';
 import { getFeatureId } from '../../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../../shared/helpers/hexToRgbArray';
@@ -9,19 +8,19 @@ import { getSelectionByKey } from '../../../shared/appState/selectors/getSelecti
 import { useAxios } from '../../../shared/hooks/useAxios';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-import { Feature } from '../../../shared/models/models.feature';
+import { MapFeature } from '../../../shared/models/models.mapFeature';
 import { getFeatureCentroid } from '../../../shared/helpers/getFeatureCentroid';
 import { getLayerTooltip } from '../../MapSet/MapTooltip/getLayerTooltip';
+import { TooltipType } from '../../../shared/models/models.tooltip';
 
 /** What our API returns when we call the route. */
 export interface GeojsonFeatureCollection {
 	type: 'FeatureCollection';
-	features: Feature[];
+	features: MapFeature[];
 }
 
 /** All shapes we *might* pass to deck.gl GeoJsonLayer `data` prop. */
-type DeckGeoJsonData = string | GeojsonFeatureCollection | Feature | Feature[];
-
+type DeckGeoJsonData = string | GeojsonFeatureCollection | MapFeature | MapFeature[];
 /**
  * Default layer style for GeoJsonLayer rendering.
  */
@@ -54,7 +53,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	const method = fetchOptions?.method;
 
 	// Hover info for hover-based tooltip
-	const [featureInfo, setFeatureInfo] = useState<{ feature: Feature; x: number; y: number } | null>(null);
+	const [featureInfo, setFeatureInfo] = useState<{ feature: MapFeature; x: number; y: number } | null>(null);
 
 	// We need a fallback URL if no route is provided (e.g. external static GeoJSON file)
 	if (!url && !route) {
@@ -85,9 +84,9 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	const distinctColours = selection?.distinctColours ?? [SELECTION_DEFAULT_COLOUR];
 	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
 
-	// Tooltip settings
+	// Tooltip settings from geojsonOptions (styling & behavior)
 	const tooltipSettings = geojsonOptions?.tooltipSettings;
-	const tooltipType = tooltipSettings?.type || (CustomTooltip ? 'hover' : 'native'); // 'native' | 'hover' | 'click' | 'selection'
+	const tooltipType = tooltipSettings?.type || (CustomTooltip ? TooltipType.Hover : TooltipType.Native); // TooltipType.Native | TooltipType.Hover | TooltipType.Click | TooltipType.Selection
 	const tooltipEnabled = !geojsonOptions?.disableTooltip;
 
 	// Load the data from route
@@ -110,11 +109,11 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	const data = route && fetchedData && !error ? fetchedData : url;
 
 	// Always normalize to an array for features used in selection & tooltips
-	let features: Feature[] = [];
+	let features: MapFeature[] = [];
 
 	if (Array.isArray(data)) {
 		// Array of features
-		features = data as Feature[];
+		features = data as MapFeature[];
 	}
 	if (typeof data === 'object' && data !== null) {
 		if (
@@ -123,8 +122,8 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 		) {
 			features = (data as GeojsonFeatureCollection).features;
 		}
-		if ((data as Feature).type === 'Feature') {
-			features = [data as Feature];
+		if ((data as MapFeature).type === 'Feature') {
+			features = [data as MapFeature];
 		}
 	}
 
@@ -138,7 +137,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	 * @param {Feature} feature - The GeoJSON feature object.
 	 * @returns {number[]} The RGBA color array for the feature's line.
 	 */
-	function getLineColor(feature: Feature): number[] {
+	function getLineColor(feature: MapFeature): number[] {
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
@@ -156,7 +155,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	 * @param {Feature} feature - The GeoJSON feature object.
 	 * @returns {number} The width of the feature's line.
 	 */
-	function getLineWidth(feature: Feature): number {
+	function getLineWidth(feature: MapFeature): number {
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			return 5;
@@ -165,6 +164,11 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	}
 
 	// ---------- Tooltip creation ----------
+	/**
+	 * Compute tooltip React node based on:
+	 * - hover/click featureInfo (screen-space tooltip)
+	 * - or selection + viewport + getFeatureCentroid (map-space tooltip)
+	 */
 	const tooltip =
 		tooltipEnabled &&
 		getLayerTooltip({
@@ -174,12 +178,9 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 			selection,
 			viewport,
 			CustomTooltip,
-			getCoordinates: (selectedFeature: Feature) => {
-				return getFeatureCentroid(selectedFeature);
-			},
+			// For GeoJSON geometries, always use a centroid / representative point.
+			getCoordinates: (selectedFeature: MapFeature) => getFeatureCentroid(selectedFeature),
 		});
-
-	// console.log(featureInfo, tooltip, CustomTooltip, typeof CustomTooltip, featureInfo, tooltipType, features);
 
 	/**
 	 * Memoize the creation of the GeoJsonLayer instance to avoid unnecessary re-renders.
@@ -203,25 +204,44 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 				getLineWidth: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
 			},
+			/**
+			 * Hover handler:
+			 * - updates `featureInfo` only when hover tooltips are enabled and active
+			 * - cleared when nothing is hovered or tooltips are disabled
+			 */
 			onHover: (info) => {
-				if (tooltipType !== 'hover') return;
+				if (!tooltipEnabled || tooltipType !== TooltipType.Hover) return;
 				if (info.object && info.x != null && info.y != null) {
-					setFeatureInfo({ feature: info.object, x: info.x, y: info.y });
+					setFeatureInfo({ feature: info.object as MapFeature, x: info.x, y: info.y });
 				} else {
 					setFeatureInfo(null);
 				}
 			},
+
+			/**
+			 * Click handler:
+			 * - toggles `featureInfo` when click tooltips are enabled and active
+			 * - clicking the same feature again hides the tooltip
+			 */
 			onClick: (info) => {
-				if (tooltipType !== 'click') return;
+				if (!tooltipEnabled || tooltipType !== TooltipType.Click) return;
 				if (!featureInfo || featureInfo.feature !== info.object) {
-					setFeatureInfo({ feature: info.object, x: info.x, y: info.y });
+					if (info.object && info.x != null && info.y != null) {
+						setFeatureInfo({ feature: info.object as MapFeature, x: info.x, y: info.y });
+					}
 				} else {
 					setFeatureInfo(null);
 				}
 			},
+
+			/**
+			 * Drag handler:
+			 * - clears tooltip state when map is dragged to avoid stale positions.
+			 */
 			onDrag: () => {
-				// Clear tooltip on drag to avoid mispositioning
-				tooltipEnabled && setFeatureInfo(null);
+				if (tooltipEnabled) {
+					setFeatureInfo(null);
+				}
 			},
 			...layerStyle,
 			getLineColor,

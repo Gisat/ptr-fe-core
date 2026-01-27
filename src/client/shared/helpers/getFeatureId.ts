@@ -1,4 +1,4 @@
-import { Feature } from '../models/models.feature';
+import { Feature } from '../models/models.mapFeature';
 
 /**
  * Returns the unique identifier for a GeoJSON feature.

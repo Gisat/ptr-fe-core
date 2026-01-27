@@ -2,7 +2,7 @@ import { PickingInfo } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
 import { getTooltipAttributes } from '../../../shared/helpers/getTooltipAttributes';
-import { TooltipAttribute } from '../../../shared/models/models.tooltip';
+import { TooltipAttribute, TooltipType } from '../../../shared/models/models.tooltip';
 import './getMapTooltip.css';
 
 /**
@@ -34,7 +34,6 @@ export const getMapTooltip = ({
 	mapLayers: RenderingLayer[] | undefined;
 	verticalOffset: number;
 }) => {
-	console.log('[getMapTooltip] Generating tooltip for picking info:', info);
 	// Early exit if no feature is hovered or layer is missing
 	if (!info.object || !info.layer) return null;
 
@@ -53,12 +52,12 @@ export const getMapTooltip = ({
 	const tooltipStyles = tooltipSettings?.nativeStyles || {};
 	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`;
 	const tooltipTitle = tooltipSettings?.title || '';
-	const tooltipType = tooltipSettings?.type || 'native';
+	const tooltipType = tooltipSettings?.type || TooltipType.Native;
 	const offsetX = tooltipSettings?.offsetX || 0;
 	const offsetY = tooltipSettings?.offsetY || verticalOffset;
 	const featureProperties = info.object?.properties || info.object || {};
 
-	if (tooltipType !== 'native') return null;
+	if (tooltipType !== TooltipType.Native) return null;
 
 	let tooltipProperties: TooltipAttribute[] | undefined;
 

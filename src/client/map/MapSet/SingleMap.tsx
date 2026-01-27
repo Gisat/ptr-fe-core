@@ -42,6 +42,9 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 	const [controlIsDown, setControlIsDown] = useState(false);
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
 
+	// Ref + size are used only to compute a DeckGL Viewport instance that is
+	// passed into LayerManager so selection tooltips in layer sources can
+	// project [lng, lat] -> screen coordinates. DeckGL itself does not use this.
 	const mapRef = React.useRef<HTMLDivElement>(null);
 	const [mapSize, setMapSize] = useState<{ width: number; height: number } | null>(null);
 
@@ -49,12 +52,16 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 		const node = mapRef.current;
 		if (!node) return;
 
+		// Observe size changes to the map container
 		const updateSize = () => {
 			const next = { width: node.offsetWidth, height: node.offsetHeight };
 			setMapSize((prev) => (!prev || prev.width !== next.width || prev.height !== next.height ? next : prev));
 		};
 
+		// Initial size measurement
 		updateSize();
+
+		// Set up ResizeObserver to track size changes
 		const resizeObserver = new window.ResizeObserver(updateSize);
 		resizeObserver.observe(node);
 		return () => resizeObserver.disconnect();
@@ -159,6 +166,15 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 		? TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER
 		: TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER;
 
+	/**
+	 * Memoized DeckGL viewport used by layer tooltips that need to project
+	 * [lng, lat] coordinates to screen space (e.g. selection tooltips).
+	 *
+	 * - When `mapSize` is not yet known (null), viewport is null and selection
+	 *   tooltips in layer sources will not be shown.
+	 * - Once the map container is measured, viewport is created and passed
+	 *   down to LayerManager.
+	 */
 	const viewport = useMemo(
 		() =>
 			mapSize
@@ -189,6 +205,13 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 				onClick={onClick}
 				onHover={onHover}
 				getCursor={({ isDragging }) => (isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab')}
+				/**
+				 * Default DeckGL tooltip:
+				 * - Disabled when a CustomTooltip component is provided (layer sources
+				 *   handle all tooltip rendering via getLayerTooltip in that case).
+				 * - Otherwise, uses shared getMapTooltip for simple hover tooltips
+				 *   based on picking info and layer configuration.
+				 */
 				getTooltip={(info) => {
 					if (CustomTooltip) return null;
 					return getMapTooltip({
