@@ -1,6 +1,6 @@
 {
 	"name": "@gisatcz/ptr-fe-core",
-	"version": "0.1.5-dev.1",
+	"version": "0.2.0-dev.0",
 	"description": "",
 	"type": "module",
 	"repository": {
@@ -91,7 +91,6 @@
 		"@deck.gl/layers": "^9.2.2",
 		"@deck.gl/react": "^9.2.2",
 		"@gisatcz/deckgl-geolib": "1.12.0-dev.5",
-		"@gisatcz/ptr-be-core": "^0.0.2",
 		"@mantine/core": "^8.0.2",
 		"@mantine/hooks": "^8.0.2",
 		"@tabler/icons-react": "^3.31.0",
@@ -110,9 +109,8 @@
 		"sqlite": "^5.1.1",
 		"sqlite3": "^5.1.7",
 		"swr": "^2.3.0",
-		"uuid": "^11.1.0"
-	},
-	"dependencies": {
+		"uuid": "^11.1.0",
+		"@gisatcz/ptr-be-core": "^0.0.7",
 		"@turf/center": "^7.3.2"
 	}
 }
