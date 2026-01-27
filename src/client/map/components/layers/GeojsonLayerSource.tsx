@@ -86,7 +86,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 
 	// Tooltip settings from geojsonOptions (styling & behavior)
 	const tooltipSettings = geojsonOptions?.tooltipSettings;
-	const tooltipType = tooltipSettings?.type || (CustomTooltip ? TooltipType.Hover : TooltipType.Native); // TooltipType.Native | TooltipType.Hover | TooltipType.Click | TooltipType.Selection
+	const tooltipType = tooltipSettings?.type || (CustomTooltip ? TooltipType.Hover : TooltipType.Native);
 	const tooltipEnabled = !geojsonOptions?.disableTooltip;
 
 	// Load the data from route
@@ -225,12 +225,22 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 			 */
 			onClick: (info) => {
 				if (!tooltipEnabled || tooltipType !== TooltipType.Click) return;
-				if (!featureInfo || featureInfo.feature !== info.object) {
-					if (info.object && info.x != null && info.y != null) {
-						setFeatureInfo({ feature: info.object as MapFeature, x: info.x, y: info.y });
-					}
-				} else {
+
+				const clickedFeature = info.object as MapFeature | null;
+				if (!clickedFeature || info.x == null || info.y == null) {
 					setFeatureInfo(null);
+					console.warn('GeojsonLayerSource: onClick handler - clickedFeature is null.');
+					return;
+				}
+
+				const currentId = featureInfo ? getFeatureId(featureInfo.feature, geojsonOptions?.featureIdProperty) : null;
+				const clickedId = getFeatureId(clickedFeature, geojsonOptions?.featureIdProperty);
+
+				// If same feature clicked again (by id), toggle tooltip off
+				if (currentId && clickedId && currentId === clickedId) {
+					setFeatureInfo(null);
+				} else {
+					setFeatureInfo({ feature: clickedFeature, x: info.x, y: info.y });
 				}
 			},
 

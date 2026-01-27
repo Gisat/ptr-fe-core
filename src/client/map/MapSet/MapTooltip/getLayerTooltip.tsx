@@ -102,9 +102,12 @@ export function getLayerTooltip({
 	if (tooltipType === TooltipType.Selection) {
 		if (!viewport) {
 			console.warn('getLayerTooltip: selection tooltip requested but no viewport provided. Tooltip will not be shown.');
-		} else if (!data.length || !selection?.featureKeys?.length) {
+		} else if (!selection?.featureKeys?.length) {
+			// No selection made, no tooltip to show, no need to warn
+			return null;
+		} else if (!data.length) {
 			console.warn(
-				'getLayerTooltip: selection tooltip requested but no (fetched) data or no selected features. Tooltip will not be shown.'
+				'getLayerTooltip: selection tooltip requested but no (fetched) data available. Tooltip will not be shown.'
 			);
 		} else {
 			const selectedId = selection.featureKeys[0];
