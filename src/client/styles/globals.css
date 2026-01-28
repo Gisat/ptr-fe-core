@@ -7,7 +7,7 @@ a {
 	color: var(--accent500);
 
 }
-
+/* merge for use in next16 */
 a:visited {
 	color: var(--accent700);
 }
