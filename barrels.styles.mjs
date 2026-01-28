@@ -31,7 +31,6 @@ function findCssFiles(dir, cssFiles = []) {
 			console.log(`Found CSS file: ${relativePath}`);
 		}
 	}
-
 	return cssFiles;
 }
 
