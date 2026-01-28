@@ -1,7 +1,16 @@
+@import '_typography.css';
 @import '_colors.css';
 @import '_spacing.css';
-@import '_typography.css';
 @import '@mantine/core/styles.css';
+
+a {
+	color: var(--accent500);
+
+}
+
+a:visited {
+	color: var(--accent700);
+}
 
 body {
 	font-family: var(--defaultFontFamily), sans-serif;
@@ -54,10 +63,4 @@ p {
 	max-width: var(--paragraph-width);
 }
 
-a {
-	color: var(--accent500);
 
-	&:visited {
-		color: var(--accent700);
-	}
-}
