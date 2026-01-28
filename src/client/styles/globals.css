@@ -3,7 +3,6 @@
 @import '_spacing.css';
 @import '@mantine/core/styles.css';
 
-
 a {
 	color: var(--accent500);
 
