@@ -38,6 +38,20 @@ function findCssFiles(dir, cssFiles = []) {
 // Find all CSS files
 const cssFiles = findCssFiles(srcDir);
 
+// Define the custom sorting order
+cssFiles.sort((a, b) => {
+    const getPriority = (filePath) => {
+        const name = path.basename(filePath);
+        // 1. fonts and typography first
+        if (name.includes('_typography')) return 1;
+        // 2. globals
+        if (name.includes('globals')) return 2;
+        // 3. CSS variable (colors, spacing)
+        return 10;
+    };
+    return getPriority(a) - getPriority(b);
+});
+
 // Generate the CSS with imports
 const imports = cssFiles.map(file => `@import './${file}';`).join('\n');
 
