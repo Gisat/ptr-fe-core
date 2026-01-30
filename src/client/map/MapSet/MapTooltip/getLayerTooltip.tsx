@@ -59,14 +59,42 @@ export function getLayerTooltip({
 	CustomTooltip,
 	getCoordinates,
 }: LayerTooltipParams): React.ReactNode {
-	// Resolve effective tooltip type:
-	// - explicit type from settings has priority
-	// - otherwise, if a CustomTooltip component is provided, default to TooltipType.Hover
-	// - otherwise default to TooltipType.Native
-	const tooltipType = tooltipSettings?.type ?? (CustomTooltip ? TooltipType.Hover : TooltipType.Native);
+	// Does the layer provide any tooltip configuration?
+	const hasTooltipSettings = !!tooltipSettings;
+	// Is a real React component provided (not just `true` / `false`)?
+	const hasCustomTooltipComponent = !!CustomTooltip && typeof CustomTooltip === 'function';
 
-	// When tooltip is "native" and there is no CustomTooltip, we don't render anything ourselves.
-	if (!tooltipSettings || (tooltipType === TooltipType.Native && !CustomTooltip)) {
+	/**
+	 * Early exit: no tooltip settings provided
+	 */
+	if (!hasTooltipSettings) {
+		console.warn('getLayerTooltip: No tooltipSettings provided, cannot show any tooltip content.');
+		return null;
+	}
+
+	/**
+	 * Resolve effective tooltip type:
+	 * - explicit type from settings has priority
+	 * - otherwise, if a CustomTooltip component is provided, default to Hover
+	 * - otherwise fall back to Native (DeckGL-managed)
+	 */
+	let tooltipType: TooltipType =
+		tooltipSettings?.type ?? (hasCustomTooltipComponent ? TooltipType.Hover : TooltipType.Native);
+
+	/**
+	 * If the user configured "native" but also provided a CustomTooltip component,
+	 * treat it as "hover with custom component" – there is nothing for us to render
+	 * in pure native mode.
+	 */
+	if (tooltipType === TooltipType.Native && hasCustomTooltipComponent) {
+		tooltipType = TooltipType.Hover;
+	}
+
+	/**
+	 * When tooltip type is "native" and there is no CustomTooltip component,
+	 * we don't render anything. DeckGL will handle its own native tooltip.
+	 */
+	if (tooltipType === TooltipType.Native && !hasCustomTooltipComponent) {
 		return null;
 	}
 

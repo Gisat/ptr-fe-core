@@ -87,7 +87,15 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 
 	// Tooltip settings from geojsonOptions (styling & behavior)
 	const tooltipSettings = geojsonOptions?.tooltipSettings;
-	const tooltipType = tooltipSettings?.type || (CustomTooltip ? TooltipType.Hover : TooltipType.Native);
+	const hasCustomTooltipComponent = !!CustomTooltip;
+	// Resolve tooltip type
+	let tooltipType: TooltipType =
+		tooltipSettings?.type ?? (hasCustomTooltipComponent ? TooltipType.Hover : TooltipType.Native);
+
+	// If "native" + custom component, treat as "hover" so we still get featureInfo
+	if (tooltipType === TooltipType.Native && hasCustomTooltipComponent) {
+		tooltipType = TooltipType.Hover;
+	}
 	const tooltipEnabled = !geojsonOptions?.disableTooltip;
 
 	// Load the data from route
@@ -204,6 +212,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 				getFillColor: [layerStyle, selection],
 				getLineWidth: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
+				onHover: [CustomTooltip],
 			},
 			/**
 			 * Hover handler:
@@ -259,7 +268,18 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 			getLineWidth,
 			pickable: isInteractive ?? layerStyle.pickable,
 		});
-	}, [isActive, key, opacity, isInteractive, layerStyle, selection, data, geojsonOptions, isDataLoading]);
+	}, [
+		isActive,
+		key,
+		opacity,
+		isInteractive,
+		layerStyle,
+		selection,
+		data,
+		geojsonOptions,
+		isDataLoading,
+		CustomTooltip,
+	]);
 
 	/**
 	 * Effect hook to handle layer updates.
@@ -271,6 +291,6 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 		return () => onLayerUpdate(key, null); // cleanup on unmount
 	}, [layerInstance, key, onLayerUpdate]);
 
-	// This component does not render any DOM elements
-	return tooltip;
+	// Render tooltip for this layer (if any); layer itself is managed via onLayerUpdate
+	return isActive ? tooltip : null;
 });
