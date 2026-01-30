@@ -171,6 +171,7 @@ export function getLayerTooltip({
 				if (CustomTooltip && typeof CustomTooltip === 'function') {
 					tooltips.push(
 						React.createElement(CustomTooltip, {
+							key: selectedId,
 							feature: selectedFeature,
 							x: xPos,
 							y: yPos,
@@ -178,7 +179,7 @@ export function getLayerTooltip({
 						})
 					);
 				} else {
-					tooltips.push(<MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />);
+					tooltips.push(<MapTooltip key={selectedId} x={xPos} y={yPos} tooltipProperties={tooltipProperties} />);
 				}
 			}
 
