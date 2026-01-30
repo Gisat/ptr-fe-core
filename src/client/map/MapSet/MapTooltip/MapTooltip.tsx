@@ -1,6 +1,6 @@
 import React from 'react';
-import './MapTooltip.css';
 import { TooltipAttribute } from '../../../shared/models/models.tooltip';
+import './MapTooltip.css';
 
 /**
  * Props for the MapTooltip component.
@@ -30,8 +30,8 @@ export const MapTooltip: React.FC<MapTooltipProps> = React.memo(({ x, y, tooltip
 	>
 		{tooltipProperties.map(({ key, label, value, unit }) => (
 			<div key={key} className="ptr-MapTooltip-row">
-				<span className="ptr-MapTooltip-label">{label}:</span>{' '}
-				<span className="ptr-MapTooltip-value">{String(value)}</span>{' '}
+				{label && <span className="ptr-MapTooltip-label">{label}:</span>}{' '}
+				{value != null && <span className="ptr-MapTooltip-value">{String(value)}</span>}{' '}
 				{unit && <span className="ptr-MapTooltip-unit">{unit}</span>}
 			</div>
 		))}

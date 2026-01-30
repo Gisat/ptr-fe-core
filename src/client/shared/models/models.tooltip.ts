@@ -8,3 +8,13 @@ export interface TooltipAttribute {
 	unit?: string;
 	decimalPlaces?: number;
 }
+
+/**
+ * Supported tooltip behavior modes.
+ */
+export enum TooltipType {
+	Native = 'native',
+	Hover = 'hover',
+	Click = 'click',
+	Selection = 'selection',
+}

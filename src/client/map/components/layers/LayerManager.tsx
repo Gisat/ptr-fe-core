@@ -1,7 +1,7 @@
 import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { MVTLayer, TileLayer, _WMSLayer as WMSLayer } from '@deck.gl/geo-layers';
 import { GeoJsonLayer } from '@deck.gl/layers';
-import { Layer } from '@deck.gl/core';
+import { Layer, Viewport } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { XYZLayerSource } from './XYZLayerSource';
 import { COGLayerSource } from './COGLayerSource';
@@ -19,20 +19,28 @@ export type LayerInstance = TileLayer<ImageBitmap> | GeoJsonLayer | WMSLayer | M
  * Props for the `LayerManager` component.
  * @property {RenderingLayer[]} layers - Array of layers to be rendered and managed.
  * @property {(id: string, instance: LayerInstance) => void} onLayerUpdate - Callback function to handle updates to layer instances.
+ * @property {Viewport | null} viewport - Current DeckGL viewport used for rendering.
+ * @property {React.ElementType | boolean} [CustomTooltip] - Optional custom tooltip React component; when false, default tooltips are used.
  */
 interface LayerManagerProps {
 	layers: RenderingLayer[];
 	onLayerUpdate: (id: string, instance: LayerInstance) => void;
+	viewport: Viewport | null;
+	CustomTooltip?: React.ElementType | boolean;
 }
 
 /**
  * Props for individual layer source components.
  * @property {RenderingLayer} layer - The configuration object for the layer.
  * @property {(id: string, instance: LayerInstance) => void} onLayerUpdate - Callback function to handle updates to the layer instance.
+ * @property {Viewport | null} [viewport] - Current DeckGL viewport used for rendering.
+ * @property {React.ElementType | boolean} [CustomTooltip] - Optional custom tooltip React component; when false, default tooltips are used.
  */
 export interface LayerSourceProps {
 	layer: RenderingLayer;
 	onLayerUpdate: (id: string, instance: LayerInstance) => void;
+	viewport?: Viewport | null;
+	CustomTooltip?: React.ElementType | boolean;
 }
 
 /**
@@ -42,7 +50,7 @@ export interface LayerSourceProps {
  * @param {LayerManagerProps} props - The props for the `LayerManager` component.
  * @returns {JSX.Element} A React fragment containing the rendered layer components.
  */
-export const LayerManager = ({ layers, onLayerUpdate }: LayerManagerProps) => {
+export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }: LayerManagerProps) => {
 	return (
 		<>
 			{layers.map((layer) => {
@@ -67,11 +75,35 @@ export const LayerManager = ({ layers, onLayerUpdate }: LayerManagerProps) => {
 					// Determine the specific layer type for GeoJSON data
 					switch (layer.layerType) {
 						case 'icon':
-							return <IconLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+							return (
+								<IconLayerSource
+									key={layer.key}
+									layer={layer}
+									onLayerUpdate={onLayerUpdate}
+									viewport={viewport}
+									CustomTooltip={CustomTooltip}
+								/>
+							);
 						case 'geojson':
-							return <GeojsonLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+							return (
+								<GeojsonLayerSource
+									key={layer.key}
+									layer={layer}
+									onLayerUpdate={onLayerUpdate}
+									viewport={viewport}
+									CustomTooltip={CustomTooltip}
+								/>
+							);
 						default:
-							return <GeojsonLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+							return (
+								<GeojsonLayerSource
+									key={layer.key}
+									layer={layer}
+									onLayerUpdate={onLayerUpdate}
+									viewport={viewport}
+									CustomTooltip={CustomTooltip}
+								/>
+							);
 					}
 				} else {
 					// Log a warning if the datasource type is unknown

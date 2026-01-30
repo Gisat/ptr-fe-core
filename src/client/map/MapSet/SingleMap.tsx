@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DeckGL } from '@deck.gl/react';
-import { PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
+import { PickingInfo, ViewStateChangeParameters, WebMercatorViewport } from '@deck.gl/core';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
@@ -12,13 +12,11 @@ import { getViewChange } from '../logic/mapView/getViewChange';
 import { handleMapClick } from './handleMapClick';
 import { handleMapHover } from './handleMapHover';
 import { getMapTooltip } from './MapTooltip/getMapTooltip';
-import { MapTooltip } from './MapTooltip/MapTooltip';
 import { LayerInstance, LayerManager } from '../components/layers/LayerManager';
 import { RenderingLayer } from '../../shared/models/models.layers';
-import { TooltipAttribute } from '../../shared/models/models.tooltip';
 
-const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = 10;
-const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = 20;
+const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = -10;
+const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = -20;
 
 export interface BasicMapProps {
 	/** Map set identifier */
@@ -42,8 +40,32 @@ type LayerRegistry = Record<string, LayerInstance>;
 export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [controlIsDown, setControlIsDown] = useState(false);
-	const [tooltip, setTooltip] = useState<{ x: number; y: number; tooltipProperties: TooltipAttribute[] } | null>(null);
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
+
+	// Ref + size are used only to compute a DeckGL Viewport instance that is
+	// passed into LayerManager so selection tooltips in layer sources can
+	// project [lng, lat] -> screen coordinates. DeckGL itself does not use this.
+	const mapRef = React.useRef<HTMLDivElement>(null);
+	const [mapSize, setMapSize] = useState<{ width: number; height: number } | null>(null);
+
+	useEffect(() => {
+		const node = mapRef.current;
+		if (!node) return;
+
+		// Observe size changes to the map container
+		const updateSize = () => {
+			const next = { width: node.offsetWidth, height: node.offsetHeight };
+			setMapSize((prev) => (!prev || prev.width !== next.width || prev.height !== next.height ? next : prev));
+		};
+
+		// Initial size measurement
+		updateSize();
+
+		// Set up ResizeObserver to track size changes
+		const resizeObserver = new window.ResizeObserver(updateSize);
+		resizeObserver.observe(node);
+		return () => resizeObserver.disconnect();
+	}, []);
 
 	/** Get the current map state and layers from shared state */
 	const mapState = getMapByKey(sharedState, mapKey);
@@ -66,9 +88,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 			.map((layer: RenderingLayer) => layerRegistry[layer.key])
 			.filter((layer: LayerInstance) => layer !== null && layer !== undefined);
 	}, [mapLayers, layerRegistry]);
-
-	/** Determines if custom tooltip logic should be used */
-	const useCustomTooltip = Boolean(CustomTooltip);
 
 	/**
 	 * On mount: sync the map view and set up keyboard listeners for Ctrl key.
@@ -121,9 +140,7 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 		handleMapHover({
 			event,
 			mapLayers,
-			setTooltip,
 			setLayerIsHovered,
-			useCustomTooltip,
 		});
 	};
 
@@ -133,8 +150,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 	 * @param {ViewStateChangeParameters} params - The parameters describing the view state change.
 	 */
 	const onViewStateChange = ({ viewState, oldViewState }: ViewStateChangeParameters) => {
-		// Hide tooltip during view changes to avoid mispositioning
-		setTooltip(null);
 		// Get changed view params
 		const change = getViewChange(oldViewState, viewState);
 		// Apply changes to map view if there are any
@@ -151,9 +166,35 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 		? TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER
 		: TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER;
 
+	/**
+	 * Memoized DeckGL viewport used by layer tooltips that need to project
+	 * [lng, lat] coordinates to screen space (e.g. selection tooltips).
+	 *
+	 * - When `mapSize` is not yet known (null), viewport is null and selection
+	 *   tooltips in layer sources will not be shown.
+	 * - Once the map container is measured, viewport is created and passed
+	 *   down to LayerManager.
+	 */
+	const viewport = useMemo(
+		() =>
+			mapSize
+				? new WebMercatorViewport({
+						...mapViewState,
+						width: mapSize.width,
+						height: mapSize.height,
+					})
+				: null,
+		[mapViewState, mapSize]
+	);
+
 	return (
-		<>
-			<LayerManager layers={mapLayers} onLayerUpdate={handleLayerUpdate} />
+		<div className="ptr-SingleMap" ref={mapRef}>
+			<LayerManager
+				layers={mapLayers}
+				onLayerUpdate={handleLayerUpdate}
+				viewport={viewport}
+				CustomTooltip={CustomTooltip}
+			/>
 			<DeckGL
 				viewState={mapViewState}
 				layers={activeLayers}
@@ -164,8 +205,15 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 				onClick={onClick}
 				onHover={onHover}
 				getCursor={({ isDragging }) => (isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab')}
+				/**
+				 * Default DeckGL tooltip:
+				 * - Disabled when a CustomTooltip component is provided (layer sources
+				 *   handle all tooltip rendering via getLayerTooltip in that case).
+				 * - Otherwise, uses shared getMapTooltip for simple hover tooltips
+				 *   based on picking info and layer configuration.
+				 */
 				getTooltip={(info) => {
-					if (useCustomTooltip) return null;
+					if (CustomTooltip) return null;
 					return getMapTooltip({
 						info,
 						mapLayers,
@@ -173,17 +221,6 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 					});
 				}}
 			/>
-			{useCustomTooltip &&
-				tooltip &&
-				(typeof CustomTooltip === 'object' ? (
-					React.createElement(CustomTooltip, {
-						x: tooltip.x,
-						y: tooltip.y,
-						tooltipProperties: tooltip.tooltipProperties,
-					})
-				) : (
-					<MapTooltip x={tooltip.x} y={tooltip.y - verticalOffset} tooltipProperties={tooltip.tooltipProperties} />
-				))}
-		</>
+		</div>
 	);
 };

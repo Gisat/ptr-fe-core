@@ -110,6 +110,7 @@
 		"sqlite3": "^5.1.7",
 		"swr": "^2.3.0",
 		"uuid": "^11.1.0",
-		"@gisatcz/ptr-be-core": "^0.0.7"
+		"@gisatcz/ptr-be-core": "^0.0.7",
+		"@turf/center": "^7.3.2"
 	}
 }
