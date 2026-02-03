@@ -1,7 +1,8 @@
 import { PickingInfo } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-import { getTooltipAttributes, TooltipAttribute } from '../../../story/utils/getTooltipAttributes';
+import { getTooltipAttributes } from '../../../shared/helpers/getTooltipAttributes';
+import { TooltipAttribute, TooltipType } from '../../../shared/models/models.tooltip';
 import './getMapTooltip.css';
 
 /**
@@ -51,7 +52,12 @@ export const getMapTooltip = ({
 	const tooltipStyles = tooltipSettings?.nativeStyles || {};
 	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`;
 	const tooltipTitle = tooltipSettings?.title || '';
-	const featureProperties = info.object?.properties || {};
+	const tooltipType = tooltipSettings?.type || TooltipType.Native;
+	const offsetX = tooltipSettings?.offsetX || 0;
+	const offsetY = tooltipSettings?.offsetY || verticalOffset;
+	const featureProperties = info.object?.properties || info.object || {};
+
+	if (tooltipType !== TooltipType.Native) return null;
 
 	let tooltipProperties: TooltipAttribute[] | undefined;
 
@@ -61,6 +67,10 @@ export const getMapTooltip = ({
 	}
 	// If no valid tooltip properties, do not show tooltip
 	if (!tooltipProperties || tooltipProperties.length === 0) {
+		console.warn('[getMapTooltip] No valid tooltip attributes found for feature.', {
+			featureProperties,
+			tooltipSettings,
+		});
 		return null;
 	}
 
@@ -81,7 +91,7 @@ export const getMapTooltip = ({
 						}
 
 						return `<div class="ptr-NativeMapTooltip-row" key="${key}">
-											<span class="ptr-NativeMapTooltip-label">${displayLabel + (valueStr ? ':' : '')}</span>
+											<span class="ptr-NativeMapTooltip-label">${displayLabel + (displayLabel && valueStr ? ':' : '')}</span>
 											<span class="ptr-NativeMapTooltip-value">
 													${valueStr}${unit ? ` ${unit}` : ''}
 											</span>
@@ -100,8 +110,8 @@ export const getMapTooltip = ({
 		style: {
 			backgroundColor: 'var(--base0)',
 			padding: '6px 10px',
-			left: `${info.x}px`,
-			top: `${info.y - verticalOffset}px`,
+			left: `${info.x + offsetX}px`,
+			top: `${info.y + offsetY}px`,
 			transform: 'translate(-50%, -100%)',
 			...tooltipStyles,
 		},

@@ -2,6 +2,7 @@ import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { DatasourceWithNeighbours } from '../../shared/models/models.metadata';
 
 /**
+ * @deprecated Used by RenderingMap which is deprecated and will be removed in future versions.
  * Validates datasource node for required fields
  * @param source Data source node
  * @param requiredDatasourceType Expected datasource type

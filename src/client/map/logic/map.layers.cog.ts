@@ -6,6 +6,7 @@ import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 const CogBitmapLayer = geolib.CogBitmapLayer;
 
 /**
+ * @deprecated Used by RenderingMap which is deprecated and will be removed in future versions. Use MapSet and related components instead.
  * Creates a COG (Cloud Optimized GeoTIFF) layer for rendering raster data on a map using @gisatcz/deckgl-geolib library
  *
  * @param {LayerGeneralProps} props - The properties required to create the COG layer.

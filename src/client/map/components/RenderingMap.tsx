@@ -50,7 +50,9 @@ export interface RenderMapProps {
 	setDistanceScales?: (distanceScales: { unitsPerDegree?: Array<number>; metersPerUnit: Array<number> }) => void;
 }
 
-/** Rendered map with DeckGL tool used as a geospatial renderer */
+/** Rendered map with DeckGL tool used as a geospatial renderer
+ * @deprecated Use MapSet and related components instead.
+ * */
 export const RenderingMap: React.FC<RenderMapProps> = (props: RenderMapProps) => {
 	// shared application state in context
 	const [sharedState] = useSharedState();
