@@ -15,7 +15,16 @@ export const LoginForm = (): JSX.Element => {
 		<Card shadow="sm" padding="xl" radius="md" withBorder className="ptr-LoginForm">
 			<h3 className="ptr-LoginForm-title">Account Access</h3>
 			<div className="ptr-LoginForm-content">
-				<Button onClick={() => (window.location.href = '/api/auth/iam')} className="ptr-authButton">
+				<Button
+					onClick={() => {
+						const searchParams = new URLSearchParams(window.location.search);
+						const returnUrl = searchParams.get('returnUrl');
+						window.location.href = returnUrl
+							? `/api/auth/iam?returnUrl=${encodeURIComponent(returnUrl)}`
+							: '/api/auth/iam';
+					}}
+					className="ptr-authButton"
+				>
 					Login
 				</Button>
 				{/*<Button className="ptr-authButton" color="gray">Register</Button>*/}
