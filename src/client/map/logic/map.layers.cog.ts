@@ -1,9 +1,7 @@
-import geolib from '@gisatcz/deckgl-geolib';
+import { CogBitmapLayer } from '@gisatcz/deckgl-geolib';
 import { LayerGeneralProps } from '../logic/map.layers.models';
 import { validateDatasource } from '../logic/validate.layers';
 import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
-
-const CogBitmapLayer = geolib.CogBitmapLayer;
 
 /**
  * @deprecated Used by RenderingMap which is deprecated and will be removed in future versions. Use MapSet and related components instead.

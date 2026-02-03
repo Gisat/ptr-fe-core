@@ -1,10 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
-import geolib from '@gisatcz/deckgl-geolib';
-import { Layer } from '@deck.gl/core';
+import { CogBitmapLayer } from '@gisatcz/deckgl-geolib';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-
-const CogBitmapLayer = geolib.CogBitmapLayer;
 
 /**
  * A React component that creates and manages a COG (Cloud Optimized GeoTIFF) layer.
@@ -43,7 +40,7 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceP
 	 * Memoize the creation of the CogBitmapLayer instance to avoid unnecessary re-renders.
 	 * The layer instance is recreated only when its dependencies change.
 	 */
-	const layerInstance: Layer = useMemo(() => {
+	const layerInstance: CogBitmapLayer | null = useMemo(() => {
 		if (!cogBitmapOptions) {
 			return null;
 		}
