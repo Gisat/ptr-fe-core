@@ -35,7 +35,7 @@
 	justify-content: center;
 	flex-direction: column;
 	align-items: center;
-	gap: .4rem;
+	gap: .6rem;
 }
 
 .ptr-StoryNavPanelIcon {
@@ -50,21 +50,4 @@
 
 .ptr-StoryNavPanelIcon.is-active {
 	color: var(--accent300);
-}
-
-.ptr-StoryNavPanelIcon.arrow-up,
-.ptr-StoryNavPanelIcon.arrow-down {
-	width: 1.5rem;
-}
-
-.ptr-StoryNavPanelIcon.default-home {
-	width: 1.3rem;
-}
-
-.ptr-StoryNavPanelIcon.default-footer {
-	width: .85rem;
-}
-
-.ptr-StoryNavPanelIcon.default-case {
-	width: .7rem;
 }
