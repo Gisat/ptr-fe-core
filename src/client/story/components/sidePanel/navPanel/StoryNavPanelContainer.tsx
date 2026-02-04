@@ -157,7 +157,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 					activeStep,
 					(e) => scrollToSection(e, StoryActionType.SECTION),
 					classes,
-					<IconHomeFilled />,
+					<IconHomeFilled size={21} />,
 					navigationIcons?.home
 				);
 			case navigationStep.footer:
@@ -166,7 +166,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 					activeStep,
 					(e) => scrollToSection(e, StoryActionType.SECTION),
 					classes,
-					<IconSquareFilled />,
+					<IconSquareFilled size={15} />,
 					navigationIcons?.footer
 				);
 			default:
@@ -175,7 +175,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 					activeStep,
 					(e) => scrollToSection(e, StoryActionType.SECTION),
 					classes,
-					<IconCircleFilled />,
+					<IconCircleFilled size={12} />,
 					navigationIcons?.case
 				);
 		}
@@ -193,6 +193,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 			<IconChevronUp
 				className={classes(['ptr-StoryNavPanelIcon', 'arrow-up'])}
 				onClick={(e) => scrollToSection(e, StoryActionType.UP)}
+				size={24}
 			/>
 			{fullNavigation && (
 				<div
@@ -210,6 +211,7 @@ export const StoryNavPanelContainer: React.FC<StoryNavPanelContainerProps> = ({
 			<IconChevronDown
 				className={classes(['ptr-StoryNavPanelIcon', 'arrow-down'])}
 				onClick={(e) => scrollToSection(e, StoryActionType.DOWN)}
+				size={24}
 			/>
 		</div>
 	);

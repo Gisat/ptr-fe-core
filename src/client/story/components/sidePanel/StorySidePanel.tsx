@@ -103,7 +103,13 @@ export const StorySidePanelInternal: React.FC<StorySidePanelInternalProps> = ({
 
 	// Generate class names based on the current layout and visibility
 	const generateClasses = (base: string) =>
-		classnames(base, `is-${panelLayout}-layout`, `is-${visiblePanelType}-visible`, className);
+		classnames(
+			base,
+			`is-${panelLayout}-layout`,
+			`is-${visiblePanelType}-visible`,
+			hideNavigation ? 'hide-navigation' : '',
+			className
+		);
 
 	// OUT trigger effect
 	useEffect(() => {
