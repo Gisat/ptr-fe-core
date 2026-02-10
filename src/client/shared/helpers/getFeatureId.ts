@@ -1,12 +1,4 @@
-/**
- * Feature interface for GeoJSON objects.
- * Represents the minimal structure needed for feature identification and property access.
- */
-export interface Feature {
-	type: 'Feature';
-	id?: string | number;
-	properties?: { [key: string]: string | number };
-}
+import { MapFeature } from '../models/models.mapFeature';
 
 /**
  * Returns the unique identifier for a GeoJSON feature.
@@ -15,12 +7,12 @@ export interface Feature {
  * If a custom property name is provided, checks that property in both the top-level and the properties object.
  * Throws an error if no identifier is found.
  *
- * @param {Feature} feature - The GeoJSON feature object.
+ * @param {MapFeature} feature - The GeoJSON feature object.
  * @param {string} [featureIdProperty='id'] - The property name to use for the identifier (defaults to "id").
  * @returns {string | number} The feature identifier if found.
  * @throws {Error} If the feature does not have an identifier.
  */
-export function getFeatureId(feature: Feature, featureIdProperty?: string): string | number {
+export function getFeatureId(feature: MapFeature, featureIdProperty?: string): string | number {
 	const idProperty = featureIdProperty ?? 'id';
 
 	// Check the configured property name at top-level (RFC standard)
