@@ -5,15 +5,7 @@ import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
 import { getFeatureId } from '../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../shared/helpers/hexToRgbArray';
 import { SELECTION_DEFAULT_COLOUR } from '../../shared/constants/colors';
-
-/**
- * Represents the structure needed for feature identification and property access.
- */
-interface Feature {
-	type: 'Feature';
-	id?: string;
-	properties?: { [key: string]: string };
-}
+import { MapFeature } from '../../shared/models/models.mapFeature';
 
 /**
  * Default layer style for GeoJsonLayer rendering.
@@ -69,7 +61,7 @@ export const createGeojsonLayer = ({
 	 * @param {Feature} feature - The GeoJSON feature object.
 	 * @returns {number[]} The RGBA color array for the feature's line.
 	 */
-	function getLineColor(feature: Feature): number[] {
+	function getLineColor(feature: MapFeature): number[] {
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
@@ -87,7 +79,7 @@ export const createGeojsonLayer = ({
 	 * @param {Feature} feature - The GeoJSON feature object.
 	 * @returns {number} The width of the feature's line.
 	 */
-	function getLineWidth(feature: Feature): number {
+	function getLineWidth(feature: MapFeature): number {
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			return 20;

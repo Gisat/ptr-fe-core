@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { GeoJsonLayer } from '@deck.gl/layers';
+import { IconLayer } from '@deck.gl/layers';
 import { SELECTION_DEFAULT_COLOUR } from '../../../shared/constants/colors';
 import { getFeatureId } from '../../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../../shared/helpers/hexToRgbArray';
@@ -9,74 +9,80 @@ import { useAxios } from '../../../shared/hooks/useAxios';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
 import { MapFeature } from '../../../shared/models/models.mapFeature';
-import { getFeatureCentroid } from '../../../shared/helpers/getFeatureCentroid';
 import { getLayerTooltip } from '../../MapSet/MapTooltip/getLayerTooltip';
 import { TooltipType } from '../../../shared/models/models.tooltip';
 
-/** What our API returns when we call the route. */
-export interface GeojsonFeatureCollection {
-	type: 'FeatureCollection';
-	features: MapFeature[];
-}
-
-/** All shapes we *might* pass to deck.gl GeoJsonLayer `data` prop. */
-type DeckGeoJsonData = string | GeojsonFeatureCollection | MapFeature | MapFeature[];
 /**
- * Default layer style for GeoJsonLayer rendering.
+ * Default layer style for IconLayer rendering.
+ * @type {Object}
  */
 const defaultLayerStyle = {
 	filled: true,
-	stroked: true,
 	pickable: false,
-	pointRadiusScale: 0.2,
-	getPointRadius: 50,
-	getFillColor: [255, 255, 255],
-	getLineColor: [0, 0, 0, 100],
-	getLineWidth: 1,
-	lineWidthUnits: 'pixels' as const,
+	getColor: [0, 0, 0, 100],
+	getSize: 40,
+	getIcon: 'marker',
+	getPosition: (d: { coordinates: [number, number] }) => d.coordinates,
 };
 
 /**
- * A React component that creates and manages a GeoJSON layer.
- * This component uses the `GeoJsonLayer` from `@deck.gl/layers` to render GeoJSON data.
+ * IconLayerSource is a React component that creates and manages a DeckGL IconLayer.
+ * This component uses the `IconLayer` from `@deck.gl/layers` to render icon markers
+ * based on GeoJSON or array data, with support for selection coloring and interactivity.
  * It also integrates tooltip functionality for hover, click, and selection-based tooltips.
  *
- * @param {LayerSourceProps} props - The props for the GeojsonLayerSource component.
+ * **Note:** The `layerStyle` object must include both `iconAtlas` (the icon sprite image)
+ * and `iconMapping` (an object mapping icon names to their positions/sizes in the atlas).
+ * If either is missing, the IconLayer will not render.
+ *
+ * **Note:** Added default `getPosition` accessor to ensure proper icon placement and getSize
+ * for icon sizing. Otherwise there might be issues with icons not appearing.
+ * These can be overridden by providing them in the `layerStyle`.
+ *
+ * @param {LayerSourceProps} props - The props for the IconLayerSource component.
  * @param {RenderingLayer} props.layer - The layer configuration object.
- * @param {(id: string, instance: GeoJsonLayer | null) => void} props.onLayerUpdate - Callback to handle updates to the layer instance.
- * @returns {null} This component does not render any DOM elements.
+ * @param {(id: string, instance: IconLayer | null) => void} props.onLayerUpdate - Callback to handle updates to the layer instance.
+ * @returns {React.ReactNode} Tooltip element for this layer (if any), no DOM for the layer itself.
  */
-export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, CustomTooltip }: LayerSourceProps) => {
+export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, CustomTooltip }: LayerSourceProps) => {
 	const [sharedState] = useSharedState();
+
 	const { isActive, key, opacity, datasource, isInteractive, selectionKey, fetchOptions } = layer;
 	const { url, documentId, validIntervalIso, configuration } = datasource;
 	const route = fetchOptions?.route;
 	const method = fetchOptions?.method;
 
 	// Hover info for hover-based tooltip
-	const [featureInfo, setFeatureInfo] = useState<{ feature: MapFeature; x: number; y: number } | null>(null);
+	const [featureInfo, setFeatureInfo] = useState<{
+		feature: MapFeature;
+		x: number;
+		y: number;
+	} | null>(null);
 
 	// We need a fallback URL if no route is provided (e.g. external static GeoJSON file)
 	if (!url && !route) {
-		throw new Error(`GeojsonLayerSource: Missing both route and url in datasource: ${key}`);
+		throw new Error(`IconLayerSource: Missing both route and url in datasource: ${key}`);
 	}
 
 	// Log a warning if the documentId is missing
 	if (!documentId) {
-		console.warn(`GeojsonLayerSource: Missing documentId in datasource: ${key}`);
+		console.warn(`IconLayerSource: Missing documentId in datasource: ${key}`);
 	}
 
-	// Parse the datasource configuration
+	// Parse datasource configuration
 	const config = parseDatasourceConfiguration(configuration);
-
 	// Extract GeoJSON options from the parsed configuration
 	// TODO geojsonOptions are currently used for styling and featureIdProperty, solve this properly in the future
 	const geojsonOptions = config?.geojsonOptions;
 	if (!geojsonOptions) {
-		console.warn(`GeojsonLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
+		console.warn(`IconLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
 	}
 
-	// Layer style
+	// Extract iconAtlas and iconMapping from layerStyle
+	const iconAtlas = geojsonOptions?.layerStyle?.iconAtlas;
+	const iconMapping = geojsonOptions?.layerStyle?.iconMapping;
+
+	// Layer style with defaults
 	const layerStyle = geojsonOptions?.layerStyle ?? defaultLayerStyle;
 
 	// Selection
@@ -103,10 +109,10 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 		data: fetchedData,
 		error,
 		isLoading,
-	} = useAxios<DeckGeoJsonData>(
+	} = useAxios(
 		{ fetchUrl: route },
 		undefined,
-		{ documentId, validIntervalIso, url },
+		{ documentId: documentId, validIntervalIso, url },
 		{ method, skip: !route }
 	);
 
@@ -117,66 +123,33 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	 */
 	const data = route && fetchedData && !error ? fetchedData : url;
 
-	// Always normalize to an array for features used in selection & tooltips
-	let features: MapFeature[] = [];
+	// Normalize to MapFeature[] for selection & tooltips
+	const features: MapFeature[] = Array.isArray(data) ? (data as MapFeature[]) : [];
 
-	if (Array.isArray(data)) {
-		// Array of features
-		features = data as MapFeature[];
-	}
-	if (typeof data === 'object' && data !== null) {
-		if (
-			(data as GeojsonFeatureCollection).type === 'FeatureCollection' &&
-			Array.isArray((data as GeojsonFeatureCollection).features)
-		) {
-			features = (data as GeojsonFeatureCollection).features;
-		}
-		if ((data as MapFeature).type === 'Feature') {
-			features = [data as MapFeature];
-		}
-	}
-
-	// We only show "loading" if we are actively trying to fetch from a route and haven't failed yet
+	// Show "loading" only when fetching from route and not failed yet
 	const isDataLoading = !!route && isLoading && !error;
 
 	/**
-	 * Returns the line color for a feature.
-	 * If the feature is selected, returns its assigned color; otherwise, returns the default.
-	 *
-	 * @param {Feature} feature - The GeoJSON feature object.
-	 * @returns {number[]} The RGBA color array for the feature's line.
+	 * Returns the color for a feature. If selected, returns selection color, otherwise layer default.
 	 */
-	function getLineColor(feature: MapFeature): number[] {
+	function getColor(feature: MapFeature): number[] {
 		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
-			// Convert hex to RGB array and add alpha channel
 			return [...hexToRgbArray(hex), 255];
 		}
-		return layerStyle.getLineColor;
-	}
-
-	/**
-	 * Returns the line width for a feature.
-	 * If the feature is selected, returns a thicker line; otherwise, returns the default.
-	 *
-	 * @param {Feature} feature - The GeoJSON feature object.
-	 * @returns {number} The width of the feature's line.
-	 */
-	function getLineWidth(feature: MapFeature): number {
-		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
-		if (featureId && selectedFeatureKeys.includes(featureId)) {
-			return 5;
+		if (typeof layerStyle.getColor === 'function') {
+			return layerStyle.getColor(feature);
 		}
-		return layerStyle.getLineWidth;
+		return layerStyle.getColor;
 	}
 
 	// ---------- Tooltip creation ----------
 	/**
 	 * Compute tooltip React node based on:
 	 * - hover/click featureInfo (screen-space tooltip)
-	 * - or selection + viewport + getFeatureCentroid (map-space tooltip)
+	 * - or selection + viewport + feature.coordinates (map-space tooltip)
 	 */
 	const tooltip =
 		tooltipEnabled &&
@@ -187,30 +160,27 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 			selection,
 			viewport,
 			CustomTooltip,
-			// For GeoJSON geometries, always use a centroid / representative point.
-			getCoordinates: (selectedFeature: MapFeature) => getFeatureCentroid(selectedFeature),
+			// For IconLayer, position comes from the helper `coordinates` field.
+			getCoordinates: (feature: MapFeature) => feature?.coordinates,
 		});
 
 	/**
-	 * Memoize the creation of the GeoJsonLayer instance to avoid unnecessary re-renders.
-	 * The layer instance is recreated only when its dependencies change.
+	 * Memoizes the creation of the IconLayer instance to avoid unnecessary re-creation.
 	 */
-	const layerInstance: GeoJsonLayer | null = useMemo(() => {
-		// Prevent rendering only if we are in the middle of a route fetch.
-		// If we have no route, or we have an error, we proceed with 'url' as data.
-		if (isDataLoading || !data) {
+	const layerInstance: IconLayer | null = useMemo(() => {
+		if (isDataLoading || !data || !iconAtlas || !iconMapping) {
 			return null;
 		}
 
-		return new GeoJsonLayer({
+		return new IconLayer({
 			id: key,
 			opacity: opacity ?? 1,
 			visible: isActive,
 			data,
+			iconAtlas,
+			iconMapping,
 			updateTriggers: {
-				getLineColor: [layerStyle, selection],
-				getFillColor: [layerStyle, selection],
-				getLineWidth: [layerStyle, selection],
+				getColor: [layerStyle, selection],
 				pickable: [layerStyle, isInteractive],
 				onHover: [CustomTooltip],
 			},
@@ -239,7 +209,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 				const clickedFeature = info.object as MapFeature | null;
 				if (!clickedFeature || info.x == null || info.y == null) {
 					setFeatureInfo(null);
-					console.warn('GeojsonLayerSource: onClick handler - clickedFeature is null.');
+					console.warn('IconLayerSource: onClick handler - clickedFeature is null.');
 					return;
 				}
 
@@ -263,9 +233,10 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 					setFeatureInfo(null);
 				}
 			},
+			getSize: 40,
+			getPosition: (d: { coordinates: [number, number] }) => d?.coordinates,
 			...layerStyle,
-			getLineColor,
-			getLineWidth,
+			getColor,
 			pickable: isInteractive ?? layerStyle.pickable,
 		});
 	}, [
@@ -276,8 +247,10 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 		layerStyle,
 		selection,
 		data,
-		geojsonOptions,
+		iconAtlas,
+		iconMapping,
 		isDataLoading,
+		geojsonOptions,
 		CustomTooltip,
 	]);
 
