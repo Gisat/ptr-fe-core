@@ -8,29 +8,34 @@ on:
     - dev
     - rc
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  code:
+  tests-and-linting:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 5
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
 
-    - name: Run tests
-      run: npm test
+      - name: Install dependencies
+        run: npm install
 
-  build:
-    runs-on: ubuntu-latest
+      - name: Run linter (ESLint)
+        run: npm run lint
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Build project
+        run: npm run build
 
-    - name: Install dependencies
-      run: npm install
-
-    - name: Build project
-      run: npm run build
+      - name: Run tests
+        run: npm run test
