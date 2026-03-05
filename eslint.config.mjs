@@ -4,9 +4,16 @@ import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 export default defineConfig([
+    {
+    ignores: [
+      '**/dev/*',
+      '**/dist/*',
+      '**/tests/*',
+      'tsconfig.json',
+    ]
+  },
   {
     files: ["**/*.{ts,tsx}"],
-    ignores: ["**/node_modules/**", "**/dist/**", "vitest.config.ts"],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {

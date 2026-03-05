@@ -36,8 +36,10 @@
 		}
 	},
 	"scripts": {
-		"build:remove": "rimraf dist && rimraf src/client/index.ts && rimraf src/client/styles.css && rimraf src/server/index.ts && rimraf src/globals/index.ts",
-		"build:barrels": "npm run build:remove && barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-server.scripts.json && barrelsby -c barrels-globals.scripts.json",
+		"yalc:publish": "yalc publish",
+    	"yalc:publish:push": "yalc publish --push",
+		"build:remove": "rimraf dist && rimraf src/client/index.ts && rimraf src/client/styles.css && rimraf src/globals/index.ts",
+		"build:barrels": "npm run build:remove && barrelsby -c barrels-client.scripts.json && barrelsby -c barrels-globals.scripts.json",
 		"build:styles": "node barrels.styles.mjs && node update-barrels.mjs",
 		"build:types": "tsc --project tsconfig.build.json",
 		"build:prebuild": "npm run build:barrels && npm run build:styles && npm run build:types",
@@ -46,7 +48,9 @@
 		"lint": "eslint",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"before:push": "npm run lint && npm run build && npm run test"
+
 	},
 	"keywords": [],
 	"author": "",
@@ -103,7 +107,7 @@
 		"lodash": "^4.17.21",
 		"luxon": "^3.6.0",
 		"node-cache": "^5.1.2",
-		"openid-client": "^5.7.1",
+		"openid-client": "^6.8.1",
 		"react": "^19.0.0",
 		"react-compare-slider": "^3.1.0",
 		"react-dom": "^19.0.0",
