@@ -95,7 +95,7 @@
 		"@deck.gl/layers": "^9.2.2",
 		"@deck.gl/react": "^9.2.2",
 		"@gisatcz/deckgl-geolib": "^2.0.0",
-		"@gisatcz/ptr-be-core": "^0.0.7",
+		"@gisatcz/ptr-be-core": "^0.0.8",
 		"@mantine/core": "^8.0.2",
 		"@mantine/hooks": "^8.0.2",
 		"@tabler/icons-react": "^3.31.0",
