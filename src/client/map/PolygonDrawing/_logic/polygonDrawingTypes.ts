@@ -2,15 +2,15 @@ export type PolygonCoordinate = [number, number];
 export type PolygonCoordinates = PolygonCoordinate[];
 
 export interface PolygonDragInfo {
-	object: any;
+	object: unknown;
 	coordinate: PolygonCoordinate;
 	index: number;
 }
 
 export interface PolygonClickInfo {
     coordinate: PolygonCoordinate;
-    object?: any;
-    layer?: any;
+    object?: unknown;
+    layer?: unknown;
     index?: number;
 }
 

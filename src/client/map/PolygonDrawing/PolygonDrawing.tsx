@@ -133,8 +133,7 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({ children, onPoly
                 return 'default';
             },
 
-            // disable default map controls (pan/zoom) when dragging a point or maybe we want to disable them when drawing?
-            // Here we disable only when dragging a point.
+            // disable default map controls (pan/zoom) while drawing an open polygon or dragging a point
             disableControls: (isActive && !isClosed) || isDragging
         });
     });
