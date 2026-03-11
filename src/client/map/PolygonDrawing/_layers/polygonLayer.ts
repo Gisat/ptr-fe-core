@@ -40,6 +40,7 @@ export const polygonLayer = ({
 					// Highlight first point in red if loop is closeable (unclosed & > 2 points)
 					return (_data.index === 0 && !isClosed && polygonCoordinates.length > 2) ? [255, 0, 0] : [255, 255, 255];
 				},
+				stroked: true,
 				getLineColor: [0, 0, 0],
 				lineWidthMinPixels: 1,
 				radiusMinPixels: 5,
@@ -47,7 +48,7 @@ export const polygonLayer = ({
 				autoHighlight: true,
 				highlightColor: [255, 0, 0, 255],
 				updateTriggers: {
-					getFillColor: [isClosed, polygonCoordinates.length]
+					getFillColor: [isClosed, polygonCoordinates.length, hoveredPointIndex]
 				}
 			})
 		);
