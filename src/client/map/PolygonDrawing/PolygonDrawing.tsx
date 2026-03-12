@@ -4,7 +4,7 @@ import { polygonLayer } from './_layers/polygonLayer';
 import { onPolygonClick } from './_logic/onPolygonClick';
 import { onPolygonDrag } from './_logic/onPolygonDrag';
 import { onPolygonHover } from './_logic/onPolygonHover';
-import { PolygonClickInfo, PolygonDragInfo } from './_logic/polygonDrawingTypes';
+import { PolygonClickInfo, PolygonDragInfo, DrawingMode } from './_logic/polygonDrawingTypes';
 
 interface PolygonDrawingProps {
 	/** The map component to wrap */
@@ -18,6 +18,8 @@ interface PolygonDrawingProps {
  * Wraps a map component (like RenderingMap) and injects deck.gl layers and event handlers.
  */
 export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({children, onPolygonChange}) => {
+	// State for the drawing mode
+	const [mode, setMode] = useState<DrawingMode>('polygon');
 	// State for the polygon vertices [longitude, latitude]
 	const [polygonCoordinates, setPolygonCoordinates] = useState<[number, number][]>([]);
 	// State to track if the polygon loop is closed
@@ -67,7 +69,8 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({children, onPolyg
 		polygonCoordinates,
 		isClosed,
 		isActive,
-		hoveredPointIndex
+		hoveredPointIndex,
+		mode
 	});
 
 	// Clone the child map component to inject necessary props for interaction
@@ -88,7 +91,8 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({children, onPolyg
 					polygonCoordinates,
 					isClosed,
 					setPolygonCoordinates: handlePolygonUpdate,
-					setIsClosed: handleIsClosedUpdate
+					setIsClosed: handleIsClosedUpdate,
+					mode
 				});
 			},
 
@@ -98,7 +102,8 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({children, onPolyg
 				onPolygonDrag({
 					info,
 					polygonCoordinates,
-					setPolygonCoordinates: handlePolygonUpdate
+					setPolygonCoordinates: handlePolygonUpdate,
+					mode
 				});
 			},
 
@@ -146,6 +151,8 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({children, onPolyg
 				isActive={isActive}
 				onClear={handleClear}
 				onToggleActive={handleToggleActive}
+				mode={mode}
+				setMode={setMode}
 			/>
 		</div>
 	);

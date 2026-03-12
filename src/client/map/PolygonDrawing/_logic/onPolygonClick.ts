@@ -1,4 +1,4 @@
-import { PolygonCoordinates, PolygonClickInfo } from './polygonDrawingTypes';
+import { PolygonCoordinates, PolygonClickInfo, DrawingMode } from './polygonDrawingTypes';
 
 interface OnClickParams {
     info: PolygonClickInfo;
@@ -6,6 +6,7 @@ interface OnClickParams {
     isClosed: boolean;
     setPolygonCoordinates: (coords: PolygonCoordinates) => void;
     setIsClosed: (closed: boolean) => void;
+    mode: DrawingMode;
 }
 
 /**
@@ -17,6 +18,7 @@ export const onPolygonClick = ({
     isClosed,
     setPolygonCoordinates,
     setIsClosed,
+    mode,
 }: OnClickParams) => {
     // If polygon is already closed, prevent adding more points.
     // Edit mode (dragging existing points) is handled separately.
@@ -30,7 +32,7 @@ export const onPolygonClick = ({
     // Check if the user clicked on an existing vertex
     if (layer && layer.id && layer.id.includes('vertex-layer')) {
         // If clicking on the first point (index 0) and we have enough points (>=3), close the polygon
-        if (typeof index === 'number' && index === 0 && polygonCoordinates.length > 2) {
+        if (mode === 'polygon' && typeof index === 'number' && index === 0 && polygonCoordinates.length > 2) {
             setIsClosed(true);
             return;
         }
@@ -41,7 +43,15 @@ export const onPolygonClick = ({
 
     // Add new point at clicked coordinate
     if (coordinate) {
-        setPolygonCoordinates([...polygonCoordinates, coordinate as [number, number]]);
+        if (mode === 'circle') {
+            const newCoords = [...polygonCoordinates, coordinate as [number, number]];
+            setPolygonCoordinates(newCoords);
+            // Circle is defined by center and one edge point (radius)
+            if (newCoords.length === 2) {
+                setIsClosed(true);
+            }
+        } else {
+            setPolygonCoordinates([...polygonCoordinates, coordinate as [number, number]]);
+        }
     }
 };
-

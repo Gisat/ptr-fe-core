@@ -1,5 +1,6 @@
 export type PolygonCoordinate = [number, number];
 export type PolygonCoordinates = PolygonCoordinate[];
+export type DrawingMode = 'polygon' | 'circle';
 
 export interface PolygonDragInfo {
 	object: any;
@@ -23,4 +24,3 @@ export interface PolygonGetCursorInfo {
     isHovering: boolean;
     isDragging: boolean;
 }
-

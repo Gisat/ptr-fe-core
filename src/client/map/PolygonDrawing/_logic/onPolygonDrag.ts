@@ -1,9 +1,10 @@
-import { PolygonCoordinates, PolygonDragInfo } from './polygonDrawingTypes';
+import { PolygonCoordinates, PolygonDragInfo, DrawingMode } from './polygonDrawingTypes';
 
 interface OnDragParams {
     info: PolygonDragInfo;
     polygonCoordinates: PolygonCoordinates;
     setPolygonCoordinates: (coords: PolygonCoordinates) => void;
+    mode: DrawingMode;
 }
 
 /**
@@ -14,6 +15,7 @@ export const onPolygonDrag = ({
     info,
     polygonCoordinates,
     setPolygonCoordinates,
+    mode,
 }: OnDragParams) => {
     // Safety check
     if (!info) return;
@@ -21,12 +23,30 @@ export const onPolygonDrag = ({
     const { coordinate, index } = info;
 
     // Validate that we are dragging a valid vertex index
-    if (typeof index !== 'number' || index < 0 || index >= polygonCoordinates.length) return;
+    if (index < 0 || index >= polygonCoordinates.length) return;
 
-    // Create a copy of coordinates and update the specific vertex position
-    // This allows real-time visual feedback while dragging
     const newCoords = [...polygonCoordinates];
-    newCoords[index] = [coordinate[0], coordinate[1]];
+
+    if (mode === 'circle') {
+        if (index === 0) {
+            // Dragging Center: Move the whole circle (center + radius point)
+            const dx = coordinate[0] - polygonCoordinates[0][0];
+            const dy = coordinate[1] - polygonCoordinates[0][1];
+
+            newCoords[0] = [coordinate[0], coordinate[1]];
+            if (newCoords[1]) {
+                newCoords[1] = [newCoords[1][0] + dx, newCoords[1][1] + dy];
+            }
+        } else if (index === 1) {
+            // Dragging Radius Point: Just move the point to resize radius
+            newCoords[1] = [coordinate[0], coordinate[1]];
+        }
+    } else {
+        // Create a copy of coordinates and update the specific vertex position
+        // This allows real-time visual feedback while dragging
+        newCoords[index] = [coordinate[0], coordinate[1]];
+    }
+
     setPolygonCoordinates(newCoords);
 };
 
