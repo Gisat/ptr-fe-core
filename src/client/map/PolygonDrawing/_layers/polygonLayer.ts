@@ -10,19 +10,19 @@ interface PolygonLayerProps {
 }
 
 function getDistance(coord1: [number, number], coord2: [number, number]): number {
-	const toRad = (x: number) => x * Math.PI / 180;
-	const R = 6371000; // Earth radius in meters
+	const toRad = (degrees: number) => degrees * Math.PI / 180;
+	const earthRadius = 6371000; // Earth radius in meters
 
 	const dLat = toRad(coord2[1] - coord1[1]);
 	const dLon = toRad(coord2[0] - coord1[0]);
 	const lat1 = toRad(coord1[1]);
 	const lat2 = toRad(coord2[1]);
 
-	const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+	const squareHalfChord = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
 		Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	const centralAngle = 2 * Math.atan2(Math.sqrt(squareHalfChord), Math.sqrt(1 - squareHalfChord));
 
-	return R * c;
+	return earthRadius * centralAngle;
 }
 
 /**
