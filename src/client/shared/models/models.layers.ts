@@ -3,7 +3,19 @@ import { LayerTreeInteraction } from '../layers/models.layers';
 import { DatasourceWithNeighbours } from './models.metadata';
 
 /**
- * Layer in rendering context, but still undepedent to specific rendering framework
+ * Polygon drawing state stored on a dedicated RenderingLayer entry.
+ * Kept as part of RenderingLayer so drawing state lives inside
+ * the existing AppSharedState.renderingLayers array.
+ */
+export interface RenderingLayerPolygonDrawing {
+	mode: 'polygon' | 'circle';
+	isActive: boolean;
+	isClosed: boolean;
+	polygonCoordinates: [number, number][];
+}
+
+/**
+ * Layer in rendering context, but still independent to specific rendering framework
  */
 export interface RenderingLayer {
 	isActive: boolean;
@@ -19,4 +31,6 @@ export interface RenderingLayer {
 		route: string;
 		method: 'GET' | 'POST';
 	};
+	/** Polygon drawing state – present only on the dedicated 'polygonDrawing' layer entry */
+	polygonDrawing?: RenderingLayerPolygonDrawing;
 }

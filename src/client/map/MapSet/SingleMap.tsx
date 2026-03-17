@@ -25,6 +25,24 @@ export interface BasicMapProps {
 	syncedView: Partial<MapView>;
 	/** Custom tooltip component */
 	CustomTooltip?: React.ElementType | boolean;
+
+	// --- Props for external layer injection and event override (used by PolygonDrawing) ---
+	/** Extra deck.gl layer instances rendered on top of managed layers */
+	extraLayers?: LayerInstance[];
+	/** Called BEFORE internal click/selection logic – lets drawing tools handle clicks first */
+	onClickExternal?: (event: PickingInfo) => void;
+	/** Called on every drag event – used to move drawing vertices */
+	onDragExternal?: (event: PickingInfo) => void;
+	/** Called on every hover event – used to detect vertex hover */
+	onHoverExternal?: (event: PickingInfo) => void;
+	/** Called when a drag gesture starts */
+	onDragStartExternal?: (event: PickingInfo) => void;
+	/** Called when a drag gesture ends */
+	onDragEndExternal?: () => void;
+	/** When provided, overrides the internal getCursor logic entirely */
+	getCursorExternal?: (info: { isDragging: boolean }) => string;
+	/** When true, the DeckGL controller (pan / zoom) is disabled */
+	controllerDisabled?: boolean;
 }
 
 type LayerRegistry = Record<string, LayerInstance>;
@@ -37,7 +55,19 @@ type LayerRegistry = Record<string, LayerInstance>;
  * @param {BasicMapProps} props - The props for the map.
  * @returns {JSX.Element} DeckGL map component.
  */
-export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMapProps) => {
+export const SingleMap = ({
+	mapKey,
+	syncedView,
+	CustomTooltip = false,
+	extraLayers,
+	onClickExternal,
+	onDragExternal,
+	onHoverExternal,
+	onDragStartExternal,
+	onDragEndExternal,
+	getCursorExternal,
+	controllerDisabled = false,
+}: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [controlIsDown, setControlIsDown] = useState(false);
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
@@ -197,14 +227,32 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 			/>
 			<DeckGL
 				viewState={mapViewState}
-				layers={activeLayers}
-				controller={true}
+				layers={[...activeLayers, ...(extraLayers?.filter(Boolean) ?? [])]}
+				controller={!controllerDisabled}
 				width="100%"
 				height="100%"
 				onViewStateChange={onViewStateChange}
-				onClick={onClick}
-				onHover={onHover}
-				getCursor={({ isDragging }) => (isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab')}
+				onClick={(event) => {
+					onClickExternal?.(event); // drawing/external handler has priority
+					onClick(event);           // internal selection logic
+				}}
+				onHover={(event) => {
+					onHover(event);           // internal hover / cursor logic
+					onHoverExternal?.(event); // vertex detection for PolygonDrawing
+				}}
+				onDrag={(event) => {
+					onDragExternal?.(event);
+				}}
+				onDragStart={(event) => {
+					onDragStartExternal?.(event);
+				}}
+				onDragEnd={() => {
+					onDragEndExternal?.();
+				}}
+				getCursor={({ isDragging }) => {
+					if (getCursorExternal) return getCursorExternal({ isDragging });
+					return isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab';
+				}}
 				/**
 				 * Default DeckGL tooltip:
 				 * - Disabled when a CustomTooltip component is provided (layer sources

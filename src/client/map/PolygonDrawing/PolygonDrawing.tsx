@@ -1,5 +1,4 @@
-import React, { useState, cloneElement, Children, ReactElement } from 'react';
-import { ControlButtons } from './ControlButtons';
+import React, { useState, cloneElement, Children, ReactElement, ReactNode } from 'react';
 import { polygonLayer } from './_layers/polygonLayer';
 import { onPolygonClick } from './_logic/onPolygonClick';
 import { onPolygonDrag } from './_logic/onPolygonDrag';
@@ -9,152 +8,109 @@ import { PolygonClickInfo, PolygonDragInfo, DrawingMode } from './_logic/polygon
 interface PolygonDrawingProps {
 	/** The map component to wrap */
 	children: ReactElement;
-	/** Callback when the polygon coordinates change */
-	onPolygonChange?: (polygon: [number, number][]) => void;
+	/** Current drawing mode – controlled from outside */
+	mode: DrawingMode;
+	/** Current polygon/circle coordinates – controlled from outside */
+	polygonCoordinates: [number, number][];
+	/** Whether the polygon loop is closed – controlled from outside */
+	isClosed: boolean;
+	/** Whether drawing/editing is active – controlled from outside */
+	isActive: boolean;
+	/** Called when coordinates change (vertex added, moved) */
+	onPolygonChange: (coords: [number, number][]) => void;
+	/** Called when closed state changes */
+	onIsClosedChange: (closed: boolean) => void;
+	/** Slot for app-level control buttons rendered inside the relative wrapper */
+	controlsSlot?: ReactNode;
 }
 
 /**
- * Component that allows drawing and editing a polygon on a map.
- * Wraps a map component (like RenderingMap) and injects deck.gl layers and event handlers.
+ * Controlled component that allows drawing and editing a polygon/circle on a map.
+ * Wraps a SingleMap and injects deck.gl layers + event handlers via cloneElement.
+ *
+ * mode / polygonCoordinates / isClosed / isActive are owned by the caller.
+ * Only low-level interaction state (hover/drag) is managed internally.
  */
-export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({children, onPolygonChange}) => {
-	// State for the drawing mode
-	const [mode, setMode] = useState<DrawingMode>('polygon');
-	// State for the polygon vertices [longitude, latitude]
-	const [polygonCoordinates, setPolygonCoordinates] = useState<[number, number][]>([]);
-	// State to track if the polygon loop is closed
-	const [isClosed, setIsClosed] = useState(false);
-	// State to control if drawing/editing is enabled
-	const [isActive, setIsActive] = useState(false);
-	// State to track if the cursor is hovering over a vertex (for styling and drag initiation)
+export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({
+	children,
+	mode,
+	polygonCoordinates,
+	isClosed,
+	isActive,
+	onPolygonChange,
+	onIsClosedChange,
+	controlsSlot,
+}) => {
+	// Internal interaction state – not needed outside this component
 	const [isHoveringPoint, setIsHoveringPoint] = useState(false);
-	// State to store the index of the vertex being hovered
 	const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
-	// State to track if a vertex is currently being dragged
 	const [isDragging, setIsDragging] = useState(false);
 
-	/**
-	 * Updates the polygon coordinates and triggers the external callback.
-	 */
-	const handlePolygonUpdate = (coords: [number, number][]) => {
-		setPolygonCoordinates(coords);
-		if (onPolygonChange) {
-			onPolygonChange(coords);
-		}
-	};
-
-	const handleIsClosedUpdate = (closed: boolean) => {
-		setIsClosed(closed);
-		// Logic for what happens when polygon closes can be extended here
-	};
-
-	/**
-	 * Resets the drawing state to start over.
-	 */
-	const handleClear = () => {
-		setPolygonCoordinates([]);
-		setIsClosed(false);
-		setIsActive(true); // Automatically switch to drawing mode
-		setIsHoveringPoint(false);
-		setHoveredPointIndex(null);
-		if (onPolygonChange) onPolygonChange([]);
-	};
-
-	const handleToggleActive = () => {
-		setIsActive(!isActive);
-	};
-
 	// Calculate the deck.gl layers to render based on current state
-	const layers = polygonLayer({
-		polygonCoordinates,
-		isClosed,
-		isActive,
-		hoveredPointIndex,
-		mode
-	});
+	const layers = polygonLayer({ polygonCoordinates, isClosed, isActive, hoveredPointIndex, mode });
 
-	// Clone the child map component to inject necessary props for interaction
+	// Clone the child map component (SingleMap) and inject drawing props.
+	// Uses the "external" prop convention supported by SingleMap.
 	const mappedChildren = Children.map(children, (child) => {
 		if (!React.isValidElement(child)) return child;
 
 		return cloneElement(child as ReactElement<any>, {
-			// Inject the generated layers into the map
-			layer: layers,
+			// Inject the generated deck.gl drawing layers on top of managed map layers
+			extraLayers: layers,
 
-			// Handle click events on the map
-			onClick: (info: PolygonClickInfo) => {
-				// Ignore clicks if drawing/editing is disabled
+			// Handle click events – add new vertex or close the polygon
+			onClickExternal: (info: PolygonClickInfo) => {
 				if (!isActive) return;
-
 				onPolygonClick({
 					info,
 					polygonCoordinates,
 					isClosed,
-					setPolygonCoordinates: handlePolygonUpdate,
-					setIsClosed: handleIsClosedUpdate,
-					mode
+					setPolygonCoordinates: onPolygonChange,
+					setIsClosed: onIsClosedChange,
+					mode,
 				});
 			},
 
-			// Handle drag events (moving vertices)
-			onDrag: (info: PolygonDragInfo) => {
+			// Handle drag events – move the dragged vertex in real time
+			onDragExternal: (info: PolygonDragInfo) => {
 				if (!isActive) return;
-				onPolygonDrag({
-					info,
-					polygonCoordinates,
-					setPolygonCoordinates: handlePolygonUpdate,
-					mode
-				});
+				onPolygonDrag({ info, polygonCoordinates, setPolygonCoordinates: onPolygonChange, mode });
 			},
 
-			// Handle hover events (detecting vertices)
-			onHover: (info: PolygonClickInfo) => {
+			// Handle hover events – detect when cursor is over a vertex
+			onHoverExternal: (info: PolygonClickInfo) => {
 				if (!isActive) return;
-				onPolygonHover({
-					info,
-					setIsHoveringPoint,
-					setHoveredPointIndex
-				});
+				onPolygonHover({ info, setIsHoveringPoint, setHoveredPointIndex });
 			},
 
-			// Handle start of a drag interaction
-			onStartDragging: () => {
-				// Only allow dragging if we are hovering over a point
-				if (isActive && isHoveringPoint) {
-					setIsDragging(true);
-				}
+			// Mark drag as started only when hovering over a vertex
+			onDragStartExternal: () => {
+				if (isActive && isHoveringPoint) setIsDragging(true);
 			},
 
-			// Handle end of a drag interaction
-			onStopDragging: () => {
-				setIsDragging(false);
-			},
+			// Clear drag state when gesture ends
+			onDragEndExternal: () => setIsDragging(false),
 
-			// dynamic cursor styling based on state
-			getCursor: ({isDragging}: { isDragging: boolean }) => {
-				if (isDragging) return 'grabbing';
-				if (isHoveringPoint && isActive) return 'pointer';
-				if (isActive && !isClosed) return 'crosshair';
+			// Dynamic cursor based on drawing / editing state
+			getCursorExternal: ({ isDragging: _d }: { isDragging: boolean }) => {
+				if (isDragging) return 'grabbing';              // vertex is being dragged
+				if (isHoveringPoint && isActive) return 'pointer'; // hovering over a vertex
+				if (isActive && !isClosed) return 'crosshair';    // drawing mode
 				return 'default';
 			},
 
-			// disable default map controls (pan/zoom) while drawing an open polygon or dragging a point
-			disableControls: (isActive && !isClosed) || isDragging
+			// Disable map pan/zoom while:
+			//   - drawing an open polygon (always locked)
+			//   - hovering over a vertex in edit mode (prevents race condition with DeckGL controller)
+			//   - actively dragging a vertex
+			controllerDisabled: isActive && (!isClosed || isHoveringPoint || isDragging),
 		});
 	});
 
 	return (
-		<div style={{position: 'relative', width: '100%', height: '100%'}}>
+		<div style={{ position: 'relative', width: '100%', height: '100%' }}>
 			{mappedChildren}
-			<ControlButtons
-				isClosed={isClosed}
-				isActive={isActive}
-				onClear={handleClear}
-				onToggleActive={handleToggleActive}
-				mode={mode}
-				setMode={setMode}
-			/>
+			{controlsSlot}
 		</div>
 	);
 };
-

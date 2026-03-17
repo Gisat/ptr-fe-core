@@ -9,80 +9,124 @@ interface PolygonLayerProps {
 	mode: DrawingMode;
 }
 
+/** Haversine great-circle distance in metres – used only for the radius value. */
 function getDistance(coord1: [number, number], coord2: [number, number]): number {
-	const toRad = (degrees: number) => degrees * Math.PI / 180;
-	const earthRadius = 6371000; // Earth radius in meters
-
+	const toRad = (d: number) => (d * Math.PI) / 180;
+	const R = 6371000;
 	const dLat = toRad(coord2[1] - coord1[1]);
 	const dLon = toRad(coord2[0] - coord1[0]);
 	const lat1 = toRad(coord1[1]);
 	const lat2 = toRad(coord2[1]);
-
-	const squareHalfChord = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+	const a =
+		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
 		Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-	const centralAngle = 2 * Math.atan2(Math.sqrt(squareHalfChord), Math.sqrt(1 - squareHalfChord));
-
-	return earthRadius * centralAngle;
+	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 /**
- * Generates deck.gl layers for displaying and editing the polygon.
- *
- * @param props Props for generating layers
- * @returns Array of deck.gl layers
+ * Computes a destination point given a start, distance (m) and bearing (rad).
+ * Uses the same spherical formula as Haversine, so the result is always
+ * exactly `distance` metres from `origin` by the Haversine metric.
+ */
+function destinationPoint(
+	origin: [number, number],
+	distance: number,
+	bearing: number
+): [number, number] {
+	const R = 6371000;
+	const d = distance / R; // angular distance
+	const lat1 = (origin[1] * Math.PI) / 180;
+	const lon1 = (origin[0] * Math.PI) / 180;
+
+	const lat2 = Math.asin(
+		Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(bearing)
+	);
+	const lon2 =
+		lon1 +
+		Math.atan2(
+			Math.sin(bearing) * Math.sin(d) * Math.cos(lat1),
+			Math.cos(d) - Math.sin(lat1) * Math.sin(lat2)
+		);
+
+	return [(lon2 * 180) / Math.PI, (lat2 * 180) / Math.PI];
+}
+
+/**
+ * Generates a geodesic circle polygon with `numPoints` vertices.
+ * Because each vertex is placed using the same spherical formula as getDistance,
+ * the edge point (coord[1]) will always sit exactly on the polygon boundary
+ * regardless of zoom level or Mercator distortion.
+ */
+function generateCirclePolygon(
+	center: [number, number],
+	radius: number,
+	numPoints = 64
+): [number, number][] {
+	return Array.from({ length: numPoints }, (_, i) => {
+		const bearing = (2 * Math.PI * i) / numPoints;
+		return destinationPoint(center, radius, bearing);
+	});
+}
+
+/**
+ * Generates deck.gl layers for displaying and editing the polygon / circle.
  */
 export const polygonLayer = ({
-	                             polygonCoordinates,
-	                             isClosed,
-	                             isActive,
-	                             hoveredPointIndex,
-	                             mode,
-                             }: PolygonLayerProps) => {
-
-	// Safety check: Don't render if coordinates are missing
+	polygonCoordinates,
+	isClosed,
+	isActive,
+	hoveredPointIndex,
+	mode,
+}: PolygonLayerProps) => {
 	if (!polygonCoordinates) return [];
 
 	const layers: any[] = [];
 
 	if (mode === 'circle') {
-		// Draw the circle area
+		// ── Circle fill ────────────────────────────────────────────────────────
+		// Use PolygonLayer with a geodesic polygon instead of ScatterplotLayer.
+		// ScatterplotLayer renders circles using a flat-earth Mercator approximation;
+		// for large circles this causes the edge point to appear off the circle at
+		// extreme zoom levels. The geodesic polygon uses the same spherical maths as
+		// getDistance, so the edge vertex is guaranteed to sit on the boundary.
 		if (isClosed && polygonCoordinates.length === 2) {
 			const radius = getDistance(polygonCoordinates[0], polygonCoordinates[1]);
+			const circlePolygon = generateCirclePolygon(polygonCoordinates[0], radius);
 			layers.push(
-				new ScatterplotLayer({
+				new PolygonLayer({
 					id: 'circle-fill-layer',
-					data: [{position: polygonCoordinates[0], radius}],
-					getPosition: (_data: any) => _data.position,
-					getRadius: (_data: any) => _data.radius,
+					data: [{ polygon: circlePolygon }],
+					getPolygon: (_data: any) => _data.polygon,
 					getFillColor: [0, 150, 255, 100],
 					getLineColor: [0, 100, 255],
+					pickable: true,
 					stroked: true,
 					filled: true,
 					lineWidthMinPixels: 2,
-					pickable: true,
 					autoHighlight: true,
 					highlightColor: [0, 0, 255, 100],
 				})
 			);
 		}
 
-        // Draw separate path line for radius if needed
-        if (polygonCoordinates.length === 2) {
-            layers.push(
-                new PathLayer({
-                    id: 'circle-radius-line',
-                    data: [{path: polygonCoordinates}],
-                    getPath: (_data: any) => _data.path,
-                    getColor: [0, 0, 0, 100],
-                    widthMinPixels: 1,
-                    pickable: false,
-                    dashJustified: true,
-                    getDashArray: [5, 5],
-                    extensions: []
-                })
-            );
-        }
-
+		// ── Radius line ────────────────────────────────────────────────────────
+		// Only shown while the user is actively drawing / editing (isActive).
+		// Hidden when the circle is complete and editing mode is off.
+		if (isActive && polygonCoordinates.length === 2) {
+			layers.push(
+				new PathLayer({
+					id: 'circle-radius-line',
+					data: [{ path: polygonCoordinates }],
+					getPath: (_data: any) => _data.path,
+					getColor: [0, 0, 0, 100],
+					widthMinPixels: 1,
+					pickable: false,
+					dashJustified: true,
+					getDashArray: [5, 5],
+					extensions: [],
+				})
+			);
+		}
 	} else {
 		// Polygon Mode
 		// Layer for closed polygon (PolygonLayer)

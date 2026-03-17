@@ -58,11 +58,23 @@ export function handleMapClick({
 		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
 		: undefined;
 
-	// Get the configuration from the clicked mapLayer's datasource
-	const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
+	// If the clicked layer is not a managed layer (e.g. drawing layers injected via extraLayers),
+	// skip selection logic entirely to avoid crashes on unknown layer types.
+	if (!mapLayer) return;
 
-	// Get the unique feature identifier for selection logic
-	const featureId = getFeatureId(pickedFeature, config.geojsonOptions?.featureIdProperty);
+	// Get the configuration from the clicked mapLayer's datasource
+	const config = parseDatasourceConfiguration(mapLayer.datasource?.configuration);
+
+	// Get the unique feature identifier for selection logic.
+	// Wrapped in try/catch because getFeatureId throws when the feature has no id field
+	// (e.g. tile bitmap objects or drawing vertex objects).
+	let featureId: string | number;
+	try {
+		featureId = getFeatureId(pickedFeature, config?.geojsonOptions?.featureIdProperty);
+	} catch {
+		console.warn('[handleMapClick] Could not determine feature ID – skipping selection.', pickedFeature);
+		return;
+	}
 
 	// Warn if featureId or layerId is missing
 	if (!featureId || !layerId) {
@@ -71,7 +83,7 @@ export function handleMapClick({
 	}
 
 	// Safely extract the custom selection style from the configuration object, if available
-	const customSelectionStyle = config.geojsonOptions?.selectionStyle;
+	const customSelectionStyle = config?.geojsonOptions?.selectionStyle;
 
 	// Check if selections are enabled for this layer
 	const selectionsEnabled = !config?.geojsonOptions?.disableSelections;
