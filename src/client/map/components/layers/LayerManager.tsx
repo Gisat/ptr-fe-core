@@ -8,6 +8,7 @@ import { COGLayerSource } from './COGLayerSource';
 import { GeojsonLayerSource } from './GeojsonLayerSource';
 import { WMSLayerSource } from './WMSLayerSource';
 import { IconLayerSource } from './IconLayerSource';
+import { PolygonDrawingLayerSource } from './PolygonDrawingLayerSource';
 
 /**
  * Represents the possible types of layer instances that can be managed.
@@ -71,6 +72,9 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 					return <COGLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
 				} else if (labels.includes(UsedDatasourceLabels.WMS)) {
 					return <WMSLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
+				} else if (labels.includes('polygonDrawing') || layer.polygonDrawing) {
+					// Custom check for polygon drawing layer
+					return <PolygonDrawingLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
 				} else if (labels.includes(UsedDatasourceLabels.Geojson)) {
 					// Determine the specific layer type for GeoJSON data
 					switch (layer.layerType) {

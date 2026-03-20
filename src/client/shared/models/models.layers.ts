@@ -12,6 +12,8 @@ export interface RenderingLayerPolygonDrawing {
 	isActive: boolean;
 	isClosed: boolean;
 	polygonCoordinates: [number, number][];
+	/** Index of the vertex currently being hovered, or null if none */
+	hoveredPointIndex?: number | null;
 }
 
 /**

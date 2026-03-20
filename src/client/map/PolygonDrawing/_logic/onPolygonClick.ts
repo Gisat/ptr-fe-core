@@ -27,12 +27,24 @@ export const onPolygonClick = ({
     // Safety check for info
     if (!info) return;
 
-    const { coordinate, index, layer } = info;
+    const rawInfo = info as PolygonClickInfo & {
+        sourceLayer?: { id?: string };
+        object?: { index?: number };
+    };
+
+    const coordinate = rawInfo.coordinate;
+    const clickedLayerId = rawInfo.sourceLayer?.id ?? rawInfo.layer?.id ?? '';
+    const clickedIndex =
+        typeof rawInfo.index === 'number'
+            ? rawInfo.index
+            : typeof rawInfo.object?.index === 'number'
+              ? rawInfo.object.index
+              : undefined;
 
     // Check if the user clicked on an existing vertex
-    if (layer && layer.id && layer.id.includes('vertex-layer')) {
+    if (clickedLayerId.includes('vertex-layer')) {
         // If clicking on the first point (index 0) and we have enough points (>=3), close the polygon
-        if (mode === 'polygon' && typeof index === 'number' && index === 0 && polygonCoordinates.length > 2) {
+        if (mode === 'polygon' && clickedIndex === 0 && polygonCoordinates.length >= 3) {
             setIsClosed(true);
             return;
         }

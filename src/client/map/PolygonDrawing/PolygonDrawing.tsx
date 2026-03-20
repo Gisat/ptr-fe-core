@@ -22,6 +22,22 @@ interface PolygonDrawingProps {
 	onIsClosedChange: (closed: boolean) => void;
 	/** Slot for app-level control buttons rendered inside the relative wrapper */
 	controlsSlot?: ReactNode;
+
+	/**
+	 * OPTIONAL: Controlled hover state.
+	 * If provided, component uses this instead of local state for hover.
+	 * Needed when rendering is handled externally (e.g. via Redux & LayerManager)
+	 * and we need to synchronize hover state with the renderer.
+	 */
+	hoveredPointIndex?: number | null;
+	onHoverChange?: (index: number | null) => void;
+
+	/**
+	 * OPTIONAL: Whether to inject layers into the child map.
+	 * Default: true.
+	 * Set to false if layers are rendered via standard LayerManager (Redux).
+	 */
+	injectLayers?: boolean;
 }
 
 /**
@@ -40,24 +56,39 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({
 	onPolygonChange,
 	onIsClosedChange,
 	controlsSlot,
+	hoveredPointIndex: propHoveredPointIndex,
+	onHoverChange,
+	injectLayers = true,
 }) => {
-	// Internal interaction state – not needed outside this component
-	const [isHoveringPoint, setIsHoveringPoint] = useState(false);
-	const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
+	// Internal interaction state – used if props not provided
+	const [internalHoveredPointIndex, setInternalHoveredPointIndex] = useState<number | null>(null);
 	const [isDragging, setIsDragging] = useState(false);
 
+	// Resolve controlled vs uncontrolled hover state
+	const isHoverControlled = propHoveredPointIndex !== undefined && onHoverChange !== undefined;
+	const hoveredPointIndex = isHoverControlled ? propHoveredPointIndex : internalHoveredPointIndex;
+	const setHoveredPointIndex = isHoverControlled ? onHoverChange : setInternalHoveredPointIndex;
+
+	const isHoveringPoint = hoveredPointIndex !== null;
+
 	// Calculate the deck.gl layers to render based on current state
-	const layers = polygonLayer({ polygonCoordinates, isClosed, isActive, hoveredPointIndex, mode });
+	// Only generate if we are injecting them
+	const layers = injectLayers
+		? polygonLayer({
+				polygonCoordinates,
+				isClosed,
+				isActive,
+				hoveredPointIndex,
+				mode,
+		  })
+		: [];
 
 	// Clone the child map component (SingleMap) and inject drawing props.
 	// Uses the "external" prop convention supported by SingleMap.
 	const mappedChildren = Children.map(children, (child) => {
 		if (!React.isValidElement(child)) return child;
 
-		return cloneElement(child as ReactElement<any>, {
-			// Inject the generated deck.gl drawing layers on top of managed map layers
-			extraLayers: layers,
-
+		const cloneProps: any = {
 			// Handle click events – add new vertex or close the polygon
 			onClickExternal: (info: PolygonClickInfo) => {
 				if (!isActive) return;
@@ -80,7 +111,12 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({
 			// Handle hover events – detect when cursor is over a vertex
 			onHoverExternal: (info: PolygonClickInfo) => {
 				if (!isActive) return;
-				onPolygonHover({ info, setIsHoveringPoint, setHoveredPointIndex });
+				// setIsHoveringPoint is a no-op because isHoveringPoint is derived from hoveredPointIndex
+				onPolygonHover({
+					info,
+					setIsHoveringPoint: () => {},
+					setHoveredPointIndex,
+				});
 			},
 
 			// Mark drag as started only when hovering over a vertex
@@ -93,18 +129,20 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({
 
 			// Dynamic cursor based on drawing / editing state
 			getCursorExternal: ({ isDragging: _d }: { isDragging: boolean }) => {
-				if (isDragging) return 'grabbing';              // vertex is being dragged
+				if (isDragging) return 'grabbing'; // vertex is being dragged
 				if (isHoveringPoint && isActive) return 'pointer'; // hovering over a vertex
-				if (isActive && !isClosed) return 'crosshair';    // drawing mode
+				if (isActive && !isClosed) return 'crosshair'; // drawing mode
 				return 'default';
 			},
+			
+			controllerDisabled: isActive,
+		};
 
-			// Disable map pan/zoom while:
-			//   - drawing an open polygon (always locked)
-			//   - hovering over a vertex in edit mode (prevents race condition with DeckGL controller)
-			//   - actively dragging a vertex
-			controllerDisabled: isActive && (!isClosed || isHoveringPoint || isDragging),
-		});
+		if (injectLayers) {
+			cloneProps.extraLayers = layers;
+		}
+
+		return cloneElement(child as ReactElement<any>, cloneProps);
 	});
 
 	return (
