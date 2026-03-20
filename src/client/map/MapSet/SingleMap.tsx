@@ -29,8 +29,9 @@ export interface BasicMapProps {
 	// --- Props for external layer injection and event override (used by PolygonDrawing) ---
 	/** Extra deck.gl layer instances rendered on top of managed layers */
 	extraLayers?: LayerInstance[];
-	/** Called BEFORE internal click/selection logic – lets drawing tools handle clicks first */
-	onClickExternal?: (event: PickingInfo) => void;
+	/** Called BEFORE internal click/selection logic – lets drawing tools handle clicks first.
+	 *  Return `true` to signal the event was handled and skip internal selection logic. */
+	onClickExternal?: (event: PickingInfo) => boolean | void;
 	/** Called on every drag event – used to move drawing vertices */
 	onDragExternal?: (event: PickingInfo) => void;
 	/** Called on every hover event – used to detect vertex hover */
@@ -233,8 +234,8 @@ export const SingleMap = ({
 				height="100%"
 				onViewStateChange={onViewStateChange}
 				onClick={(event) => {
-					onClickExternal?.(event); // drawing/external handler has priority
-					onClick(event);           // internal selection logic
+					const handled = onClickExternal?.(event); // drawing/external handler has priority
+					if (!handled) onClick(event);             // internal selection logic
 				}}
 				onHover={(event) => {
 					onHover(event);           // internal hover / cursor logic

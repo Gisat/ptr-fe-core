@@ -90,7 +90,7 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({
 
 		const cloneProps: any = {
 			// Handle click events – add new vertex or close the polygon
-			onClickExternal: (info: PolygonClickInfo) => {
+			onClickExternal: (info: PolygonClickInfo): boolean | void => {
 				if (!isActive) return;
 				onPolygonClick({
 					info,
@@ -100,6 +100,7 @@ export const PolygonDrawing: React.FC<PolygonDrawingProps> = ({
 					setIsClosed: onIsClosedChange,
 					mode,
 				});
+				return true; // Signal that the click was handled – skip internal selection
 			},
 
 			// Handle drag events – move the dragged vertex in real time

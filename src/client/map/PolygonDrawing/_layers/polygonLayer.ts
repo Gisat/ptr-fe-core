@@ -99,11 +99,11 @@ export const polygonLayer = ({
 					getPolygon: (_data: any) => _data.polygon,
 					getFillColor: [0, 150, 255, 100],
 					getLineColor: [0, 100, 255],
-					pickable: true,
+					pickable: isActive,
 					stroked: true,
 					filled: true,
 					lineWidthMinPixels: 2,
-					autoHighlight: true,
+					autoHighlight: isActive,
 					highlightColor: [0, 0, 255, 100],
 				})
 			);
@@ -121,9 +121,6 @@ export const polygonLayer = ({
 					getColor: [0, 0, 0, 100],
 					widthMinPixels: 1,
 					pickable: false,
-					dashJustified: true,
-					getDashArray: [5, 5],
-					extensions: [],
 				})
 			);
 		}
@@ -139,7 +136,7 @@ export const polygonLayer = ({
 					getPolygon: (_data: any) => _data.polygon,
 					getFillColor: [0, 150, 255, 100],
 					getLineColor: [0, 100, 255],
-					pickable: true,
+					pickable: isActive,
 					stroked: true,
 					filled: true,
 					lineWidthMinPixels: 2,

@@ -27,18 +27,13 @@ export const onPolygonClick = ({
     // Safety check for info
     if (!info) return;
 
-    const rawInfo = info as PolygonClickInfo & {
-        sourceLayer?: { id?: string };
-        object?: { index?: number };
-    };
-
-    const coordinate = rawInfo.coordinate;
-    const clickedLayerId = rawInfo.sourceLayer?.id ?? rawInfo.layer?.id ?? '';
+    const coordinate = info.coordinate;
+    const clickedLayerId = info.sourceLayer?.id ?? info.layer?.id ?? '';
     const clickedIndex =
-        typeof rawInfo.index === 'number'
-            ? rawInfo.index
-            : typeof rawInfo.object?.index === 'number'
-              ? rawInfo.object.index
+        typeof info.index === 'number'
+            ? info.index
+            : typeof info.object?.index === 'number'
+              ? info.object.index
               : undefined;
 
     // Check if the user clicked on an existing vertex
