@@ -51,6 +51,20 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceP
 			opacity: opacity ?? 1,
 			visible: isActive,
 			cogBitmapOptions,
+			pickable: true,
+			onClick: (info: any) => {
+				const uv = info.uv || (info.bitmap && info.bitmap.uv);
+				if (info.tile?.content?.raw && uv) {
+					const { raw, width, height } = info.tile.content;
+					const [u, v] = uv;
+					const x = Math.floor(u * width);
+					const y = Math.floor(v * height);
+					const channels = raw.length / (width * height);
+					const pixelIndex = Math.floor((y * width + x) * channels);
+					const rawValues = Array.from(raw.slice(pixelIndex, pixelIndex + channels));
+					console.log('Raw COG values at click (all bands):', rawValues);
+				}
+			},
 		});
 		/* TODO: Since cogBitmapOptions is derived from configuration, which originally is a string
 				   (from ptr-be-core model HasConfiguration) and later parsed to an object,
