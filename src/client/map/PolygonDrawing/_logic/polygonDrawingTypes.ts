@@ -16,12 +16,12 @@ export type DrawingMode = 'polygon' | 'circle';
  * type-safe without duplicating Deck.gl's own definitions.
  */
 export interface PolygonClickInfo {
-    coordinate: PickingInfo['coordinate'];
-    object?: PickingInfo['object'];
-    layer?: PickingInfo['layer'];
-    index?: PickingInfo['index'];
-    /** Present in composite-layer picks – the actual sub-layer that matched. */
-    sourceLayer?: PickingInfo['sourceLayer'];
+	coordinate: PickingInfo['coordinate'];
+	object?: PickingInfo['object'];
+	layer?: PickingInfo['layer'];
+	index?: PickingInfo['index'];
+	/** Present in composite-layer picks – the actual sub-layer that matched. */
+	sourceLayer?: PickingInfo['sourceLayer'];
 }
 
 /**
@@ -30,7 +30,7 @@ export interface PolygonClickInfo {
  * Only the fields required by {@link onPolygonDrag} are included.
  */
 export interface PolygonDragInfo {
-    coordinate: PolygonCoordinate;
-    index: number;
+	coordinate: PolygonCoordinate;
+	index: number;
 }
 

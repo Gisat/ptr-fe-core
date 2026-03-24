@@ -3,6 +3,22 @@ import { RenderingLayer, RenderingLayerPolygonDrawing } from '../../models/model
 import { ActionPolygonDrawingUpdate } from '../state.models.actions';
 
 /**
+ * Full default drawing state used when a layer has no existing `polygonDrawing`
+ * value and a patch is dispatched for it.
+ *
+ * Ensures that after every update the resulting `polygonDrawing` object always
+ * satisfies the full `RenderingLayerPolygonDrawing` shape – no required field
+ * can be accidentally absent due to an incomplete first patch.
+ */
+const DEFAULT_POLYGON_DRAWING_STATE: RenderingLayerPolygonDrawing = {
+	mode: 'polygon',
+	isActive: false,
+	isClosed: false,
+	polygonCoordinates: [],
+	hoveredPointIndex: null,
+};
+
+/**
  * Core reducer handler for POLYGON_DRAWING_UPDATE.
  *
  * Finds the RenderingLayer identified by `payload.layerKey` and merges
@@ -22,7 +38,14 @@ export const reduceHandlerPolygonDrawingUpdate = <T extends AppSharedState>(
 	const newRenderingLayers = state.renderingLayers.map((layer: RenderingLayer) => {
 		if (layer.key !== layerKey) return layer;
 
-		const current = layer.polygonDrawing ?? {};
+		/**
+		 * Fall back to the full default state when `polygonDrawing` is absent.
+		 * Using `{}` here would leave required fields (mode, polygonCoordinates,
+		 * isActive, isClosed) missing after the spread, causing runtime crashes
+		 * in drawing handlers that assume those fields always exist.
+		 */
+		const current: RenderingLayerPolygonDrawing =
+			layer.polygonDrawing ?? DEFAULT_POLYGON_DRAWING_STATE;
 
 		/**
 		 * No-op guard: if every field in the patch already has the same value
@@ -47,8 +70,8 @@ export const reduceHandlerPolygonDrawingUpdate = <T extends AppSharedState>(
 			...layer,
 			polygonDrawing: {
 				...current,
-				...patch,
-			} as RenderingLayerPolygonDrawing,
+				...patch
+			},
 		};
 	});
 

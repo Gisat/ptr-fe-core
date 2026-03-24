@@ -91,7 +91,7 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 	 * 3. Executes the appropriate reducer based on the action type
 	 *
 	 * @example
-	 * const reducer = reducerForSpecificApp(appReducers);  // ← aktualizovaný příklad
+	 * const reducer = reducerForSpecificApp(appReducers);  // ← updated example
 	 * const newState = reducer(currentState, {
 	 *   type: StateActionType.MAP_LAYER_ADD,
 	 *   payload: layerData
