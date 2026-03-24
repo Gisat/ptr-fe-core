@@ -58,7 +58,8 @@ export function handleMapClick({
 		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
 		: undefined;
 
-	// If the clicked layer is not a managed layer (e.g. drawing layers injected via extraLayers),
+	// If the clicked layer is not a managed layer (e.g. polygon drawing vertex/fill layers
+	// rendered by PolygonDrawingLayerSource whose IDs like 'vertex-layer' are not in mapLayers),
 	// skip selection logic entirely to avoid crashes on unknown layer types.
 	if (!mapLayer) return;
 

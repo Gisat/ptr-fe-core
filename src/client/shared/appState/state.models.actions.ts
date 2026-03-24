@@ -2,7 +2,7 @@ import { SingleMapModel } from '../models/models.singleMap';
 import { MapView } from '../models/models.mapView';
 import { MapSetModel } from '../models/models.mapSet';
 import { MapSetSync } from '../models/models.mapSetSync';
-import { RenderingLayer } from '../models/models.layers';
+import { RenderingLayer, RenderingLayerPolygonDrawing } from '../models/models.layers';
 import { StateActionType } from './enum.state.actionType'; // Import the ActionType enum
 import { AppSpecificAction } from './state.models.reducer';
 import { Selection } from '../models/models.selections';
@@ -266,4 +266,18 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionMapSetAdd
 		| ActionMapSetRemove
 		| ActionMapAdd
+		| ActionPolygonDrawingUpdate
 	);
+
+/**
+ * Updates the polygonDrawing field of the RenderingLayer identified by layerKey.
+ * Only the changed fields need to be provided (partial patch).
+ */
+export interface ActionPolygonDrawingUpdate extends AppSpecificAction {
+	type: StateActionType.POLYGON_DRAWING_UPDATE;
+	payload: {
+		layerKey: string;
+		patch: Partial<RenderingLayerPolygonDrawing>;
+	};
+}
+

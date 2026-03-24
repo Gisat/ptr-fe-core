@@ -6,14 +6,17 @@ import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
 import { StateActionType } from '../../shared/appState/enum.state.actionType';
 import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMapKey';
-import { ActionMapViewChange } from '../../shared/appState/state.models.actions';
+import { ActionMapViewChange, ActionPolygonDrawingUpdate } from '../../shared/appState/state.models.actions';
 import { mergeViews } from '../logic/mapView/mergeViews';
 import { getViewChange } from '../logic/mapView/getViewChange';
 import { handleMapClick } from './handleMapClick';
 import { handleMapHover } from './handleMapHover';
 import { getMapTooltip } from './MapTooltip/getMapTooltip';
 import { LayerInstance, LayerManager } from '../components/layers/LayerManager';
-import { RenderingLayer } from '../../shared/models/models.layers';
+import { RenderingLayer, RenderingLayerPolygonDrawing } from '../../shared/models/models.layers';
+import { onPolygonClick } from '../PolygonDrawing/_logic/onPolygonClick';
+import { onPolygonDrag } from '../PolygonDrawing/_logic/onPolygonDrag';
+import { onPolygonHover } from '../PolygonDrawing/_logic/onPolygonHover';
 
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = -10;
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = -20;
@@ -25,25 +28,6 @@ export interface BasicMapProps {
 	syncedView: Partial<MapView>;
 	/** Custom tooltip component */
 	CustomTooltip?: React.ElementType | boolean;
-
-	// --- Props for external layer injection and event override (used by PolygonDrawing) ---
-	/** Extra deck.gl layer instances rendered on top of managed layers */
-	extraLayers?: LayerInstance[];
-	/** Called BEFORE internal click/selection logic – lets drawing tools handle clicks first.
-	 *  Return `true` to signal the event was handled and skip internal selection logic. */
-	onClickExternal?: (event: PickingInfo) => boolean | void;
-	/** Called on every drag event – used to move drawing vertices */
-	onDragExternal?: (event: PickingInfo) => void;
-	/** Called on every hover event – used to detect vertex hover */
-	onHoverExternal?: (event: PickingInfo) => void;
-	/** Called when a drag gesture starts */
-	onDragStartExternal?: (event: PickingInfo) => void;
-	/** Called when a drag gesture ends */
-	onDragEndExternal?: () => void;
-	/** When provided, overrides the internal getCursor logic entirely */
-	getCursorExternal?: (info: { isDragging: boolean }) => string;
-	/** When true, the DeckGL controller (pan / zoom) is disabled */
-	controllerDisabled?: boolean;
 }
 
 type LayerRegistry = Record<string, LayerInstance>;
@@ -52,6 +36,8 @@ type LayerRegistry = Record<string, LayerInstance>;
  * SingleMap component intended to be used in MapSet component.
  *
  * Renders a DeckGL map instance with selection, hover, and view state sync logic.
+ * Polygon/circle drawing is handled automatically when a rendering layer with a
+ * `polygonDrawing` field exists in the map's layer list – no extra props required.
  *
  * @param {BasicMapProps} props - The props for the map.
  * @returns {JSX.Element} DeckGL map component.
@@ -60,18 +46,12 @@ export const SingleMap = ({
 	mapKey,
 	syncedView,
 	CustomTooltip = false,
-	extraLayers,
-	onClickExternal,
-	onDragExternal,
-	onHoverExternal,
-	onDragStartExternal,
-	onDragEndExternal,
-	getCursorExternal,
-	controllerDisabled = false,
 }: BasicMapProps) => {
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [controlIsDown, setControlIsDown] = useState(false);
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
+	// Local drag-gesture state used only for cursor styling during vertex drag
+	const [isDragging, setIsDragging] = useState(false);
 
 	// Ref + size are used only to compute a DeckGL Viewport instance that is
 	// passed into LayerManager so selection tooltips in layer sources can
@@ -102,6 +82,33 @@ export const SingleMap = ({
 	const mapState = getMapByKey(sharedState, mapKey);
 	const mapViewState = mergeViews(syncedView, mapState?.view ?? {});
 	const mapLayers = getLayersByMapKey(sharedState, mapKey) ?? [];
+
+	// ---------------------------------------------------------------------------
+	// Drawing state – read automatically from the dedicated polygonDrawing layer.
+	// Drawing is active when any layer in this map has polygonDrawing.isActive.
+	// No extra props on MapSet or SingleMap are required – drawing activates purely
+	// by the presence of a RenderingLayer with a `polygonDrawing` field in state.
+	// ---------------------------------------------------------------------------
+	const drawingLayer: RenderingLayer | undefined = mapLayers.find((l) => l.polygonDrawing);
+	const drawingState: RenderingLayerPolygonDrawing | undefined = drawingLayer?.polygonDrawing;
+	const isDrawingActive = drawingState?.isActive ?? false;
+	/** True when the cursor is currently over a vertex handle */
+	const isHoveringPoint = (drawingState?.hoveredPointIndex ?? null) !== null;
+
+	/**
+	 * Dispatches a partial patch to the drawing state of `drawingLayer`.
+	 * No-op if there is no drawing layer in this map.
+	 */
+	const updateDrawing = useCallback(
+		(patch: Partial<RenderingLayerPolygonDrawing>) => {
+			if (!drawingLayer) return;
+			sharedStateDispatch({
+				type: StateActionType.POLYGON_DRAWING_UPDATE,
+				payload: { layerKey: drawingLayer.key, patch },
+			} as ActionPolygonDrawingUpdate);
+		},
+		[drawingLayer, sharedStateDispatch]
+	);
 
 	// Local registry for actual Deck.gl class instances
 	const [layerRegistry, setLayerRegistry] = useState<LayerRegistry>({});
@@ -147,7 +154,7 @@ export const SingleMap = ({
 	}, []);
 
 	/**
-	 * Handles click events on the map.
+	 * Internal selection click handler (only runs when drawing is NOT active).
 	 *
 	 * @param {PickingInfo} event - The DeckGL picking event containing information about the clicked object.
 	 */
@@ -228,31 +235,75 @@ export const SingleMap = ({
 			/>
 			<DeckGL
 				viewState={mapViewState}
-				layers={[...activeLayers, ...(extraLayers?.filter(Boolean) ?? [])]}
-				controller={!controllerDisabled}
+				layers={activeLayers}
+				/**
+				 * Controller is disabled while drawing/editing so the user can click/drag
+				 * vertices without accidentally panning or zooming the map.
+				 */
+				controller={!isDrawingActive}
 				width="100%"
 				height="100%"
 				onViewStateChange={onViewStateChange}
 				onClick={(event) => {
-					const handled = onClickExternal?.(event); // drawing/external handler has priority
-					if (!handled) onClick(event);             // internal selection logic
+					if (isDrawingActive && drawingState) {
+						// Drawing mode: handle vertex placement / polygon closing.
+						// Return early to skip internal layer-selection logic.
+						onPolygonClick({
+							info: event as any,
+							polygonCoordinates: drawingState.polygonCoordinates,
+							isClosed: drawingState.isClosed,
+							setPolygonCoordinates: (coords) => updateDrawing({ polygonCoordinates: coords }),
+							setIsClosed: (closed) => updateDrawing({ isClosed: closed }),
+							mode: drawingState.mode,
+						});
+						return; // skip internal selection
+					}
+					onClick(event);
 				}}
 				onHover={(event) => {
-					onHover(event);           // internal hover / cursor logic
-					onHoverExternal?.(event); // vertex detection for PolygonDrawing
+					// Always run internal hover so cursor / tooltip state stays correct
+					onHover(event);
+					// Additionally detect vertex hover when drawing is active
+					if (isDrawingActive && drawingState) {
+						onPolygonHover({
+							info: event as any,
+							setIsHoveringPoint: () => {},
+							setHoveredPointIndex: (index) => {
+								// Guard: dispatch only when the value actually changes to prevent
+								// an infinite render loop (onHover fires on every frame over an
+								// interactive layer and would otherwise dispatch on every render).
+								if (index !== (drawingState.hoveredPointIndex ?? null)) {
+									updateDrawing({ hoveredPointIndex: index });
+								}
+							},
+						});
+					}
 				}}
 				onDrag={(event) => {
-					onDragExternal?.(event);
+					// Move the dragged vertex in real time
+					if (isDrawingActive && drawingState) {
+						onPolygonDrag({
+							info: event as any,
+							polygonCoordinates: drawingState.polygonCoordinates,
+							setPolygonCoordinates: (coords) => updateDrawing({ polygonCoordinates: coords }),
+							mode: drawingState.mode,
+						});
+					}
 				}}
-				onDragStart={(event) => {
-					onDragStartExternal?.(event);
+				onDragStart={() => {
+					// Only mark as dragging when a vertex handle is being grabbed
+					if (isDrawingActive && isHoveringPoint) setIsDragging(true);
 				}}
-				onDragEnd={() => {
-					onDragEndExternal?.();
-				}}
-				getCursor={({ isDragging }) => {
-					if (getCursorExternal) return getCursorExternal({ isDragging });
-					return isDragging ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab';
+				onDragEnd={() => setIsDragging(false)}
+				getCursor={({ isDragging: drag }) => {
+					if (isDrawingActive) {
+						if (drag || isDragging) return 'grabbing';      // vertex being dragged
+						if (isHoveringPoint) return 'pointer';       // hovering over a vertex
+						if (!drawingState?.isClosed) return 'crosshair'; // drawing mode
+						return 'default';
+					}
+					// Default map cursor behaviour
+					return drag ? 'grabbing' : layerIsHovered ? 'pointer' : 'grab';
 				}}
 				/**
 				 * Default DeckGL tooltip:

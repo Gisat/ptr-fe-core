@@ -58,24 +58,22 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 				// Extract datasource labels from the layer
 				const labels: string[] = layer?.datasource?.labels;
 
+
 				// Log an error if no labels are provided for the layer
-				if (!labels?.length) {
+				if (!labels?.length && !layer.polygonDrawing) {
 					// Log it instead of throwing to keep the React tree stable
 					console.error(`Datasource error: Missing labels for layer ${layer.key}`);
 					return null;
 				}
 
 				// Render the appropriate layer source component based on the datasource labels
-				if (labels.includes(UsedDatasourceLabels.XYZ)) {
-					return <XYZLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
-				} else if (labels.includes(UsedDatasourceLabels.COG)) {
-					return <COGLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
-				} else if (labels.includes(UsedDatasourceLabels.WMS)) {
-					return <WMSLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
-				} else if (labels.includes('polygonDrawing') || layer.polygonDrawing) {
-					// Custom check for polygon drawing layer
-					return <PolygonDrawingLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} />;
-				} else if (labels.includes(UsedDatasourceLabels.Geojson)) {
+				if (labels?.includes(UsedDatasourceLabels.XYZ)) {
+					return <XYZLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
+				} else if (labels?.includes(UsedDatasourceLabels.COG)) {
+					return <COGLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
+				} else if (labels?.includes(UsedDatasourceLabels.WMS)) {
+					return <WMSLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
+				} else if (labels?.includes(UsedDatasourceLabels.Geojson)) {
 					// Determine the specific layer type for GeoJSON data
 					switch (layer.layerType) {
 						case 'icon':
@@ -109,6 +107,9 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 								/>
 							);
 					}
+				} else if (layer.polygonDrawing) {
+					// Custom check for polygon drawing layer
+					return <PolygonDrawingLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
 				} else {
 					// Log a warning if the datasource type is unknown
 					console.warn(`Datasource Warning - Unknown datasource type for layer ${layer.key}`);

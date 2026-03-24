@@ -1,7 +1,7 @@
 import classnames from 'classnames';
 import React from 'react';
 import { ReactCompareSlider, ReactCompareSliderHandle } from 'react-compare-slider';
-import { SingleMap, BasicMapProps } from './SingleMap';
+import { SingleMap } from './SingleMap';
 import { useSharedState } from '../../shared/hooks/state.useSharedState';
 import { getMapSetByKey } from '../../shared/appState/selectors/getMapSetByKey';
 import { getSyncedView } from '../../shared/appState/selectors/getSyncedView';
@@ -21,6 +21,7 @@ export interface MapSetWrapperProps {
  * @param {MapSetWrapperProps} props - The props for the wrapper component.
  * @returns {JSX.Element} The wrapped children inside a div with the "ptr-MapSet" class.
  */
+
 export const MapSetWrapper = ({ children }: MapSetWrapperProps) => {
 	return <div className="ptr-MapSet">{children}</div>;
 };
@@ -29,11 +30,13 @@ export const MapSetWrapper = ({ children }: MapSetWrapperProps) => {
  * Props for the MapSet component.
  * @interface MapSetProps
  * @property {string} sharedStateKey - The key used to retrieve the map set from the shared state.
- * @property {React.ElementType} [SingleMapTools] - Optional tools component to render alongside each map.
- * @property {React.ElementType} [MapSetTools] - Optional tools component to render for the entire map set.
+ * @property {React.ElementType} [SingleMapTools] - Optional tools component rendered alongside each map.
+ *   Receives `{ mapKey, mapSetKey }` props (and `isSliderModeLeftMap` / `isSliderModeRightMap` in slider mode).
+ * @property {React.ElementType} [MapSetTools] - Optional tools component rendered once for the entire set.
+ *   Receives `{ mapSetKey }` props.
  * @property {React.ElementType | boolean} [CustomTooltip] - Optional custom tooltip component for the maps.
  */
-export interface MapSetProps extends Partial<Omit<BasicMapProps, 'mapKey' | 'syncedView'>> {
+export interface MapSetProps {
 	sharedStateKey: string;
 	SingleMapTools?: React.ElementType;
 	MapSetTools?: React.ElementType;
@@ -43,11 +46,14 @@ export interface MapSetProps extends Partial<Omit<BasicMapProps, 'mapKey' | 'syn
 /**
  * MapSet component renders a set of maps in either a grid or slider mode based on the shared state.
  * Handles synced zoom and center for maps and provides warnings for invalid configurations.
+ *
+ * Drawing, event interception, and any other map-level concerns are driven entirely by
+ * shared state – no extra props are needed here.
+ *
  * @param {MapSetProps} props - The props for the MapSet component.
  * @returns {JSX.Element | null} The rendered MapSet or null if no maps are found.
  */
-export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTooltip, ...rest }: MapSetProps) => {
-	// Retrieve shared state and map set using the provided key
+export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTooltip }: MapSetProps) => {
 	const [sharedState] = useSharedState();
 	const mapSet = getMapSetByKey(sharedState, sharedStateKey);
 	const maps = mapSet?.maps;
@@ -75,12 +81,12 @@ export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTool
 			<MapSetWrapper>
 				<ReactCompareSlider
 					onlyHandleDraggable
-					handle={<ReactCompareSliderHandle />}
+					handle={<ReactCompareSliderHandle/>}
 					className="ptr-MapSetSliderComparator"
 					itemOne={
 						<div key={maps[0]} className="ptr-MapSet-map">
 							{/* Render individual map */}
-							<SingleMap mapKey={maps[0]} syncedView={syncedView} CustomTooltip={CustomTooltip} {...rest} />
+							<SingleMap mapKey={maps[0]} syncedView={syncedView} CustomTooltip={CustomTooltip}/>
 							{/* Optionally render tools for the map */}
 							{SingleMapTools &&
 								React.createElement(SingleMapTools, {
@@ -93,7 +99,7 @@ export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTool
 					itemTwo={
 						<div key={maps[1]} className="ptr-MapSet-map">
 							{/* Render individual map */}
-							<SingleMap mapKey={maps[1]} syncedView={syncedView} CustomTooltip={CustomTooltip} {...rest} />
+							<SingleMap mapKey={maps[1]} syncedView={syncedView} CustomTooltip={CustomTooltip}/>
 							{/* Optionally render tools for the map */}
 							{SingleMapTools &&
 								React.createElement(SingleMapTools, {
@@ -103,7 +109,7 @@ export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTool
 								})}
 						</div>
 					}
-				></ReactCompareSlider>
+				/>
 				{MapSetTools && React.createElement(MapSetTools, { mapSetKey: sharedStateKey })}
 			</MapSetWrapper>
 		);
@@ -128,7 +134,7 @@ export const MapSet = ({ sharedStateKey, SingleMapTools, MapSetTools, CustomTool
 				{maps.map((mapKey: string) => (
 					<div key={mapKey} className="ptr-MapSet-map">
 						{/* Render individual map */}
-						<SingleMap mapKey={mapKey} syncedView={syncedView} CustomTooltip={CustomTooltip} {...rest} />
+						<SingleMap mapKey={mapKey} syncedView={syncedView} CustomTooltip={CustomTooltip}/>
 						{/* Optionally render tools for the map */}
 						{SingleMapTools && React.createElement(SingleMapTools, { mapKey, mapSetKey: sharedStateKey })}
 					</div>
