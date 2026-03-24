@@ -14,7 +14,7 @@ import { parseDatasourceConfiguration } from '../../../shared/models/parsers.dat
  */
 export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceProps) => {
 	// Destructure properties from the layer configuration
-	const { isActive, key, opacity, datasource } = layer;
+	const { isActive, isInteractive, key, opacity, datasource } = layer;
 	const { url, configuration } = datasource;
 
 	// Ensure the URL is provided in the datasource
@@ -51,7 +51,7 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceP
 			opacity: opacity ?? 1,
 			visible: isActive,
 			cogBitmapOptions,
-			pickable: true,
+			pickable: isInteractive,
 			onClick: (info: any) => {
 				const uv = info.uv || (info.bitmap && info.bitmap.uv);
 				if (info.tile?.content?.raw && uv) {

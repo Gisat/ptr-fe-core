@@ -2,71 +2,145 @@ import { PickingInfo } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
 import { getTooltipAttributes } from '../../../shared/helpers/getTooltipAttributes';
-import { TooltipAttribute, TooltipType } from '../../../shared/models/models.tooltip';
+import { readCogPixelValues } from '../../../shared/helpers/readCogPixelValues';
+import { buildNativeTooltipResult } from './buildNativeTooltipResult';
+import { CogTooltipSettings, TooltipAttribute, TooltipType, VectorTooltipSettings } from '../../../shared/models/models.tooltip';
 import './getMapTooltip.css';
 
 /**
  * Generates a DeckGL tooltip object for a hovered map feature if enabled.
  *
- * - Uses layer configuration to determine tooltip attributes and formatting.
- * - Tooltip can be customized via geojsonOptions in datasource configuration with tooltipSettings:
- *    - attributes: array of attribute definitions (key, label, unit, decimalPlaces).
- *    - nativeStyles: custom CSS styles for tooltip container.
- *    - nativeClassName: additional CSS class names for tooltip container.
- *    - title: optional tooltip title.
- * - If no attributes are defined, tooltip will not be shown.
- * - Returns null if no feature or tooltip is disabled.
- * - Tooltip is styled and includes an indicator triangle.
- * - Supports dynamic label substitution: if label contains [key], it is replaced with the value from featureProperties[key].
- * - Ensures value and unit are always together in the same row.
+ * COG layers — configure via `cogBitmapOptions.tooltipSettings` (CogTooltipSettings):
+ *   - `title`            optional label shown at the top of the tooltip.
+ *   - `unit`             unit string appended to the pixel value (e.g. "°C", "%").
+ *   - `decimalPlaces`    rounds the pixel value before display.
+ *   - `nativeStyles`     inline CSS overrides for the tooltip container.
+ *   - `nativeClassName`  additional CSS class(es) appended to the container.
+ *   - `offsetX/Y`        pixel offset from the cursor position.
+ *   Disable via `cogBitmapOptions.disableTooltip`.
+ *
+ * Vector layers — configure via `geojsonOptions.tooltipSettings` (VectorTooltipSettings):
+ *   - `attributes`       array of attribute definitions (key, label, unit, decimalPlaces).
+ *   - `title`            optional tooltip title.
+ *   - `nativeStyles`     inline CSS overrides for the tooltip container.
+ *   - `nativeClassName`  additional CSS class(es) appended to the container.
+ *   - `offsetX/Y`        pixel offset from the cursor position.
+ *   - `type`             tooltip strategy — only Native is handled here; Hover/Click/Selection
+ *                        are delegated to getLayerTooltip.
+ *   Supports `[key]` label interpolation from feature properties.
+ *   Disable via `geojsonOptions.disableTooltip`.
  *
  * @param {Object} params
  * @param {PickingInfo} params.info - DeckGL picking info for the hovered feature.
- * @param {RenderingLayer[] | undefined} params.mapLayers - Array of map layers for configuration lookup.
- * @returns {Object|null} Tooltip object for DeckGL or null if not applicable.
+ * @param {RenderingLayer[] | undefined} params.mapLayers - Map layers for configuration lookup.
+ * @param {number} [params.verticalOffset=0] - Fallback vertical offset when no offsetY is configured.
+ * @returns {Object|null} DeckGL tooltip object or null if not applicable.
  */
 export const getMapTooltip = ({
 	info,
 	mapLayers,
 	verticalOffset = 0,
 }: {
-	info: PickingInfo;
+	info: PickingInfo | any; // `info.uv`, `info.bitmap`, and `info.tile` no longer exist on the base `PickingInfo` type in 9.3.0
 	mapLayers: RenderingLayer[] | undefined;
 	verticalOffset: number;
 }) => {
-	// Early exit if no feature is hovered or layer is missing
-	if (!info.object || !info.layer) return null;
+	if (!info.layer) return null;
 
-	// Find the layer configuration for the hovered feature
-	const layerId = info.layer.id;
+	const isCog = info.bitmap && info.layer.props.cogBitmapOptions;
+	const isVector = !!info.object;
+
+	if (!isCog && !isVector) return null;
+
+	// Resolve layer config once – shared by both branches
 	const mapLayer = Array.isArray(mapLayers)
-		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
+		? mapLayers.find((layer: RenderingLayer) => layer.key === info.layer.id)
 		: undefined;
 	const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
 
-	// Check if tooltip is enabled in layer config
-	const tooltipEnabled = !config?.geojsonOptions?.disableTooltip;
-	if (!tooltipEnabled) return null;
+	if (isCog) {
+		return getCogTooltip({ info, config, verticalOffset });
+	}
 
-	const tooltipSettings = config?.geojsonOptions?.tooltipSettings;
-	const tooltipStyles = tooltipSettings?.nativeStyles || {};
-	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`;
-	const tooltipTitle = tooltipSettings?.title || '';
-	const tooltipType = tooltipSettings?.type || TooltipType.Native;
-	const offsetX = tooltipSettings?.offsetX || 0;
-	const offsetY = tooltipSettings?.offsetY || verticalOffset;
-	const featureProperties = info.object?.properties || info.object || {};
+	return getVectorTooltip({ info, config, verticalOffset });
+};
 
-	if (tooltipType !== TooltipType.Native) return null;
+// ---------------------------------------------------------------------------
+// COG branch
+// ---------------------------------------------------------------------------
+
+function getCogTooltip({
+	info,
+	config,
+	verticalOffset,
+}: {
+	info: any;
+	config: any;
+	verticalOffset: number;
+}) {
+	if (config?.cogBitmapOptions?.disableTooltip) return null;
+
+	const values = readCogPixelValues(info);
+	if (!values) return null;
+
+	const tooltipSettings: CogTooltipSettings | undefined = config?.cogBitmapOptions?.tooltipSettings;
+	const title = tooltipSettings?.title ?? '';
+	const unit = tooltipSettings?.unit ?? '';
+	const decimalPlaces = tooltipSettings?.decimalPlaces;
+
+	let displayValue: number = values[0];
+	if (typeof decimalPlaces === 'number') {
+		displayValue = Number(values[0].toFixed(decimalPlaces));
+	}
+	const valueWithUnit = `${displayValue}${unit ? ` ${unit}` : ''}`;
+
+	const html = `<div>
+		${title ? `<div class="ptr-NativeMapTooltip-title">${title}</div>` : ''}
+		<div class="ptr-NativeMapTooltip-row">
+			<span class="ptr-NativeMapTooltip-value">${valueWithUnit}</span>
+		</div>
+		<div class="ptr-NativeMapTooltip-indicator"></div>
+	</div>`;
+
+	return buildNativeTooltipResult({
+		html,
+		className: `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`.trim(),
+		nativeStyles: tooltipSettings?.nativeStyles,
+		x: info.x,
+		y: info.y,
+		offsetX: tooltipSettings?.offsetX ?? 0,
+		offsetY: tooltipSettings?.offsetY ?? verticalOffset,
+	});
+}
+
+// ---------------------------------------------------------------------------
+// Vector branch
+// ---------------------------------------------------------------------------
+
+function getVectorTooltip({
+	info,
+	config,
+	verticalOffset,
+}: {
+	info: any;
+	config: any;
+	verticalOffset: number;
+}) {
+	if (config?.geojsonOptions?.disableTooltip) return null;
+
+	const tooltipSettings: VectorTooltipSettings | undefined = config?.geojsonOptions?.tooltipSettings;
+
+	// Only Native tooltips are handled here; Hover/Click/Selection are handled by getLayerTooltip
+	if ((tooltipSettings?.type ?? TooltipType.Native) !== TooltipType.Native) return null;
+
+	const featureProperties = info.object?.properties ?? info.object ?? {};
 
 	let tooltipProperties: TooltipAttribute[] | undefined;
-
-	// Use configured attributes if available
 	if (tooltipSettings?.attributes && Array.isArray(tooltipSettings.attributes)) {
 		tooltipProperties = getTooltipAttributes(tooltipSettings.attributes, featureProperties);
 	}
-	// If no valid tooltip properties, do not show tooltip
-	if (!tooltipProperties || tooltipProperties.length === 0) {
+
+	if (!tooltipProperties?.length) {
 		console.warn('[getMapTooltip] No valid tooltip attributes found for feature.', {
 			featureProperties,
 			tooltipSettings,
@@ -74,46 +148,38 @@ export const getMapTooltip = ({
 		return null;
 	}
 
-	// Build HTML for tooltip content and indicator
-	const tooltipHtml = `
-    <div>
-				${tooltipTitle ? `<div class="ptr-NativeMapTooltip-title">${tooltipTitle}</div>` : ''}
-        ${tooltipProperties
-					.map(({ key, label, value, unit }) => {
-						const valueStr = value == null ? '' : String(value);
+	const title = tooltipSettings?.title ?? '';
 
-						// Replace all [key] patterns in the label with the corresponding featureProperties value
-						let displayLabel = label;
-						if (typeof label === 'string') {
-							displayLabel = label.replace(/\[([^\]]+)\]/g, (_, k) =>
-								featureProperties[k] != null ? featureProperties[k] : `[${k}]`
-							);
-						}
+	const rows = tooltipProperties
+		.map(({ label, value, unit }) => {
+			const valueStr = value == null ? '' : String(value);
+			// Replace all [key] patterns in the label with the corresponding featureProperties value
+			let displayLabel = label ?? '';
+			if (displayLabel) {
+				displayLabel = displayLabel.replace(/\[([^\]]+)]/g, (_, k) =>
+					featureProperties[k] != null ? featureProperties[k] : `[${k}]`
+				);
+			}
+			return `<div class="ptr-NativeMapTooltip-row">
+				<span class="ptr-NativeMapTooltip-label">${displayLabel + (displayLabel && valueStr ? ':' : '')}</span>
+				<span class="ptr-NativeMapTooltip-value">${valueStr}${unit ? ` ${unit}` : ''}</span>
+			</div>`;
+		})
+		.join('');
 
-						return `<div class="ptr-NativeMapTooltip-row" key="${key}">
-											<span class="ptr-NativeMapTooltip-label">${displayLabel + (displayLabel && valueStr ? ':' : '')}</span>
-											<span class="ptr-NativeMapTooltip-value">
-													${valueStr}${unit ? ` ${unit}` : ''}
-											</span>
-										</div>`;
-					})
-					.join('')}
-        <div class="ptr-NativeMapTooltip-indicator"></div>
-    </div>
-`;
+	const html = `<div>
+		${title ? `<div class="ptr-NativeMapTooltip-title">${title}</div>` : ''}
+		${rows}
+		<div class="ptr-NativeMapTooltip-indicator"></div>
+	</div>`;
 
-	// Return DeckGL tooltip object with styling and indicator
-	return {
-		html: tooltipHtml,
-		className: tooltipClassNames,
-		// Inline styles for positioning and appearance (is overriding default inline styles from deck.gl)
-		style: {
-			backgroundColor: 'var(--base0)',
-			padding: '6px 10px',
-			left: `${info.x + offsetX}px`,
-			top: `${info.y + offsetY}px`,
-			transform: 'translate(-50%, -100%)',
-			...tooltipStyles,
-		},
-	};
-};
+	return buildNativeTooltipResult({
+		html,
+		className: `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`.trim(),
+		nativeStyles: tooltipSettings?.nativeStyles,
+		x: info.x,
+		y: info.y,
+		offsetX: tooltipSettings?.offsetX ?? 0,
+		offsetY: tooltipSettings?.offsetY ?? verticalOffset,
+	});
+}
