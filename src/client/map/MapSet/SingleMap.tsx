@@ -52,6 +52,13 @@ export const SingleMap = ({
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
 	// Local drag-gesture state used only for cursor styling during vertex drag
 	const [isDragging, setIsDragging] = useState(false);
+	/**
+	 * Synchronous mirror of `isDragging`.
+	 * useState has a 1-render lag – the ref is written inside the event handler
+	 * itself so onHover sees the correct drag status in the same tick, preventing
+	 * hover dispatches from racing with drag dispatches on fast circle movement.
+	 */
+	const isDraggingRef = React.useRef(false);
 
 	// Ref + size are used only to compute a DeckGL Viewport instance that is
 	// passed into LayerManager so selection tooltips in layer sources can
@@ -263,15 +270,15 @@ export const SingleMap = ({
 				onHover={(event) => {
 					// Always run internal hover so cursor / tooltip state stays correct
 					onHover(event);
-					// Additionally detect vertex hover when drawing is active
 					if (isDrawingActive && drawingState) {
 						onPolygonHover({
 							info: event as any,
 							setIsHoveringPoint: () => {},
 							setHoveredPointIndex: (index) => {
-								// Guard: dispatch only when the value actually changes to prevent
-								// an infinite render loop (onHover fires on every frame over an
-								// interactive layer and would otherwise dispatch on every render).
+								// Skip hover dispatches while dragging – prevents the pick result
+								// oscillating (vertex ↔ null) from racing with drag dispatches.
+								if (isDraggingRef.current) return;
+								// Only dispatch when the value actually changes.
 								if (index !== (drawingState.hoveredPointIndex ?? null)) {
 									updateDrawing({ hoveredPointIndex: index });
 								}
@@ -291,10 +298,21 @@ export const SingleMap = ({
 					}
 				}}
 				onDragStart={() => {
-					// Only mark as dragging when a vertex handle is being grabbed
-					if (isDrawingActive && isHoveringPoint) setIsDragging(true);
+					if (isDrawingActive) {
+						// Always suppress hover dispatches for the entire drag in drawing mode.
+						// isDraggingRef must not depend on isHoveringPoint (shared state) because
+						// hoveredPointIndex may still be null when dragstart fires (the preceding
+						// hover dispatch hasn't committed yet), leaving the ref unset and allowing
+						// the hover/drag dispatch race that causes "Maximum update depth exceeded".
+						isDraggingRef.current = true;
+						// isDragging state is only for cursor styling – conditional is fine here.
+						if (isHoveringPoint) setIsDragging(true);
+					}
 				}}
-				onDragEnd={() => setIsDragging(false)}
+				onDragEnd={() => {
+					setIsDragging(false);
+					isDraggingRef.current = false;
+				}}
 				getCursor={({ isDragging: drag }) => {
 					if (isDrawingActive) {
 						if (drag || isDragging) return 'grabbing';      // vertex being dragged
