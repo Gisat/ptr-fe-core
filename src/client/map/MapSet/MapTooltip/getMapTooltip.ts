@@ -4,7 +4,12 @@ import { parseDatasourceConfiguration } from '../../../shared/models/parsers.dat
 import { getTooltipAttributes } from '../../../shared/helpers/getTooltipAttributes';
 import { readCogPixelValues } from '../../../shared/helpers/readCogPixelValues';
 import { buildNativeTooltipResult } from './buildNativeTooltipResult';
-import { CogTooltipSettings, TooltipAttribute, TooltipType, VectorTooltipSettings } from '../../../shared/models/models.tooltip';
+import {
+	CogTooltipSettings,
+	TooltipAttribute,
+	TooltipType,
+	VectorTooltipSettings,
+} from '../../../shared/models/models.tooltip';
 import './getMapTooltip.css';
 
 /**
@@ -69,15 +74,7 @@ export const getMapTooltip = ({
 // COG branch
 // ---------------------------------------------------------------------------
 
-function getCogTooltip({
-	info,
-	config,
-	verticalOffset,
-}: {
-	info: any;
-	config: any;
-	verticalOffset: number;
-}) {
+function getCogTooltip({ info, config, verticalOffset }: { info: any; config: any; verticalOffset: number }) {
 	if (config?.cogBitmapOptions?.disableTooltip) return null;
 
 	const values = readCogPixelValues(info);
@@ -122,7 +119,7 @@ function getVectorTooltip({
 	config,
 	verticalOffset,
 }: {
-	info: any;
+	info: PickingInfo;
 	config: any;
 	verticalOffset: number;
 }) {

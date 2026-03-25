@@ -218,7 +218,7 @@ export const SingleMap = ({ mapKey, syncedView, CustomTooltip = false }: BasicMa
 						info,
 						mapLayers,
 						verticalOffset,
-					});
+					}) as any;
 				}}
 			/>
 		</div>
