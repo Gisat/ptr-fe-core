@@ -23,9 +23,11 @@ export interface LayerTooltipParams {
 		type?: TooltipType.Native | TooltipType.Hover | TooltipType.Click | TooltipType.Selection;
 	};
 	/** Info about the currently hovered/clicked feature (screen position + feature). */
-	featureInfo: { feature: MapFeature; x: number; y: number } | null;
+	featureInfo?: { feature: MapFeature; x: number; y: number } | null;
+
+	pixelInfo?: { values: number[]; x: number; y: number; currentChannelIndex: number } | null;
 	/** Features used for selection-based tooltips (typically all rendered features). */
-	data: MapFeature[];
+	data?: MapFeature[];
 	/** Active selection state for the layer (may be null if not selectable). */
 	selection?: Selection | null;
 	/** Current DeckGL viewport used for projecting [lng, lat] to screen coords. */
@@ -36,7 +38,7 @@ export interface LayerTooltipParams {
 	 * Layer-specific function that returns a flat [lng, lat] coordinate
 	 * for a given feature (e.g. centroid for polygons, position for points).
 	 */
-	getCoordinates: (feature: MapFeature) => [number, number] | undefined;
+	getCoordinates?: (feature: MapFeature) => [number, number] | undefined;
 }
 
 /**
@@ -53,6 +55,7 @@ export interface LayerTooltipParams {
 export function getLayerTooltip({
 	tooltipSettings,
 	featureInfo,
+	pixelInfo,
 	data,
 	selection,
 	viewport,
@@ -108,21 +111,35 @@ export function getLayerTooltip({
 	// ---------------------------------------------------------------------
 	// Hover / click tooltip (uses screen x/y from featureInfo directly)
 	// ---------------------------------------------------------------------
-	if ((tooltipType === TooltipType.Hover || tooltipType === TooltipType.Click) && featureInfo) {
-		const { feature, x, y } = featureInfo;
-		const tooltipProperties = getTooltipAttributes(tooltipAttributes, feature?.properties ?? feature);
-		const xPos = x + tooltipOffsetX;
-		const yPos = y + tooltipOffsetY;
+	if (tooltipType === TooltipType.Hover || tooltipType === TooltipType.Click) {
+		if (featureInfo) {
+			const { feature, x, y } = featureInfo;
+			const tooltipProperties = getTooltipAttributes(tooltipAttributes, feature?.properties ?? feature);
+			const xPos = x + tooltipOffsetX;
+			const yPos = y + tooltipOffsetY;
 
-		if (CustomTooltip && typeof CustomTooltip === 'function') {
-			tooltip = React.createElement(CustomTooltip, {
-				feature,
-				x: xPos,
-				y: yPos,
-				tooltipProperties,
-			});
-		} else {
-			tooltip = <MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />;
+			if (CustomTooltip && typeof CustomTooltip === 'function') {
+				tooltip = React.createElement(CustomTooltip, {
+					feature,
+					x: xPos,
+					y: yPos,
+					tooltipProperties,
+				});
+			} else {
+				tooltip = <MapTooltip x={xPos} y={yPos} tooltipProperties={tooltipProperties} />;
+			}
+		} else if (pixelInfo) {
+			const { currentChannelIndex, values, x, y } = pixelInfo;
+			const xPos = x + tooltipOffsetX;
+			const yPos = y + tooltipOffsetY;
+			if (CustomTooltip && typeof CustomTooltip === 'function') {
+				tooltip = React.createElement(CustomTooltip, {
+					x: xPos,
+					y: yPos,
+					values,
+					currentChannelIndex,
+				});
+			}
 		}
 	}
 
@@ -136,7 +153,7 @@ export function getLayerTooltip({
 		} else if (!selection || !selection.featureKeys?.length) {
 			// No selection – nothing to render
 			return null;
-		} else if (!data.length) {
+		} else if (!data?.length) {
 			console.warn(
 				'getLayerTooltip: selection tooltip requested but no (fetched) data available. Tooltip will not be shown.'
 			);
@@ -151,7 +168,7 @@ export function getLayerTooltip({
 					continue;
 				}
 
-				const coordinates = getCoordinates(selectedFeature);
+				const coordinates = getCoordinates && getCoordinates(selectedFeature);
 				if (!coordinates) {
 					console.warn(
 						'getLayerTooltip: getCoordinates returned no coordinate for selected feature. Tooltip will not be shown for this feature.',
