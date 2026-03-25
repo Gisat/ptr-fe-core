@@ -43,8 +43,8 @@ import { reduceHandlerRemoveFeatureKeyInSelections } from './reducerHandlers/map
 import { reduceHandlerSetFeatureKeyInSelections } from './reducerHandlers/mapLayerSetFeatureKeyInSelections';
 import { reduceHandlerMapLayerInteractivityChange } from './reducerHandlers/mapLayerInteractivityChange';
 import { reduceHandlerMapAdd } from './reducerHandlers/mapAdd';
-import { reduceHandlerPolygonDrawingUpdate } from './reducerHandlers/polygonDrawingUpdate';
-import { ActionPolygonDrawingUpdate } from './state.models.actions';
+import { reduceHandlerGeometryDrawingUpdate } from './reducerHandlers/geometryDrawingUpdate';
+import { ActionGeometryDrawingUpdate } from './state.models.actions';
 
 /**
  * Creates a reducer function for a specific application state that combines core and application-specific reducers.
@@ -177,7 +177,7 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 			reduceHandlerMapSetRemove(currentState, action as ActionMapSetRemove)
 		);
 		reducerSwitch.set(StateActionType.POLYGON_DRAWING_UPDATE, () =>
-			reduceHandlerPolygonDrawingUpdate(currentState, action as ActionPolygonDrawingUpdate)
+			reduceHandlerGeometryDrawingUpdate(currentState, action as ActionGeometryDrawingUpdate)
 		);
 
 		// 2. now we need to add the application specific actions and reducers to the switch map

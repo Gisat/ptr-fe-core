@@ -3,15 +3,15 @@ import { LayerTreeInteraction } from '../layers/models.layers';
 import { DatasourceWithNeighbours } from './models.metadata';
 
 /**
- * Polygon drawing state stored on a dedicated RenderingLayer entry.
+ * Drawing state for a geometry (polygon or circle) stored on a dedicated RenderingLayer entry.
  * Kept as part of RenderingLayer so drawing state lives inside
  * the existing AppSharedState.renderingLayers array.
  */
-export interface RenderingLayerPolygonDrawing {
+export interface GeometryDrawingModel {
 	mode: 'polygon' | 'circle';
 	isActive: boolean;
 	isClosed: boolean;
-	polygonCoordinates: [number, number][];
+	geometryCoordinates: [number, number][];
 	/** Index of the vertex currently being hovered, or null if none */
 	hoveredPointIndex?: number | null;
 }
@@ -33,6 +33,6 @@ export interface RenderingLayer {
 		route: string;
 		method: 'GET' | 'POST';
 	};
-	/** Polygon drawing state – present only on the dedicated 'polygonDrawing' layer entry */
-	polygonDrawing?: RenderingLayerPolygonDrawing;
+	/** Drawing state – present only on the dedicated 'polygonDrawing' layer entry */
+	polygonDrawing?: GeometryDrawingModel;
 }

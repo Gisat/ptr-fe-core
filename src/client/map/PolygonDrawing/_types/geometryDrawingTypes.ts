@@ -1,21 +1,21 @@
 import type { PickingInfo } from '@deck.gl/core';
 
 /** A single [longitude, latitude] coordinate pair. */
-export type PolygonCoordinate = [number, number];
+export type GeometryCoordinate = [number, number];
 
-/** Ordered list of polygon / circle coordinates. */
-export type PolygonCoordinates = PolygonCoordinate[];
+/** Ordered list of geometry (polygon / circle) coordinates. */
+export type GeometryCoordinates = GeometryCoordinate[];
 
 /** Supported drawing modes. */
 export type DrawingMode = 'polygon' | 'circle';
 
 /**
- * Picking info for polygon click and hover events.
+ * Picking info for geometry click and hover events.
  *
  * Uses indexed access types from Deck.gl {@link PickingInfo} to stay
  * type-safe without duplicating Deck.gl's own definitions.
  */
-export interface PolygonClickInfo {
+export interface GeometryClickInfo {
 	coordinate: PickingInfo['coordinate'];
 	object?: PickingInfo['object'];
 	layer?: PickingInfo['layer'];
@@ -27,10 +27,10 @@ export interface PolygonClickInfo {
 /**
  * Picking info for vertex drag events.
  *
- * Only the fields required by {@link onPolygonDrag} are included.
+ * Only the fields required by {@link onGeometryDrag} are included.
  */
-export interface PolygonDragInfo {
-	coordinate: PolygonCoordinate;
+export interface GeometryDragInfo {
+	coordinate: GeometryCoordinate;
 	index: number;
 }
 

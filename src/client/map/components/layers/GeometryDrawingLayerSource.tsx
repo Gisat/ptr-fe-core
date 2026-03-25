@@ -1,18 +1,18 @@
 import { useEffect } from 'react';
 import { CompositeLayer } from '@deck.gl/core';
 import { LayerSourceProps } from './LayerManager';
-import { polygonLayer } from '../../PolygonDrawing/_layers/polygonLayer';
-import { RenderingLayerPolygonDrawing } from '../../../shared/models/models.layers';
+import { geometryLayer } from '../../PolygonDrawing/_layers/geometryLayer';
+import { GeometryDrawingModel } from '../../../shared/models/models.layers';
 
- /**
- * A deck.gl CompositeLayer that delegates rendering to {@link polygonLayer}.
- * Acts as a bridge so that the polygon/circle drawing sub-layers
+/**
+ * A deck.gl CompositeLayer that delegates rendering to {@link geometryLayer}.
+ * Acts as a bridge so that the geometry drawing sub-layers
  * (vertices, edges, fill, radius line, …) can be managed as a single
  * layer instance inside the standard LayerManager pipeline.
  */
 class DrawCompositeLayer extends CompositeLayer<any> {
 	renderLayers() {
-		return polygonLayer(this.props as any);
+		return geometryLayer(this.props as any);
 	}
 }
 
@@ -28,11 +28,11 @@ class DrawCompositeLayer extends CompositeLayer<any> {
  *
  * @param {LayerSourceProps} props – Standard layer-source props provided by LayerManager.
  */
-export const PolygonDrawingLayerSource = ({
+export const GeometryDrawingLayerSource = ({
 	layer,
 	onLayerUpdate,
 }: LayerSourceProps) => {
-	const drawingState: RenderingLayerPolygonDrawing | undefined =
+	const drawingState: GeometryDrawingModel | undefined =
 		layer.polygonDrawing;
 
 	useEffect(() => {

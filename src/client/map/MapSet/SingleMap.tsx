@@ -6,17 +6,17 @@ import { getMapByKey } from '../../shared/appState/selectors/getMapByKey';
 import { MapView } from '../../shared/models/models.mapView';
 import { StateActionType } from '../../shared/appState/enum.state.actionType';
 import { getLayersByMapKey } from '../../shared/appState/selectors/getLayersByMapKey';
-import { ActionMapViewChange, ActionPolygonDrawingUpdate } from '../../shared/appState/state.models.actions';
+import { ActionMapViewChange, ActionGeometryDrawingUpdate } from '../../shared/appState/state.models.actions';
 import { mergeViews } from '../logic/mapView/mergeViews';
 import { getViewChange } from '../logic/mapView/getViewChange';
 import { handleMapClick } from './handleMapClick';
 import { handleMapHover } from './handleMapHover';
 import { getMapTooltip } from './MapTooltip/getMapTooltip';
 import { LayerInstance, LayerManager } from '../components/layers/LayerManager';
-import { RenderingLayer, RenderingLayerPolygonDrawing } from '../../shared/models/models.layers';
-import { onPolygonClick } from '../PolygonDrawing/_logic/onPolygonClick';
-import { onPolygonDrag } from '../PolygonDrawing/_logic/onPolygonDrag';
-import { onPolygonHover } from '../PolygonDrawing/_logic/onPolygonHover';
+import { RenderingLayer, GeometryDrawingModel } from '../../shared/models/models.layers';
+import { onGeometryClick } from '../PolygonDrawing/_logic/onGeometryClick';
+import { onGeometryDrag } from '../PolygonDrawing/_logic/onGeometryDrag';
+import { onGeometryHover } from '../PolygonDrawing/_logic/onGeometryHover';
 
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = -10;
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = -20;
@@ -97,7 +97,7 @@ export const SingleMap = ({
 	// by the presence of a RenderingLayer with a `polygonDrawing` field in state.
 	// ---------------------------------------------------------------------------
 	const drawingLayer: RenderingLayer | undefined = mapLayers.find((l) => l.polygonDrawing);
-	const drawingState: RenderingLayerPolygonDrawing | undefined = drawingLayer?.polygonDrawing;
+	const drawingState: GeometryDrawingModel | undefined = drawingLayer?.polygonDrawing;
 	const isDrawingActive = drawingState?.isActive ?? false;
 	/** True when the cursor is currently over a vertex handle */
 	const isHoveringPoint = (drawingState?.hoveredPointIndex ?? null) !== null;
@@ -107,12 +107,12 @@ export const SingleMap = ({
 	 * No-op if there is no drawing layer in this map.
 	 */
 	const updateDrawing = useCallback(
-		(patch: Partial<RenderingLayerPolygonDrawing>) => {
+		(patch: Partial<GeometryDrawingModel>) => {
 			if (!drawingLayer) return;
 			sharedStateDispatch({
 				type: StateActionType.POLYGON_DRAWING_UPDATE,
 				payload: { layerKey: drawingLayer.key, patch },
-			} as ActionPolygonDrawingUpdate);
+			} as ActionGeometryDrawingUpdate);
 		},
 		[drawingLayer, sharedStateDispatch]
 	);
@@ -255,11 +255,11 @@ export const SingleMap = ({
 					if (isDrawingActive && drawingState) {
 						// Drawing mode: handle vertex placement / polygon closing.
 						// Return early to skip internal layer-selection logic.
-						onPolygonClick({
+						onGeometryClick({
 							info: event as any,
-							polygonCoordinates: drawingState.polygonCoordinates,
+							geometryCoordinates: drawingState.geometryCoordinates,
 							isClosed: drawingState.isClosed,
-							setPolygonCoordinates: (coords) => updateDrawing({ polygonCoordinates: coords }),
+							setGeometryCoordinates: (coords) => updateDrawing({ geometryCoordinates: coords }),
 							setIsClosed: (closed) => updateDrawing({ isClosed: closed }),
 							mode: drawingState.mode,
 						});
@@ -271,7 +271,7 @@ export const SingleMap = ({
 					// Always run internal hover so cursor / tooltip state stays correct
 					onHover(event);
 					if (isDrawingActive && drawingState) {
-						onPolygonHover({
+						onGeometryHover({
 							info: event as any,
 							setIsHoveringPoint: () => {},
 							setHoveredPointIndex: (index) => {
@@ -289,10 +289,10 @@ export const SingleMap = ({
 				onDrag={(event) => {
 					// Move the dragged vertex in real time
 					if (isDrawingActive && drawingState) {
-						onPolygonDrag({
+						onGeometryDrag({
 							info: event as any,
-							polygonCoordinates: drawingState.polygonCoordinates,
-							setPolygonCoordinates: (coords) => updateDrawing({ polygonCoordinates: coords }),
+							geometryCoordinates: drawingState.geometryCoordinates,
+							setGeometryCoordinates: (coords) => updateDrawing({ geometryCoordinates: coords }),
 							mode: drawingState.mode,
 						});
 					}

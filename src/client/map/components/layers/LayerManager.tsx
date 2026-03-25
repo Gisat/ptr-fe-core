@@ -8,7 +8,7 @@ import { COGLayerSource } from './COGLayerSource';
 import { GeojsonLayerSource } from './GeojsonLayerSource';
 import { WMSLayerSource } from './WMSLayerSource';
 import { IconLayerSource } from './IconLayerSource';
-import { PolygonDrawingLayerSource } from './PolygonDrawingLayerSource';
+import { GeometryDrawingLayerSource } from './GeometryDrawingLayerSource';
 
 /**
  * Represents the possible types of layer instances that can be managed.
@@ -109,7 +109,7 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 					}
 				} else if (layer.polygonDrawing) {
 					// Custom check for polygon drawing layer
-					return <PolygonDrawingLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
+					return <GeometryDrawingLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
 				} else {
 					// Log a warning if the datasource type is unknown
 					console.warn(`Datasource Warning - Unknown datasource type for layer ${layer.key}`);

@@ -1,26 +1,26 @@
-import { PolygonCoordinates, PolygonClickInfo, DrawingMode } from './polygonDrawingTypes';
+import { GeometryCoordinates, GeometryClickInfo, DrawingMode } from '../_types/geometryDrawingTypes';
 
 interface OnClickParams {
-	info: PolygonClickInfo;
-	polygonCoordinates: PolygonCoordinates;
+	info: GeometryClickInfo;
+	geometryCoordinates: GeometryCoordinates;
 	isClosed: boolean;
-	setPolygonCoordinates: (coords: PolygonCoordinates) => void;
+	setGeometryCoordinates: (coords: GeometryCoordinates) => void;
 	setIsClosed: (closed: boolean) => void;
 	mode: DrawingMode;
 }
 
 /**
- * Validates click events and either adds a new vertex or closes the polygon loop.
+ * Validates click events and either adds a new vertex or closes the geometry loop.
  */
-export const onPolygonClick = ({
-	                               info,
-	                               polygonCoordinates,
-	                               isClosed,
-	                               setPolygonCoordinates,
-	                               setIsClosed,
-	                               mode,
-                               }: OnClickParams) => {
-	// If polygon is already closed, prevent adding more points.
+export const onGeometryClick = ({
+	info,
+	geometryCoordinates,
+	isClosed,
+	setGeometryCoordinates,
+	setIsClosed,
+	mode,
+}: OnClickParams) => {
+	// If geometry is already closed, prevent adding more points.
 	// Edit mode (dragging existing points) is handled separately.
 	if (isClosed) return;
 
@@ -39,7 +39,7 @@ export const onPolygonClick = ({
 	// Check if the user clicked on an existing vertex
 	if (clickedLayerId.includes('vertex-layer')) {
 		// If clicking on the first point (index 0) and we have enough points (>=3), close the polygon
-		if (mode === 'polygon' && clickedIndex === 0 && polygonCoordinates.length >= 3) {
+		if (mode === 'polygon' && clickedIndex === 0 && geometryCoordinates.length >= 3) {
 			setIsClosed(true);
 			return;
 		}
@@ -51,14 +51,15 @@ export const onPolygonClick = ({
 	// Add new point at clicked coordinate
 	if (coordinate) {
 		if (mode === 'circle') {
-			const newCoords = [... polygonCoordinates, coordinate as [number, number]];
-			setPolygonCoordinates(newCoords);
+			const newCoords = [...geometryCoordinates, coordinate as [number, number]];
+			setGeometryCoordinates(newCoords);
 			// Circle is defined by center and one edge point (radius)
 			if (newCoords.length === 2) {
 				setIsClosed(true);
 			}
 		} else {
-			setPolygonCoordinates([... polygonCoordinates, coordinate as [number, number]]);
+			setGeometryCoordinates([...geometryCoordinates, coordinate as [number, number]]);
 		}
 	}
 };
+

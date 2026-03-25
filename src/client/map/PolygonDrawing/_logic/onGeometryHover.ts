@@ -1,16 +1,16 @@
-import { PolygonClickInfo } from './polygonDrawingTypes';
+import { GeometryClickInfo } from '../_types/geometryDrawingTypes';
 
 interface OnHoverParams {
-	info: PolygonClickInfo;
+	info: GeometryClickInfo;
 	setIsHoveringPoint: (isHovering: boolean) => void;
 	setHoveredPointIndex: (index: number | null) => void;
 }
 
 /**
- * Detects if the cursor is hovering over a polygon vertex.
+ * Detects if the cursor is hovering over a geometry vertex.
  * Used to update UI state for highlighting and cursor styling.
  */
-export const onPolygonHover = ({ info, setIsHoveringPoint, setHoveredPointIndex }: OnHoverParams) => {
+export const onGeometryHover = ({ info, setIsHoveringPoint, setHoveredPointIndex }: OnHoverParams) => {
 	const { layer, index } = info;
 
 	// Check if the hovered object belongs to the 'vertex-layer' and has a valid index

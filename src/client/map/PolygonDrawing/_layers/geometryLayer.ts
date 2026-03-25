@@ -1,8 +1,8 @@
 import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
-import { DrawingMode } from '../_logic/polygonDrawingTypes';
+import { DrawingMode } from '../_types/geometryDrawingTypes';
 
-interface PolygonLayerProps {
-	polygonCoordinates: [number, number][];
+interface GeometryLayerProps {
+	geometryCoordinates: [number, number][];
 	isClosed: boolean;
 	isActive: boolean;
 	hoveredPointIndex: number | null;
@@ -34,7 +34,7 @@ function destinationPoint(
 	bearing: number
 ): [number, number] {
 	const R = 6371000;
-	const d = distance / R; // angular distance
+	const d = distance / R;
 	const lat1 = (origin[1] * Math.PI) / 180;
 	const lon1 = (origin[0] * Math.PI) / 180;
 
@@ -57,7 +57,7 @@ function destinationPoint(
  * the edge point (coord[1]) will always sit exactly on the polygon boundary
  * regardless of zoom level or Mercator distortion.
  */
-function generateCirclePolygon(
+function generateCircle(
 	center: [number, number],
 	radius: number,
 	numPoints = 64
@@ -69,16 +69,16 @@ function generateCirclePolygon(
 }
 
 /**
- * Generates deck.gl layers for displaying and editing the polygon / circle.
+ * Generates deck.gl layers for displaying and editing a geometry (polygon or circle).
  */
-export const polygonLayer = ({
-	polygonCoordinates,
+export const geometryLayer = ({
+	geometryCoordinates,
 	isClosed,
 	isActive,
 	hoveredPointIndex,
 	mode,
-}: PolygonLayerProps) => {
-	if (!polygonCoordinates) return [];
+}: GeometryLayerProps) => {
+	if (!geometryCoordinates) return [];
 
 	const layers: any[] = [];
 
@@ -89,9 +89,9 @@ export const polygonLayer = ({
 		// for large circles this causes the edge point to appear off the circle at
 		// extreme zoom levels. The geodesic polygon uses the same spherical maths as
 		// getDistance, so the edge vertex is guaranteed to sit on the boundary.
-		if (isClosed && polygonCoordinates.length === 2) {
-			const radius = getDistance(polygonCoordinates[0], polygonCoordinates[1]);
-			const circlePolygon = generateCirclePolygon(polygonCoordinates[0], radius);
+		if (isClosed && geometryCoordinates.length === 2) {
+			const radius = getDistance(geometryCoordinates[0], geometryCoordinates[1]);
+			const circlePolygon = generateCircle(geometryCoordinates[0], radius);
 			layers.push(
 				new PolygonLayer({
 					id: 'circle-fill-layer',
@@ -112,11 +112,11 @@ export const polygonLayer = ({
 		// ── Radius line ────────────────────────────────────────────────────────
 		// Only shown while the user is actively drawing / editing (isActive).
 		// Hidden when the circle is complete and editing mode is off.
-		if (isActive && polygonCoordinates.length === 2) {
+		if (isActive && geometryCoordinates.length === 2) {
 			layers.push(
 				new PathLayer({
 					id: 'circle-radius-line',
-					data: [{ path: polygonCoordinates }],
+					data: [{ path: geometryCoordinates }],
 					getPath: (_data: any) => _data.path,
 					getColor: [0, 0, 0, 100],
 					widthMinPixels: 1,
@@ -125,14 +125,13 @@ export const polygonLayer = ({
 			);
 		}
 	} else {
-		// Polygon Mode
-		// Layer for closed polygon (PolygonLayer)
-		// Rendered when the loop is closed to show the area.
-		if (isClosed && polygonCoordinates.length >= 3) {
+		// ── Polygon mode ────────────────────────────────────────────────────────
+		// Filled polygon – rendered when the loop is closed.
+		if (isClosed && geometryCoordinates.length >= 3) {
 			layers.push(
 				new PolygonLayer({
 					id: 'polygon-fill-layer',
-					data: [{polygon: polygonCoordinates}],
+					data: [{ polygon: geometryCoordinates }],
 					getPolygon: (_data: any) => _data.polygon,
 					getFillColor: [0, 150, 255, 100],
 					getLineColor: [0, 100, 255],
@@ -144,14 +143,12 @@ export const polygonLayer = ({
 					highlightColor: [0, 0, 255, 100],
 				})
 			);
-		}
-			// Layer for open path (while drawing) (PathLayer)
-		// Rendered while drawing to connect the points placed so far.
-		else if (polygonCoordinates.length > 0) {
+		} else if (geometryCoordinates.length > 0) {
+			// Open path – connects the vertices placed so far while drawing.
 			layers.push(
 				new PathLayer({
 					id: 'polygon-path-layer',
-					data: [{path: polygonCoordinates}],
+					data: [{ path: geometryCoordinates }],
 					getPath: (_data: any) => _data.path,
 					getColor: [0, 0, 255],
 					widthMinPixels: 2,
@@ -161,26 +158,24 @@ export const polygonLayer = ({
 		}
 	}
 
-	// Layer for vertices (ScatterplotLayer)
-	// Allows dragging points and highlights the starting point for closing the loop.
-	if (isActive && polygonCoordinates.length > 0) {
+	// ── Vertex handles ─────────────────────────────────────────────────────────
+	// Draggable points; first vertex highlighted red when polygon is closeable.
+	if (isActive && geometryCoordinates.length > 0) {
 		layers.push(
 			new ScatterplotLayer({
 				id: 'vertex-layer',
-				data: polygonCoordinates.map((_coord, _index) => ({position: _coord, index: _index})),
+				data: geometryCoordinates.map((_coord, _index) => ({ position: _coord, index: _index })),
 				getPosition: (_data: any) => _data.position,
-				getRadius: 50, // TODO: Adjust radius based on zoom level for better UX
+				getRadius: 50,
 				getFillColor: (_data: any) => {
-					// Highlight hovered point
 					if (_data.index === hoveredPointIndex) return [255, 255, 0];
-
 					if (mode === 'polygon') {
-						// Highlight first point in red if loop is closeable (unclosed & > 2 points)
-						return (_data.index === 0 && !isClosed && polygonCoordinates.length > 2) ? [255, 0, 0] : [255, 255, 255];
-					} else {
-					    // Circle: Center (0) and Edge (1). Maybe highlight Center differently?
-					    return [255, 255, 255];
+						// Highlight first vertex red when loop is closeable (unclosed & > 2 points)
+						return (_data.index === 0 && !isClosed && geometryCoordinates.length > 2)
+							? [255, 0, 0]
+							: [255, 255, 255];
 					}
+					return [255, 255, 255];
 				},
 				stroked: true,
 				getLineColor: [0, 0, 0],
@@ -190,11 +185,12 @@ export const polygonLayer = ({
 				autoHighlight: true,
 				highlightColor: [255, 0, 0, 255],
 				updateTriggers: {
-					getFillColor: [isClosed, polygonCoordinates.length, hoveredPointIndex, mode]
-				}
+					getFillColor: [isClosed, geometryCoordinates.length, hoveredPointIndex, mode],
+				},
 			})
 		);
 	}
 
 	return layers;
 };
+
