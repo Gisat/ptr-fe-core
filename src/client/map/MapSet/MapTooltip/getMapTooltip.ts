@@ -75,19 +75,21 @@ export const getMapTooltip = ({
 // ---------------------------------------------------------------------------
 
 function getCogTooltip({ info, config, verticalOffset }: { info: any; config: any; verticalOffset: number }) {
-	if (config?.cogBitmapOptions?.disableTooltip) return null;
+	const cogBitmapOptions = config?.cogBitmapOptions;
+	if (!cogBitmapOptions || cogBitmapOptions.disableTooltip) return null;
+	const currentChannelIndex = cogBitmapOptions.useChannel - 1;
 
-	const values = readCogPixelValues(info);
+	const values = readCogPixelValues(info, currentChannelIndex);
 	if (!values) return null;
 
-	const tooltipSettings: CogTooltipSettings | undefined = config?.cogBitmapOptions?.tooltipSettings;
+	const tooltipSettings: CogTooltipSettings | undefined = cogBitmapOptions.tooltipSettings;
 	const title = tooltipSettings?.title ?? '';
 	const unit = tooltipSettings?.unit ?? '';
 	const decimalPlaces = tooltipSettings?.decimalPlaces;
 
-	let displayValue: number = values[0];
+	let displayValue: number = values[currentChannelIndex];
 	if (typeof decimalPlaces === 'number') {
-		displayValue = Number(values[0].toFixed(decimalPlaces));
+		displayValue = Number(values[currentChannelIndex].toFixed(decimalPlaces));
 	}
 	const valueWithUnit = `${displayValue}${unit ? ` ${unit}` : ''}`;
 
