@@ -14,9 +14,9 @@ import { handleMapHover } from './handleMapHover';
 import { getMapTooltip } from './MapTooltip/getMapTooltip';
 import { LayerInstance, LayerManager } from '../components/layers/LayerManager';
 import { RenderingLayer, GeometryDrawingModel } from '../../shared/models/models.layers';
-import { onGeometryClick } from '../PolygonDrawing/_logic/onGeometryClick';
-import { onGeometryDrag } from '../PolygonDrawing/_logic/onGeometryDrag';
-import { onGeometryHover } from '../PolygonDrawing/_logic/onGeometryHover';
+import { onGeometryClick } from '../GeometryDrawing/_logic/onGeometryClick';
+import { onGeometryDrag } from '../GeometryDrawing/_logic/onGeometryDrag';
+import { onGeometryHover } from '../GeometryDrawing/_logic/onGeometryHover';
 
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = -10;
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = -20;

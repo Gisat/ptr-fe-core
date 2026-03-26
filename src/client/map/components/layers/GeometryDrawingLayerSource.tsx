@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { CompositeLayer } from '@deck.gl/core';
 import { LayerSourceProps } from './LayerManager';
-import { geometryLayer } from '../../PolygonDrawing/_layers/geometryLayer';
+import { geometryLayer } from '../../GeometryDrawing/_layers/geometryLayer';
 import { GeometryDrawingModel } from '../../../shared/models/models.layers';
 
 /**
