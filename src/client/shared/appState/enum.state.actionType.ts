@@ -79,4 +79,7 @@ export enum StateActionType {
 
 	/** Action to remove a map set. */
 	MAP_SET_REMOVE = 'mapSetRemove',
+
+	/** Action to update polygon/circle drawing state on a RenderingLayer. */
+	POLYGON_DRAWING_UPDATE = 'polygonDrawingUpdate',
 }
