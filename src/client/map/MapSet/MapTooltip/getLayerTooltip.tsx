@@ -138,6 +138,7 @@ export function getLayerTooltip({
 					y: yPos,
 					values,
 					currentChannelIndex,
+					tooltipSettings,
 				});
 			}
 		}

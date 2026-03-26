@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { CogBitmapLayer } from '@gisatcz/deckgl-geolib';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-import { getLayerTooltip } from '../../MapSet/MapTooltip/getLayerTooltip';
+import { getLayerTooltip, LayerTooltipParams } from '../../MapSet/MapTooltip/getLayerTooltip';
 import { TooltipType } from '../../../shared/models/models.tooltip';
 import { readCogPixelValues } from '../../../shared/helpers/readCogPixelValues';
 
@@ -21,6 +21,7 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 		x: number;
 		y: number;
 		currentChannelIndex: number;
+		tooltipSettings: LayerTooltipParams['tooltipSettings'] | undefined;
 	} | null>(null);
 
 	// Destructure properties from the layer configuration
@@ -82,7 +83,13 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 				if (!values) {
 					setPixelInfo(null);
 				} else {
-					setPixelInfo({ x: info.x, y: info.y, values, currentChannelIndex: channelIndex });
+					setPixelInfo({
+						x: info.x,
+						y: info.y,
+						values,
+						currentChannelIndex: channelIndex,
+						tooltipSettings: cogBitmapOptions?.tooltipSettings,
+					});
 				}
 			},
 		});
