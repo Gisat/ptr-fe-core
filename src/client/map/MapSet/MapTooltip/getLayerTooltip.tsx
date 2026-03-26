@@ -6,6 +6,7 @@ import type { Selection } from '../../../shared/models/models.selections';
 import type { MapFeature } from '../../../shared/models/models.mapFeature';
 import { TooltipAttribute } from '../../../shared/models/models.tooltip';
 import { TooltipType } from '../../../shared/models/models.tooltip';
+import { resolveTooltipType } from './resolveTooltipType';
 
 export interface LayerTooltipParams {
 	/** Tooltip visual/config settings coming from layer definition. */
@@ -80,18 +81,9 @@ export function getLayerTooltip({
 	 * - explicit type from settings has priority
 	 * - otherwise, if a CustomTooltip component is provided, default to Hover
 	 * - otherwise fall back to Native (DeckGL-managed)
+	 * - edge-case: "native" + CustomTooltip component → upgrade to Hover
 	 */
-	let tooltipType: TooltipType =
-		tooltipSettings?.type ?? (hasCustomTooltipComponent ? TooltipType.Hover : TooltipType.Native);
-
-	/**
-	 * If the user configured "native" but also provided a CustomTooltip component,
-	 * treat it as "hover with custom component" – there is nothing for us to render
-	 * in pure native mode.
-	 */
-	if (tooltipType === TooltipType.Native && hasCustomTooltipComponent) {
-		tooltipType = TooltipType.Hover;
-	}
+	const tooltipType: TooltipType = resolveTooltipType(tooltipSettings?.type, hasCustomTooltipComponent);
 
 	/**
 	 * When tooltip type is "native" and there is no CustomTooltip component,
