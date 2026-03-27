@@ -96,7 +96,7 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 		/* TODO: Since cogBitmapOptions is derived from configuration, which originally is a string
 				   (from ptr-be-core model HasConfiguration) and later parsed to an object,
 				   we need to stringify it here to avoid infinite render loops due to object reference changes. */
-	}, [url, isActive, key, opacity, JSON.stringify(cogBitmapOptions), CustomTooltip]);
+	}, [url, isActive, isInteractive, key, opacity, JSON.stringify(cogBitmapOptions), CustomTooltip]);
 
 	/**
 	 * Effect hook to handle layer updates.
