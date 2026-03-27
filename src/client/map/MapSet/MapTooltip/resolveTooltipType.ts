@@ -1,4 +1,4 @@
-﻿import { TooltipType } from '../../../shared/models/models.tooltip';
+import { TooltipType } from '../../../shared/models/models.tooltip';
 
 /**
  * Resolves the effective tooltip type for a map layer.
