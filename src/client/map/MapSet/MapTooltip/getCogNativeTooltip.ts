@@ -31,19 +31,32 @@ export function getCogNativeTooltip({
 }): NativeTooltipResult | null {
 	const cogBitmapOptions = config?.cogBitmapOptions;
 	if (!cogBitmapOptions || cogBitmapOptions.disableTooltip) return null;
-	const currentChannelIndex = cogBitmapOptions.useChannel - 1;
+
+	// Resolve `useChannel` to a valid 1-based channel number and derive a 0-based index.
+	const rawUseChannel = cogBitmapOptions.useChannel;
+	const resolvedChannel =
+		typeof rawUseChannel === 'number' && Number.isFinite(rawUseChannel) && rawUseChannel >= 1
+			? rawUseChannel
+			: 1;
+	const currentChannelIndex = resolvedChannel - 1;
 
 	const values = readCogPixelValues(info, currentChannelIndex);
-	if (!values) return null;
+	if (!values || !Array.isArray(values) || values.length === 0) return null;
+
+	// Ensure the index we use for display is within bounds of the returned values array.
+	const safeIndex =
+		currentChannelIndex >= 0 && currentChannelIndex < values.length ? currentChannelIndex : 0;
+	const baseValue = values[safeIndex];
+	if (typeof baseValue !== 'number') return null;
 
 	const tooltipSettings: CogTooltipSettings | undefined = cogBitmapOptions.tooltipSettings;
 	const title = tooltipSettings?.title ?? '';
 	const unit = tooltipSettings?.unit ?? '';
 	const decimalPlaces = tooltipSettings?.decimalPlaces;
 
-	let displayValue: number = values[currentChannelIndex];
+	let displayValue: number = baseValue;
 	if (typeof decimalPlaces === 'number') {
-		displayValue = Number(values[currentChannelIndex].toFixed(decimalPlaces));
+		displayValue = Number(baseValue.toFixed(decimalPlaces));
 	}
 	const valueWithUnit = `${displayValue}${unit ? ` ${unit}` : ''}`;
 
