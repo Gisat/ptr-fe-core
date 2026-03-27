@@ -10,20 +10,27 @@
  *   - `info.tile.content.raw` — flat typed array of raw pixel data.
  *   - `info.tile.content.width` / `height` — tile dimensions in pixels.
  * @param {number} channelIndex - Zero-based index of the channel whose value is validated.
- *   If the value at this index is NaN, or if `channelIndex < 0`, `null` is returned.
+ *   Must be a finite integer within `[0, channels-1]`; otherwise `null` is returned.
  * @returns {number[] | null} Array of values from all channels at the picked pixel,
  *   or `null` if the data is unavailable or the value on current channel contains NaN.
  */
-export function readCogPixelValues(info: any, channelIndex): number[] | null {
+export function readCogPixelValues(info: any, channelIndex: number): number[] | null {
+	if (!Number.isInteger(channelIndex) || channelIndex < 0) return null;
+
 	const uv: [number, number] | undefined = info.uv ?? info.bitmap?.uv;
-	if (!info.tile?.content?.raw || !uv || channelIndex < 0) return null;
+	if (!info.tile?.content?.raw || !uv) return null;
 
 	const { raw, width, height } = info.tile.content;
-	const [u, v] = uv;
-	const px = Math.floor(u * width);
-	const py = Math.floor(v * height);
 	const channels = raw.length / (width * height);
-	const pixelIndex = Math.floor((py * width + px) * channels);
+
+	// Validate that channels resolves to a positive integer and channelIndex is in range.
+	if (!Number.isInteger(channels) || channels < 1 || channelIndex >= channels) return null;
+
+	const [u, v] = uv;
+	// Clamp to [0, dimension-1] so UV values of 0.0, 1.0 or out-of-range do not produce out-of-bounds indices.
+	const px = Math.max(0, Math.min(Math.floor(u * width), width - 1));
+	const py = Math.max(0, Math.min(Math.floor(v * height), height - 1));
+	const pixelIndex = (py * width + px) * channels;
 	const values: number[] = Array.from(raw.slice(pixelIndex, pixelIndex + channels));
 
 	if (!values.length || Number.isNaN(values[channelIndex])) return null;
