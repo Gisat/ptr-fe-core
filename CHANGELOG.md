@@ -1,3 +1,10 @@
+# [56.2.0-dev.1](https://github.com/Gisat/ptr-fe-core/compare/v56.1.0...v56.2.0-dev.1) (2026-04-01)
+
+
+### Features
+
+* add dev branch pre-release and update CI triggers ([9635089](https://github.com/Gisat/ptr-fe-core/commit/9635089cf9340171b2287ab9eb2401216d6faec7))
+
 # [56.1.0](https://github.com/Gisat/ptr-fe-core/compare/v56.0.4...v56.1.0) (2026-04-01)
 
 
