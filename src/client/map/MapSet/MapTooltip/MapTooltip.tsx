@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { TooltipAttribute } from '../../../shared/models/models.tooltip';
-import './MapTooltip.css';
+import './tooltip.css';
 
 /**
  * Props for the MapTooltip component.

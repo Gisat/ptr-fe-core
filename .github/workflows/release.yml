@@ -1,38 +1,49 @@
-name: Build & Publish NPM Package
-description: Build and publish to npm (prod/dev) using Trusted Publishers.
+name: Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'          # prod releases, e.g. v1.2.3
-      - 'v*.*.*-dev.*'    # dev releases, e.g. v1.2.3-dev.4
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  packages: write
+  id-token: write
 
 jobs:
-  build-and-publish:
+  release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write   # Required for npm Trusted Publishers (OIDC)
-
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Configure git for SSH
+        run: |
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+          git remote set-url origin "git@github.com:${{ github.repository }}.git"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 'lts/*'
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build package
+      - name: Build
         run: npm run build
 
-      - name: Publish dev tag to npm (Trusted Publishers)
-        if: contains(github.ref_name, '-dev.')
-        run: npm publish --provenance --access public --tag dev
-
-      - name: Publish latest to npm (Trusted Publishers)
-        if: ${{ !contains(github.ref_name, '-dev.') }}
-        run: npm publish --provenance --access public
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx --package semantic-release --package @semantic-release/changelog --package @semantic-release/git semantic-release
