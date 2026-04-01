@@ -1,7 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CogBitmapLayer } from '@gisatcz/deckgl-geolib';
 import { LayerSourceProps } from './LayerManager';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
+import { getLayerTooltip, LayerTooltipParams } from '../../MapSet/MapTooltip/getLayerTooltip';
+import { TooltipType } from '../../../shared/models/models.tooltip';
+import { readCogPixelValues } from '../../../shared/helpers/readCogPixelValues';
 
 /**
  * A React component that creates and manages a COG (Cloud Optimized GeoTIFF) layer.
@@ -12,9 +15,17 @@ import { parseDatasourceConfiguration } from '../../../shared/models/parsers.dat
  * @param {(id: string, instance: Layer | null) => void} props.onLayerUpdate - Callback to handle updates to the layer instance.
  * @returns {null} This component does not render any DOM elements.
  */
-export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceProps) => {
+export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip, viewport }: LayerSourceProps) => {
+	const [pixelInfo, setPixelInfo] = useState<{
+		values: number[];
+		x: number;
+		y: number;
+		currentChannelIndex: number;
+		tooltipSettings: LayerTooltipParams['tooltipSettings'] | undefined;
+	} | null>(null);
+
 	// Destructure properties from the layer configuration
-	const { isActive, key, opacity, datasource } = layer;
+	const { isActive, isInteractive, key, opacity, datasource } = layer;
 	const { url, configuration } = datasource;
 
 	// Ensure the URL is provided in the datasource
@@ -36,6 +47,19 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceP
 		console.warn(`COGLayerSource: Missing cogBitmapOptions in datasource configuration: ${key}`);
 	}
 
+	const tooltipSettings = cogBitmapOptions?.tooltipSettings;
+	const tooltipEnabled = !cogBitmapOptions?.disableTooltip;
+	const tooltipType = TooltipType.Hover; // Currently, only hover tooltips are supported for COG layers. This can be extended in the future if needed.
+
+	const tooltip =
+		tooltipEnabled &&
+		getLayerTooltip({
+			tooltipSettings,
+			pixelInfo,
+			viewport,
+			CustomTooltip,
+		});
+
 	/**
 	 * Memoize the creation of the CogBitmapLayer instance to avoid unnecessary re-renders.
 	 * The layer instance is recreated only when its dependencies change.
@@ -51,11 +75,28 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceP
 			opacity: opacity ?? 1,
 			visible: isActive,
 			cogBitmapOptions,
+			pickable: isInteractive,
+			onHover: (info) => {
+				if (!tooltipEnabled || tooltipType !== TooltipType.Hover) return;
+				const channelIndex = cogBitmapOptions.useChannel - 1;
+				const values = readCogPixelValues(info, channelIndex);
+				if (!values) {
+					setPixelInfo(null);
+				} else {
+					setPixelInfo({
+						x: info.x,
+						y: info.y,
+						values,
+						currentChannelIndex: channelIndex,
+						tooltipSettings: cogBitmapOptions?.tooltipSettings,
+					});
+				}
+			},
 		});
 		/* TODO: Since cogBitmapOptions is derived from configuration, which originally is a string
 				   (from ptr-be-core model HasConfiguration) and later parsed to an object,
 				   we need to stringify it here to avoid infinite render loops due to object reference changes. */
-	}, [url, isActive, key, opacity, JSON.stringify(cogBitmapOptions)]);
+	}, [url, isActive, isInteractive, key, opacity, JSON.stringify(cogBitmapOptions), CustomTooltip]);
 
 	/**
 	 * Effect hook to handle layer updates.
@@ -68,5 +109,5 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate }: LayerSourceP
 	}, [layerInstance, key, onLayerUpdate]);
 
 	// This component does not render any DOM elements
-	return null;
+	return isActive ? tooltip : null;
 });

@@ -1,119 +1,80 @@
-import { PickingInfo } from '@deck.gl/core';
+﻿import { PickingInfo } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
-import { getTooltipAttributes } from '../../../shared/helpers/getTooltipAttributes';
-import { TooltipAttribute, TooltipType } from '../../../shared/models/models.tooltip';
-import './getMapTooltip.css';
+import { getCogNativeTooltip } from './getCogNativeTooltip';
+import { getVectorNativeTooltip } from './getVectorNativeTooltip';
 
 /**
- * Generates a DeckGL tooltip object for a hovered map feature if enabled.
+ * Generates a DeckGL native tooltip object for a hovered map element.
  *
- * - Uses layer configuration to determine tooltip attributes and formatting.
- * - Tooltip can be customized via geojsonOptions in datasource configuration with tooltipSettings:
- *    - attributes: array of attribute definitions (key, label, unit, decimalPlaces).
- *    - nativeStyles: custom CSS styles for tooltip container.
- *    - nativeClassName: additional CSS class names for tooltip container.
- *    - title: optional tooltip title.
- * - If no attributes are defined, tooltip will not be shown.
- * - Returns null if no feature or tooltip is disabled.
- * - Tooltip is styled and includes an indicator triangle.
- * - Supports dynamic label substitution: if label contains [key], it is replaced with the value from featureProperties[key].
- * - Ensures value and unit are always together in the same row.
+ * Acts as a dispatcher: detects whether the hovered element is a COG raster
+ * pixel or a vector feature and delegates to the appropriate builder.
+ * Returns `null` when no tooltip should be shown (layer absent, tooltip
+ * disabled, or no relevant data under the cursor).
  *
- * @param {Object} params
- * @param {PickingInfo} params.info - DeckGL picking info for the hovered feature.
- * @param {RenderingLayer[] | undefined} params.mapLayers - Array of map layers for configuration lookup.
- * @returns {Object|null} Tooltip object for DeckGL or null if not applicable.
+ * ---
+ * **COG layers** — configure via `cogBitmapOptions.tooltipSettings` ({@link CogTooltipSettings}):
+ *   - `title`           — optional label shown at the top of the tooltip.
+ *   - `unit`            — unit string appended to the pixel value (e.g. `"°C"`, `"%"`).
+ *   - `decimalPlaces`   — rounds the pixel value to this many decimal places before display.
+ *   - `nativeStyles`    — inline CSS overrides for the tooltip container.
+ *   - `nativeClassName` — additional CSS class(es) appended to the container.
+ *   - `offsetX` / `offsetY` — pixel offset from the cursor position.
+ *
+ *   Disable entirely via `cogBitmapOptions.disableTooltip = true`.
+ *
+ * ---
+ * **Vector layers** — configure via `geojsonOptions.tooltipSettings` ({@link VectorTooltipSettings}):
+ *   - `attributes`      — array of {@link TooltipAttribute} definitions (`key`, `label`, `unit`, `decimalPlaces`).
+ *   - `title`           — optional tooltip title.
+ *   - `nativeStyles`    — inline CSS overrides for the tooltip container.
+ *   - `nativeClassName` — additional CSS class(es) appended to the container.
+ *   - `offsetX` / `offsetY` — pixel offset from the cursor position.
+ *   - `type`            — tooltip strategy; only `TooltipType.Native` is handled here.
+ *                         `Hover`, `Click`, and `Selection` are delegated to `getLayerTooltip`.
+ *
+ *   Label strings support `[key]` interpolation — occurrences of `[key]` are
+ *   replaced with the corresponding value from the feature's properties.
+ *
+ *   Disable entirely via `geojsonOptions.disableTooltip = true`.
+ *
+ * @param params
+ * @param params.info           - DeckGL picking info for the hovered element.
+ *                                Typed loosely (`any`) because `info.bitmap`, `info.uv`,
+ *                                and `info.tile` are not present on the base `PickingInfo`
+ *                                type in deck.gl 9.3+.
+ * @param params.mapLayers      - Full list of rendering layers used to look up the
+ *                                datasource configuration by layer key.
+ * @param params.verticalOffset - Fallback vertical offset (px) applied when no `offsetY`
+ *                                is set in `tooltipSettings`. Defaults to `0`.
+ * @returns A DeckGL tooltip object `{ html, className, style }` consumed by the
+ *          `getTooltip` callback, or `null` when no tooltip should be rendered.
  */
 export const getMapTooltip = ({
 	info,
 	mapLayers,
 	verticalOffset = 0,
 }: {
-	info: PickingInfo;
+	info: PickingInfo | any; // `info.uv`, `info.bitmap`, and `info.tile` no longer exist on the base `PickingInfo` type in 9.3.0
 	mapLayers: RenderingLayer[] | undefined;
 	verticalOffset: number;
 }) => {
-	// Early exit if no feature is hovered or layer is missing
-	if (!info.object || !info.layer) return null;
+	if (!info.layer) return null;
 
-	// Find the layer configuration for the hovered feature
-	const layerId = info.layer.id;
+	const isCog = info.bitmap && info.layer.props.cogBitmapOptions;
+	const isVector = !!info.object;
+
+	if (!isCog && !isVector) return null;
+
+	// Resolve layer config once — shared by both branches
 	const mapLayer = Array.isArray(mapLayers)
-		? mapLayers.find((layer: RenderingLayer) => layer.key === layerId)
+		? mapLayers.find((layer: RenderingLayer) => layer.key === info.layer.id)
 		: undefined;
 	const config = parseDatasourceConfiguration(mapLayer?.datasource?.configuration);
 
-	// Check if tooltip is enabled in layer config
-	const tooltipEnabled = !config?.geojsonOptions?.disableTooltip;
-	if (!tooltipEnabled) return null;
-
-	const tooltipSettings = config?.geojsonOptions?.tooltipSettings;
-	const tooltipStyles = tooltipSettings?.nativeStyles || {};
-	const tooltipClassNames = `ptr-NativeMapTooltip ${tooltipSettings?.nativeClassName ?? ''}`;
-	const tooltipTitle = tooltipSettings?.title || '';
-	const tooltipType = tooltipSettings?.type || TooltipType.Native;
-	const offsetX = tooltipSettings?.offsetX || 0;
-	const offsetY = tooltipSettings?.offsetY || verticalOffset;
-	const featureProperties = info.object?.properties || info.object || {};
-
-	if (tooltipType !== TooltipType.Native) return null;
-
-	let tooltipProperties: TooltipAttribute[] | undefined;
-
-	// Use configured attributes if available
-	if (tooltipSettings?.attributes && Array.isArray(tooltipSettings.attributes)) {
-		tooltipProperties = getTooltipAttributes(tooltipSettings.attributes, featureProperties);
-	}
-	// If no valid tooltip properties, do not show tooltip
-	if (!tooltipProperties || tooltipProperties.length === 0) {
-		console.warn('[getMapTooltip] No valid tooltip attributes found for feature.', {
-			featureProperties,
-			tooltipSettings,
-		});
-		return null;
+	if (isCog) {
+		return getCogNativeTooltip({ info, config, verticalOffset });
 	}
 
-	// Build HTML for tooltip content and indicator
-	const tooltipHtml = `
-    <div>
-				${tooltipTitle ? `<div class="ptr-NativeMapTooltip-title">${tooltipTitle}</div>` : ''}
-        ${tooltipProperties
-					.map(({ key, label, value, unit }) => {
-						const valueStr = value == null ? '' : String(value);
-
-						// Replace all [key] patterns in the label with the corresponding featureProperties value
-						let displayLabel = label;
-						if (typeof label === 'string') {
-							displayLabel = label.replace(/\[([^\]]+)\]/g, (_, k) =>
-								featureProperties[k] != null ? featureProperties[k] : `[${k}]`
-							);
-						}
-
-						return `<div class="ptr-NativeMapTooltip-row" key="${key}">
-											<span class="ptr-NativeMapTooltip-label">${displayLabel + (displayLabel && valueStr ? ':' : '')}</span>
-											<span class="ptr-NativeMapTooltip-value">
-													${valueStr}${unit ? ` ${unit}` : ''}
-											</span>
-										</div>`;
-					})
-					.join('')}
-        <div class="ptr-NativeMapTooltip-indicator"></div>
-    </div>
-`;
-
-	// Return DeckGL tooltip object with styling and indicator
-	return {
-		html: tooltipHtml,
-		className: tooltipClassNames,
-		// Inline styles for positioning and appearance (is overriding default inline styles from deck.gl)
-		style: {
-			backgroundColor: 'var(--base0)',
-			padding: '6px 10px',
-			left: `${info.x + offsetX}px`,
-			top: `${info.y + offsetY}px`,
-			transform: 'translate(-50%, -100%)',
-			...tooltipStyles,
-		},
-	};
+	return getVectorNativeTooltip({ info, config, verticalOffset });
 };

@@ -11,6 +11,7 @@ import { parseDatasourceConfiguration } from '../../../shared/models/parsers.dat
 import { MapFeature } from '../../../shared/models/models.mapFeature';
 import { getFeatureCentroid } from '../../../shared/helpers/getFeatureCentroid';
 import { getLayerTooltip } from '../../MapSet/MapTooltip/getLayerTooltip';
+import { resolveTooltipType } from '../../MapSet/MapTooltip/resolveTooltipType';
 import { TooltipType } from '../../../shared/models/models.tooltip';
 
 /** What our API returns when we call the route. */
@@ -89,13 +90,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	const tooltipSettings = geojsonOptions?.tooltipSettings;
 	const hasCustomTooltipComponent = !!CustomTooltip;
 	// Resolve tooltip type
-	let tooltipType: TooltipType =
-		tooltipSettings?.type ?? (hasCustomTooltipComponent ? TooltipType.Hover : TooltipType.Native);
-
-	// If "native" + custom component, treat as "hover" so we still get featureInfo
-	if (tooltipType === TooltipType.Native && hasCustomTooltipComponent) {
-		tooltipType = TooltipType.Hover;
-	}
+	const tooltipType: TooltipType = resolveTooltipType(tooltipSettings?.type, hasCustomTooltipComponent);
 	const tooltipEnabled = !geojsonOptions?.disableTooltip;
 
 	// Load the data from route
