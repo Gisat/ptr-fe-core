@@ -4,9 +4,7 @@ on:
   pull_request:
     branches:
       - main
-      - master
       - dev
-      - rc
 
 permissions:
   contents: read
