@@ -43,6 +43,8 @@ import { reduceHandlerRemoveFeatureKeyInSelections } from './reducerHandlers/map
 import { reduceHandlerSetFeatureKeyInSelections } from './reducerHandlers/mapLayerSetFeatureKeyInSelections';
 import { reduceHandlerMapLayerInteractivityChange } from './reducerHandlers/mapLayerInteractivityChange';
 import { reduceHandlerMapAdd } from './reducerHandlers/mapAdd';
+import { reduceHandlerGeometryDrawingUpdate } from './reducerHandlers/geometryDrawingUpdate';
+import { ActionGeometryDrawingUpdate } from './state.models.actions';
 
 /**
  * Creates a reducer function for a specific application state that combines core and application-specific reducers.
@@ -81,7 +83,7 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 	 * @param currentState - The current application state before the reduction
 	 * @param action - The action object containing the type and payload for state modification
 	 * @throws {Error} When an unknown action type is provided
-	 * @returns {ApplicationSpecificState} The new application state after applying the reduction
+	 * @returns The new application state after applying the reduction
 	 *
 	 * The reducer follows a three-step process:
 	 * 1. Initializes core action handlers
@@ -89,7 +91,8 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 	 * 3. Executes the appropriate reducer based on the action type
 	 *
 	 * @example
-	 * const newState = reducerForReact(currentState, {
+	 * const reducer = reducerForSpecificApp(appReducers);  // ← updated example
+	 * const newState = reducer(currentState, {
 	 *   type: StateActionType.MAP_LAYER_ADD,
 	 *   payload: layerData
 	 * });
@@ -172,6 +175,9 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 		);
 		reducerSwitch.set(StateActionType.MAP_SET_REMOVE, () =>
 			reduceHandlerMapSetRemove(currentState, action as ActionMapSetRemove)
+		);
+		reducerSwitch.set(StateActionType.POLYGON_DRAWING_UPDATE, () =>
+			reduceHandlerGeometryDrawingUpdate(currentState, action as ActionGeometryDrawingUpdate)
 		);
 
 		// 2. now we need to add the application specific actions and reducers to the switch map
