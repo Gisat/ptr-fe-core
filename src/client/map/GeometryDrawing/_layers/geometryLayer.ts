@@ -52,7 +52,7 @@ function destinationPoint(
 }
 
 /**
- * Generates a geodesic circle polygon with `numPoints` vertices.
+ * Generates a geodesic circle with `numPoints` vertices.
  * Because each vertex is placed using the same spherical formula as getDistance,
  * the edge point (coord[1]) will always sit exactly on the polygon boundary
  * regardless of zoom level or Mercator distortion.
