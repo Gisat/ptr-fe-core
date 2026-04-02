@@ -336,7 +336,7 @@ export const SingleMap = ({
 						info,
 						mapLayers,
 						verticalOffset,
-					});
+					}) as any;
 				}}
 			/>
 		</div>

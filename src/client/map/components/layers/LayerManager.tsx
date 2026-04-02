@@ -70,7 +70,10 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 				if (labels?.includes(UsedDatasourceLabels.XYZ)) {
 					return <XYZLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
 				} else if (labels?.includes(UsedDatasourceLabels.COG)) {
-					return <COGLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
+					return (<COGLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}viewport={viewport}
+							CustomTooltip={CustomTooltip}
+						/>
+					);
 				} else if (labels?.includes(UsedDatasourceLabels.WMS)) {
 					return <WMSLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
 				} else if (labels?.includes(UsedDatasourceLabels.Geojson)) {
