@@ -1,3 +1,10 @@
+# [56.4.0](https://github.com/Gisat/ptr-fe-core/compare/v56.3.0...v56.4.0) (2026-04-09)
+
+
+### Features
+
+* story step switcher ([064dc13](https://github.com/Gisat/ptr-fe-core/commit/064dc1387c20dfc8de5c4a0758108e9f4cd6a1b4))
+
 # [56.3.0](https://github.com/Gisat/ptr-fe-core/compare/v56.2.0...v56.3.0) (2026-04-02)
 
 
