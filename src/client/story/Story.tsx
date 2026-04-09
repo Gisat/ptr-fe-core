@@ -107,17 +107,16 @@ export const Story = React.forwardRef<StoryHandle, StoryProps>(({
 	const sidePanelRef = React.useRef<HTMLDivElement | null>(null);
 
 	const scrollToStep = (index: number) => {
+		const clampedIndex = Math.max(0, Math.min(index, getMaxSectionIndex()));
+
 		if (panelLayout === StoryPanelLayout.SINGLE) {
-			setActiveStep(index);
+			setActiveStep(clampedIndex);
 		} else {
 			if (sidePanelRef.current) {
 				const sidePanelNodes = Array.from(sidePanelRef.current.childNodes) as HTMLElement[];
-				if (sidePanelNodes[index]) {
-					sidePanelRef.current.scrollTo({
-						top: sidePanelNodes[index].offsetTop,
-						behavior: 'smooth',
-					});
-					setJumpSection(index);
+				if (sidePanelNodes[clampedIndex]) {
+					sidePanelRef.current.scrollTo({ top: sidePanelNodes[clampedIndex].offsetTop, behavior: 'smooth' });
+					setJumpSection(clampedIndex);
 				}
 			}
 		}
@@ -184,9 +183,9 @@ export const Story = React.forwardRef<StoryHandle, StoryProps>(({
 		if (isPublicSidePanel) {
 			return (
 				<StorySidePanelInternal
-					onScroll={(e: React.UIEvent<HTMLDivElement>) =>
+					onScroll={(event: React.UIEvent<HTMLDivElement>) =>
 						handleSidePanelScroll(
-							e,
+							event,
 							sidePanelRef,
 							panelLayout,
 							jumpSection,
