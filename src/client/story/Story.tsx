@@ -20,6 +20,18 @@ import './variables.css';
 import './Story.css';
 
 /**
+ * Imperative handle exposed by the Story component via a forwarded ref.
+ * Allows parent components to programmatically control navigation.
+ */
+export interface StoryHandle {
+	/**
+	 * Programmatically scroll to a specific step.
+	 * @param index - The zero-based index of the step to scroll to
+	 */
+	scrollToStep: (index: number) => void;
+}
+
+/**
  * Props for Story component.
  */
 type StoryProps = {
@@ -57,7 +69,7 @@ type StoryProps = {
  * Story component orchestrates responsive panel layout and section navigation.
  * It wraps main/side panels, manages layout, swipe, and navigation logic.
  */
-export const Story: React.FC<StoryProps> = ({
+export const Story = React.forwardRef<StoryHandle, StoryProps>(({
 	className,
 	children,
 	defaultStep = 0,
@@ -71,7 +83,7 @@ export const Story: React.FC<StoryProps> = ({
 	hideNavigation = false,
 	animationDuration = 400,
 	pauseBetweenSlides = 0,
-}) => {
+}, ref) => {
 	/** Currently active section index */
 	const [activeStep, setActiveStep] = useState<number>(defaultStep);
 	/** Section index to jump to (for scroll sync) */
@@ -94,6 +106,24 @@ export const Story: React.FC<StoryProps> = ({
 	/** Ref to the side panel DOM node */
 	const sidePanelRef = React.useRef<HTMLDivElement | null>(null);
 
+	const scrollToStep = (index: number) => {
+		const clampedIndex = Math.max(0, Math.min(index, getMaxSectionIndex()));
+
+		if (panelLayout === StoryPanelLayout.SINGLE) {
+			setActiveStep(clampedIndex);
+		} else {
+			if (sidePanelRef.current) {
+				const sidePanelNodes = Array.from(sidePanelRef.current.childNodes) as HTMLElement[];
+				if (sidePanelNodes[clampedIndex]) {
+					sidePanelRef.current.scrollTo({ top: sidePanelNodes[clampedIndex].offsetTop, behavior: 'smooth' });
+					setJumpSection(clampedIndex);
+				}
+			}
+		}
+	};
+
+	React.useImperativeHandle(ref, () => ({ scrollToStep }));
+
 	/**
 	 * Handles resize events to update layout and content size.
 	 */
@@ -115,7 +145,7 @@ export const Story: React.FC<StoryProps> = ({
 	);
 
 	// Attach resize detector to root
-	const { ref } = useResizeDetector({
+	const { ref: containerRef } = useResizeDetector({
 		handleHeight: true,
 		onResize,
 	});
@@ -153,9 +183,9 @@ export const Story: React.FC<StoryProps> = ({
 		if (isPublicSidePanel) {
 			return (
 				<StorySidePanelInternal
-					onScroll={(e: React.UIEvent<HTMLDivElement>) =>
+					onScroll={(event: React.UIEvent<HTMLDivElement>) =>
 						handleSidePanelScroll(
-							e,
+							event,
 							sidePanelRef,
 							panelLayout,
 							jumpSection,
@@ -222,34 +252,34 @@ export const Story: React.FC<StoryProps> = ({
 	return (
 		<div
 			className={rootClassNames}
-			ref={ref}
+			ref={containerRef}
 			onTouchStart={handleTouchStart}
 			onTouchMove={handleTouchMove}
 			onTouchEnd={handleTouchEnd}
 		>
-			{/* Render main/side panels and other children */}
-			{Children.map(children, renderStoryChildElement)}
+				{/* Render main/side panels and other children */}
+				{Children.map(children, renderStoryChildElement)}
 
-			{/* Panel navigation and toggle for single layout */}
-			<div className={classnames('ptr-StoryPanelWrapper', `is-${panelLayout}-layout`)}>
-				{panelLayout === StoryPanelLayout.SINGLE && (
-					<StoryPanelToggle value={visiblePanelType} onChange={(val) => setVisiblePanelType(val)} />
-				)}
+				{/* Panel navigation and toggle for single layout */}
+				<div className={classnames('ptr-StoryPanelWrapper', `is-${panelLayout}-layout`)}>
+					{panelLayout === StoryPanelLayout.SINGLE && (
+						<StoryPanelToggle value={visiblePanelType} onChange={(val) => setVisiblePanelType(val)} />
+					)}
 
-				{panelLayout === StoryPanelLayout.SINGLE && !hideNavigation && (
-					<StoryNavPanel
-						activeStep={activeStep}
-						setActiveStep={setActiveStep}
-						setJumpSection={setJumpSection}
-						sidePanelRef={sidePanelRef}
-						sidePanelChildrenCount={sidePanelChildrenCount}
-						contentSize={contentSize}
-						navigationIcons={navigationIcons}
-						fullNavigation={fullNavigation}
-						panelLayout={panelLayout}
-					/>
-				)}
+					{panelLayout === StoryPanelLayout.SINGLE && !hideNavigation && (
+						<StoryNavPanel
+							activeStep={activeStep}
+							setActiveStep={setActiveStep}
+							setJumpSection={setJumpSection}
+							sidePanelRef={sidePanelRef}
+							sidePanelChildrenCount={sidePanelChildrenCount}
+							contentSize={contentSize}
+							navigationIcons={navigationIcons}
+							fullNavigation={fullNavigation}
+							panelLayout={panelLayout}
+						/>
+					)}
+				</div>
 			</div>
-		</div>
 	);
-};
+});
