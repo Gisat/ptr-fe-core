@@ -1,4 +1,3 @@
-import { isArray } from 'lodash';
 import { NodeWithNeighbours, UsedNodeLabels } from '@gisatcz/ptr-be-core/browser';
 import { FullPantherEntity, Nullable } from '@gisatcz/ptr-be-core/browser';
 import {
@@ -25,7 +24,7 @@ const uniqueItemsByKey = (items: { key: string }[]) => [...new Map(items.map((p)
 export const parseNodesFromPanther = (data: unknown) => {
 	if (!data) throw new Error('Panther Fetch: No data recived');
 
-	if (!isArray(data)) throw new Error('Panther Fetch: Data must be an array of nodes');
+	if (!Array.isArray(data)) throw new Error('Panther Fetch: Data must be an array of nodes');
 
 	// TODO: Add more node types here
 	// TODO: what if one of the main nodes is in neighbours as well?
@@ -36,7 +35,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 			let nodes: FullPantherEntity[] = [];
 
 			// If the node is an object with a node and neighbours, we need to handle it differently
-			if ('node' in node && isArray(node.neighbours)) {
+			if ('node' in node && Array.isArray(node.neighbours)) {
 				const nodeWithLinks = {
 					...node.node,
 					neighbours: node.neighbours.map((n) => n.key),
