@@ -1,3 +1,10 @@
+## [56.4.1](https://github.com/Gisat/ptr-fe-core/compare/v56.4.0...v56.4.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* update dependencies to fix critical issues and remove unused packages ([979f165](https://github.com/Gisat/ptr-fe-core/commit/979f16576bd81a934297fee9afd936d6506a7105))
+
 # [56.4.0](https://github.com/Gisat/ptr-fe-core/compare/v56.3.0...v56.4.0) (2026-04-09)
 
 
