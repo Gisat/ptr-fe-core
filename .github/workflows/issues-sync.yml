@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: Generate GitHub App Token
       id: get_token
-      uses: actions/create-github-app-token@v2
+      uses: actions/create-github-app-token@v3
       with:
         app-id: ${{ secrets.NOTION_SYNC_APP_ID }}
         private-key: ${{ secrets.NOTION_SYNC_APP_KEY }}
