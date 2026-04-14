@@ -1,3 +1,18 @@
+## [57.0.0](https://github.com/Gisat/ptr-fe-core/compare/v56.4.1...v57.0.0) (2026-04-14)
+
+### ⚠ BREAKING CHANGES
+
+* update @gisatcz/ptr-be-core to version 57.0.0
+
+### Features
+
+* update @gisatcz/ptr-be-core to version 57.0.0 ([ae9bb85](https://github.com/Gisat/ptr-fe-core/commit/ae9bb853b3cb3f997c472a8f371af3d25bee301d))
+
+### Bug Fixes
+
+* ensure all semantic-release plugins are explicitly provided via npx --package ([c127b02](https://github.com/Gisat/ptr-fe-core/commit/c127b023ab1a9927a60324844115ec01f2967af1))
+* update GitHub Actions token creation and semantic-release config ([f574a2a](https://github.com/Gisat/ptr-fe-core/commit/f574a2ac919a70ec497bc0841fcd555f0868c7ea))
+
 ## [56.4.1](https://github.com/Gisat/ptr-fe-core/compare/v56.4.0...v56.4.1) (2026-04-13)
 
 
