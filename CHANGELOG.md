@@ -1,3 +1,9 @@
+## [57.0.1](https://github.com/Gisat/ptr-fe-core/compare/v57.0.0...v57.0.1) (2026-04-14)
+
+### Bug Fixes
+
+* update axios to version 1.15.0 ([4b4697d](https://github.com/Gisat/ptr-fe-core/commit/4b4697d965de4e79b16ba478ba9adc3fa1dccc22))
+
 ## [57.0.0](https://github.com/Gisat/ptr-fe-core/compare/v56.4.1...v57.0.0) (2026-04-14)
 
 ### ⚠ BREAKING CHANGES
