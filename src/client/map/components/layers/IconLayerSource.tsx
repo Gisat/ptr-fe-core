@@ -97,7 +97,7 @@ export const IconLayerSource = React.memo(({ layer, onLayerUpdate, viewport, Cus
 	const hasCustomTooltipComponent = !!CustomTooltip;
 	// Resolve tooltip type
 	const tooltipType: TooltipType = resolveTooltipType(tooltipSettings?.type, hasCustomTooltipComponent);
-	const tooltipEnabled = !geojsonOptions?.disableTooltip && isInteractive;
+	const tooltipEnabled = !geojsonOptions?.disableTooltip;
 
 	// Load the data from route
 	const {
