@@ -48,7 +48,7 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 	}
 
 	const tooltipSettings = cogBitmapOptions?.tooltipSettings;
-	const tooltipEnabled = !cogBitmapOptions?.disableTooltip;
+	const tooltipEnabled = !cogBitmapOptions?.disableTooltip && isInteractive;
 	const tooltipType = TooltipType.Hover; // Currently, only hover tooltips are supported for COG layers. This can be extended in the future if needed.
 
 	const tooltip =
