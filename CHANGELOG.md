@@ -1,3 +1,10 @@
+## [57.0.2](https://github.com/Gisat/ptr-fe-core/compare/v57.0.1...v57.0.2) (2026-04-16)
+
+### Bug Fixes
+
+* enable tooltips conditionally based on interactivity for COG and GeoJSON layers ([32a4544](https://github.com/Gisat/ptr-fe-core/commit/32a4544190f09d767830b3c67df24e634edba935))
+* remove interactivity condition for tooltip enabling in GeoJSON and Icon layers ([73f514e](https://github.com/Gisat/ptr-fe-core/commit/73f514ec6e7979696c1b25dd4f8ef6a7078a14af))
+
 ## [57.0.1](https://github.com/Gisat/ptr-fe-core/compare/v57.0.0...v57.0.1) (2026-04-14)
 
 ### Bug Fixes
