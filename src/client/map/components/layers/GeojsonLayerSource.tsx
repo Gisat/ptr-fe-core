@@ -91,7 +91,7 @@ export const GeojsonLayerSource = React.memo(({ layer, onLayerUpdate, viewport, 
 	const hasCustomTooltipComponent = !!CustomTooltip;
 	// Resolve tooltip type
 	const tooltipType: TooltipType = resolveTooltipType(tooltipSettings?.type, hasCustomTooltipComponent);
-	const tooltipEnabled = !geojsonOptions?.disableTooltip;
+	const tooltipEnabled = !geojsonOptions?.disableTooltip && isInteractive;
 
 	// Load the data from route
 	const {
