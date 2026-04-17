@@ -1,3 +1,13 @@
+## [57.1.0](https://github.com/Gisat/ptr-fe-core/compare/v57.0.2...v57.1.0) (2026-04-17)
+
+### Features
+
+* Merge pull request [#138](https://github.com/Gisat/ptr-fe-core/issues/138) from Gisat/update-mantine ([433ea8f](https://github.com/Gisat/ptr-fe-core/commit/433ea8f1a5b75dc2855cc166e2711bc73a6814e6))
+
+### Bug Fixes
+
+* Update Mantine ([276c633](https://github.com/Gisat/ptr-fe-core/commit/276c633bad62c99e8cdd434e234780fc5bb9b05f))
+
 ## [57.0.2](https://github.com/Gisat/ptr-fe-core/compare/v57.0.1...v57.0.2) (2026-04-16)
 
 ### Bug Fixes
