@@ -274,7 +274,7 @@ export type OneOfStateActions = AppSpecificAction &
  * Only the changed fields need to be provided (partial patch).
  */
 export interface ActionGeometryDrawingUpdate extends AppSpecificAction {
-	type: StateActionType.POLYGON_DRAWING_UPDATE;
+	type: StateActionType.GEOMETRY_DRAWING_UPDATE;
 	payload: {
 		layerKey: string;
 		patch: Partial<GeometryDrawingModel>;

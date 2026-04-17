@@ -96,8 +96,8 @@ export const SingleMap = ({
 	// No extra props on MapSet or SingleMap are required – drawing activates purely
 	// by the presence of a RenderingLayer with a `polygonDrawing` field in state.
 	// ---------------------------------------------------------------------------
-	const drawingLayer: RenderingLayer | undefined = mapLayers.find((l) => l.polygonDrawing);
-	const drawingState: GeometryDrawingModel | undefined = drawingLayer?.polygonDrawing;
+	const drawingLayer: RenderingLayer | undefined = mapLayers.find((l) => l.geometryDrawing);
+	const drawingState: GeometryDrawingModel | undefined = drawingLayer?.geometryDrawing;
 	const isDrawingActive = drawingState?.isActive ?? false;
 	/** True when the cursor is currently over a vertex handle */
 	const isHoveringPoint = (drawingState?.hoveredPointIndex ?? null) !== null;
@@ -110,7 +110,7 @@ export const SingleMap = ({
 		(patch: Partial<GeometryDrawingModel>) => {
 			if (!drawingLayer) return;
 			sharedStateDispatch({
-				type: StateActionType.POLYGON_DRAWING_UPDATE,
+				type: StateActionType.GEOMETRY_DRAWING_UPDATE,
 				payload: { layerKey: drawingLayer.key, patch },
 			} as ActionGeometryDrawingUpdate);
 		},

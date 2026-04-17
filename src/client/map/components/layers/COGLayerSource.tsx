@@ -83,6 +83,7 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 				if (!values) {
 					setPixelInfo(null);
 				} else {
+
 					setPixelInfo({
 						x: info.x,
 						y: info.y,

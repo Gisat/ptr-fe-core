@@ -45,7 +45,7 @@ export const reduceHandlerGeometryDrawingUpdate = <T extends AppSharedState>(
 		 * in drawing handlers that assume those fields always exist.
 		 */
 		const current: GeometryDrawingModel =
-			layer.polygonDrawing ?? DEFAULT_GEOMETRY_DRAWING_STATE;
+			layer.geometryDrawing ?? DEFAULT_GEOMETRY_DRAWING_STATE;
 
 		/**
 		 * No-op guard: if every field in the patch already has the same value
@@ -68,7 +68,7 @@ export const reduceHandlerGeometryDrawingUpdate = <T extends AppSharedState>(
 
 		return {
 			...layer,
-			polygonDrawing: {
+			geometryDrawing: {
 				...current,
 				...patch,
 			},

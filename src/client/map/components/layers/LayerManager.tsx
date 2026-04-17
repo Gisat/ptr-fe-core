@@ -60,7 +60,7 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 
 
 				// Log an error if no labels are provided for the layer
-				if (!labels?.length && !layer.polygonDrawing) {
+				if (!labels?.length && !layer.geometryDrawing) {
 					// Log it instead of throwing to keep the React tree stable
 					console.error(`Datasource error: Missing labels for layer ${layer.key}`);
 					return null;
@@ -70,7 +70,7 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 				if (labels?.includes(UsedDatasourceLabels.XYZ)) {
 					return <XYZLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
 				} else if (labels?.includes(UsedDatasourceLabels.COG)) {
-					return (<COGLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}viewport={viewport}
+					return (<COGLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} viewport={viewport}
 							CustomTooltip={CustomTooltip}
 						/>
 					);
@@ -110,9 +110,9 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 								/>
 							);
 					}
-				} else if (layer.polygonDrawing) {
+				} else if (layer.geometryDrawing) {
 					// Custom check for polygon drawing layer
-					return <GeometryDrawingLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
+					return <GeometryDrawingLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} viewport={viewport}/>;
 				} else {
 					// Log a warning if the datasource type is unknown
 					console.warn(`Datasource Warning - Unknown datasource type for layer ${layer.key}`);

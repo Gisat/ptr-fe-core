@@ -176,7 +176,7 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 		reducerSwitch.set(StateActionType.MAP_SET_REMOVE, () =>
 			reduceHandlerMapSetRemove(currentState, action as ActionMapSetRemove)
 		);
-		reducerSwitch.set(StateActionType.POLYGON_DRAWING_UPDATE, () =>
+		reducerSwitch.set(StateActionType.GEOMETRY_DRAWING_UPDATE, () =>
 			reduceHandlerGeometryDrawingUpdate(currentState, action as ActionGeometryDrawingUpdate)
 		);
 
