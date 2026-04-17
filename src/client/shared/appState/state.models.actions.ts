@@ -270,7 +270,7 @@ export type OneOfStateActions = AppSpecificAction &
 	);
 
 /**
- * Updates the polygonDrawing field of the RenderingLayer identified by layerKey.
+ * Updates the geometryDrawing field of the RenderingLayer identified by layerKey.
  * Only the changed fields need to be provided (partial patch).
  */
 export interface ActionGeometryDrawingUpdate extends AppSpecificAction {

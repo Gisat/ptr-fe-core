@@ -91,12 +91,12 @@ export const SingleMap = ({
 	const mapLayers = getLayersByMapKey(sharedState, mapKey) ?? [];
 
 	// ---------------------------------------------------------------------------
-	// Drawing state – read automatically from the dedicated polygonDrawing layer.
-	// Drawing is active when any layer in this map has polygonDrawing.isActive.
+	// Drawing state – read automatically from the dedicated geometryDrawing layer.
+	// Drawing is active when any layer in this map has geometryDrawing.isActive.
 	// No extra props on MapSet or SingleMap are required – drawing activates purely
-	// by the presence of a RenderingLayer with a `polygonDrawing` field in state.
+	// by the presence of a RenderingLayer with a `geometryDrawing` field in state.
 	// ---------------------------------------------------------------------------
-	const drawingLayer: RenderingLayer | undefined = mapLayers.find((l) => l.geometryDrawing);
+	const drawingLayer: RenderingLayer | undefined = mapLayers.find((layer) => layer.geometryDrawing);
 	const drawingState: GeometryDrawingModel | undefined = drawingLayer?.geometryDrawing;
 	const isDrawingActive = drawingState?.isActive ?? false;
 	/** True when the cursor is currently over a vertex handle */
