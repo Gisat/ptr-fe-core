@@ -19,7 +19,7 @@ class DrawCompositeLayer extends CompositeLayer<any> {
 /**
  * Layer source for polygon / circle drawing.
  *
- * Reads `polygonDrawing` state from the rendering layer definition,
+ * Reads `geometryDrawing` state from the rendering layer definition,
  * wraps it in a {@link DrawCompositeLayer} and registers the resulting
  * deck.gl layer instance via `onLayerUpdate` so that LayerManager can
  * include it in the standard layer stack.
