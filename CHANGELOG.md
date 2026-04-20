@@ -1,3 +1,9 @@
+## [57.2.0](https://github.com/Gisat/ptr-fe-core/compare/v57.1.0...v57.2.0) (2026-04-20)
+
+### Features
+
+* updated docs and remove local logs ([d8fe1b0](https://github.com/Gisat/ptr-fe-core/commit/d8fe1b0bf5e6e86deddbb8a8aa73f03d154923af))
+
 ## [57.1.0](https://github.com/Gisat/ptr-fe-core/compare/v57.0.2...v57.1.0) (2026-04-17)
 
 ### Features
