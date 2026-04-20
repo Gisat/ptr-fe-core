@@ -33,6 +33,6 @@ export interface RenderingLayer {
 		route: string;
 		method: 'GET' | 'POST';
 	};
-	/** Drawing state – present only on the dedicated 'polygonDrawing' layer entry */
-	polygonDrawing?: GeometryDrawingModel;
+	/** Drawing state – present only on the dedicated 'geometryDrawing' layer entry */
+	geometryDrawing?: GeometryDrawingModel;
 }

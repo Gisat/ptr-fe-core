@@ -166,7 +166,8 @@ export const geometryLayer = ({
 				id: 'vertex-layer',
 				data: geometryCoordinates.map((_coord, _index) => ({ position: _coord, index: _index })),
 				getPosition: (_data: any) => _data.position,
-				getRadius: 50,
+				getRadius: 8,
+				radiusUnits: 'pixels',
 				getFillColor: (_data: any) => {
 					if (_data.index === hoveredPointIndex) return [255, 255, 0];
 					if (mode === 'polygon') {

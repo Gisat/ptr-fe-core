@@ -19,7 +19,7 @@ class DrawCompositeLayer extends CompositeLayer<any> {
 /**
  * Layer source for polygon / circle drawing.
  *
- * Reads `polygonDrawing` state from the rendering layer definition,
+ * Reads `geometryDrawing` state from the rendering layer definition,
  * wraps it in a {@link DrawCompositeLayer} and registers the resulting
  * deck.gl layer instance via `onLayerUpdate` so that LayerManager can
  * include it in the standard layer stack.
@@ -31,27 +31,31 @@ class DrawCompositeLayer extends CompositeLayer<any> {
 export const GeometryDrawingLayerSource = ({
 	layer,
 	onLayerUpdate,
+	viewport,
 }: LayerSourceProps) => {
 	const drawingState: GeometryDrawingModel | undefined =
-		layer.polygonDrawing;
+		layer.geometryDrawing;
 
 	useEffect(() => {
 		if (drawingState) {
+			const zoom = viewport?.zoom;
 			const compositeLayer = new DrawCompositeLayer({
 				id: layer.key,
 				...drawingState,
+				zoom,
 				// Ensure updates are triggered when properties change
 				updateTriggers: {
 					// We can trigger update on specific props, or just rely on new instance creation
 					// containing new props.
 					...drawingState,
+					zoom,
 				},
 			});
 			onLayerUpdate(layer.key, compositeLayer);
 		} else {
 			onLayerUpdate(layer.key, null);
 		}
-	}, [layer.key, drawingState, onLayerUpdate]);
+	}, [layer.key, drawingState, onLayerUpdate, viewport?.zoom]);
 
 	return null;
 };
