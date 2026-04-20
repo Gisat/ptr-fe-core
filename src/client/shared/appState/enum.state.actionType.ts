@@ -56,6 +56,12 @@ export enum StateActionType {
 	/** Action to remove a feature key from the map layer selections. */
 	MAP_LAYER_REMOVE_FEATURE_KEY = 'mapLayerRemoveFeatureKey',
 
+	/** Action to set (replace) all feature keys for a map layer selection atomically. */
+	MAP_LAYER_SET_FEATURE_KEYS = 'mapLayerSetFeatureKeys',
+
+	/** Action to clear all feature keys from a map layer selection atomically. */
+	MAP_LAYER_CLEAR_SELECTION = 'mapLayerClearSelection',
+
 	/** Action to add map to map set */
 	MAP_ADD_TO_MAP_SET = 'addMapToMapSet',
 

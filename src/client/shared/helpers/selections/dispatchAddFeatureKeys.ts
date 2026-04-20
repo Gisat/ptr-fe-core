@@ -1,15 +1,16 @@
 import { Dispatch } from 'react';
-import { ActionMapLayerAddFeatureKey } from '../../appState/state.models.actions';
+import { ActionMapLayerSetFeatureKeys } from '../../appState/state.models.actions';
 import { StateActionType } from '../../appState/enum.state.actionType';
+
 /**
- * Dispatches MAP_LAYER_ADD_FEATURE_KEY for each key in the provided array.
+ * Dispatches MAP_LAYER_SET_FEATURE_KEYS — a single atomic action that replaces
+ * all feature keys for the given layer's selection in one state update,
+ * automatically assigning colour indexes.
  *
- * WHY per-key dispatches instead of GLOBAL_STATE_UPDATE:
- * GLOBAL_STATE_UPDATE merges via deduplicateByKey([...state.selections, ...payload.selections])
- * — existing selection always wins, so a newly built object for a layer that already
- * has a selection entry is silently discarded.
- *
- * TODO: Replace with MAP_LAYER_SET_FEATURE_KEYS bulk action once added to ptr-fe-core.
+ * @param dispatch    - React dispatch function from the shared state reducer.
+ * @param mapKey      - Key of the map that owns the layer.
+ * @param layerKey    - Key of the rendering layer to add feature keys to.
+ * @param featureKeys - Array of feature keys to set (should already be deduplicated).
  */
 export function dispatchAddFeatureKeys(
 	dispatch: Dispatch<any>,
@@ -17,10 +18,8 @@ export function dispatchAddFeatureKeys(
 	layerKey: string,
 	featureKeys: Array<string | number>
 ): void {
-	featureKeys.forEach((featureKey) => {
-		dispatch({
-			type: StateActionType.MAP_LAYER_ADD_FEATURE_KEY,
-			payload: { mapKey, layerKey, featureKey },
-		} as ActionMapLayerAddFeatureKey);
-	});
+	dispatch({
+		type: StateActionType.MAP_LAYER_SET_FEATURE_KEYS,
+		payload: { mapKey, layerKey, featureKeys },
+	} as ActionMapLayerSetFeatureKeys);
 }

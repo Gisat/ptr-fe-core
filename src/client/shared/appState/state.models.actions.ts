@@ -142,6 +142,28 @@ export interface ActionMapLayerRemoveFeatureKey extends AppSpecificAction {
 }
 
 /**
+ * Atomically replace all feature keys for a map layer selection.
+ * Assigns colour indexes automatically matching the logic of MAP_LAYER_ADD_FEATURE_KEY.
+ */
+export interface ActionMapLayerSetFeatureKeys extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_SET_FEATURE_KEYS;
+	payload: {
+		mapKey: string;
+		layerKey: string;
+		featureKeys: Array<string | number>;
+		customSelectionStyle?: Partial<Selection>;
+	};
+}
+
+/**
+ * Atomically clear all feature keys for a map layer selection.
+ */
+export interface ActionMapLayerClearSelection extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_CLEAR_SELECTION;
+	payload: { mapKey: string; layerKey: string };
+}
+
+/**
  * Add map to map set
  */
 export interface ActionMapAddToMapSet extends AppSpecificAction {
