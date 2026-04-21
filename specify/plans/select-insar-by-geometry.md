@@ -8,5 +8,5 @@ Enable users to select InSAR points that fall within a user-drawn polygon or cir
 
 1. Created Next.js API proxy route (`/api/(data-service)/query-by-geometry/route.ts`).
 2. Updated state definition to include `selections` and `selectionKey`.
-3. Created constants.ps and helpers.ts
+3. Created constants.ps and selectionByGeometryHelpers.ts
 4. Extended MapSelectionByGeometryClient to use selections.

@@ -13,6 +13,8 @@ import {
 	ActionMapLayerRemove,
 	ActionMapLayerRemoveFeatureKey,
 	ActionMapLayerSetFeatureKey,
+	ActionMapLayerSetFeatureKeys,
+	ActionMapLayerClearSelection,
 	ActionMapRemoveFromMapSet,
 	ActionMapSetAdd,
 	ActionMapSetModeChange,
@@ -41,6 +43,8 @@ import { AppSpecificAction, AppSpecificReducerMap } from './state.models.reducer
 import { reduceHandlerAddFeatureKeyToSelections } from './reducerHandlers/mapLayerAddFeatureKeyToSelections';
 import { reduceHandlerRemoveFeatureKeyInSelections } from './reducerHandlers/mapLayerRemoveFeatureKeyInSelections';
 import { reduceHandlerSetFeatureKeyInSelections } from './reducerHandlers/mapLayerSetFeatureKeyInSelections';
+import { reduceHandlerSetFeatureKeysInSelections } from './reducerHandlers/mapLayerSetFeatureKeysInSelections';
+import { reduceHandlerClearLayerSelection } from './reducerHandlers/mapLayerClearSelection';
 import { reduceHandlerMapLayerInteractivityChange } from './reducerHandlers/mapLayerInteractivityChange';
 import { reduceHandlerMapAdd } from './reducerHandlers/mapAdd';
 import { reduceHandlerGeometryDrawingUpdate } from './reducerHandlers/geometryDrawingUpdate';
@@ -150,6 +154,12 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 		);
 		reducerSwitch.set(StateActionType.MAP_LAYER_REMOVE_FEATURE_KEY, () =>
 			reduceHandlerRemoveFeatureKeyInSelections(currentState, action as ActionMapLayerRemoveFeatureKey)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_SET_FEATURE_KEYS, () =>
+			reduceHandlerSetFeatureKeysInSelections(currentState, action as ActionMapLayerSetFeatureKeys)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_CLEAR_SELECTION, () =>
+			reduceHandlerClearLayerSelection(currentState, action as ActionMapLayerClearSelection)
 		);
 		reducerSwitch.set(StateActionType.MAP_LAYER_OPACITY_CHANGE, () =>
 			reduceHandlerMapLayerOpacityChange(currentState, action as ActionMapLayerOpacityChange)
