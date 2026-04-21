@@ -1,6 +1,7 @@
 import { AppSharedState } from '../state.models';
 import { ActionMapLayerClearSelection } from '../state.models.actions';
-import { getMapByKey } from '../selectors/getMapByKey';/**
+import { getMapByKey } from '../selectors/getMapByKey';
+/**
  * Reducer to atomically clear all feature keys from a map layer selection.
  *
  * Unlike dispatching MAP_LAYER_REMOVE_FEATURE_KEY N times (N state updates, N re-renders),
@@ -31,10 +32,10 @@ export const reduceHandlerClearLayerSelection = <T extends AppSharedState = AppS
 
 	const selections = Array.isArray(state.selections) ? state.selections : [];
 
-	const updatedSelections = selections.map((selected) =>
-		selected.key === selectionKey
-			? { ...selected, featureKeys: [], featureKeyColourIndexPairs: {} }
-			: selected
+	const updatedSelections = selections.map((selection) =>
+		selection.key === selectionKey
+			? { ...selection, featureKeys: [], featureKeyColourIndexPairs: {} }
+			: selection
 	);
 
 	return { ...state, selections: updatedSelections };
