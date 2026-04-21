@@ -1,3 +1,16 @@
+## [57.3.0](https://github.com/Gisat/ptr-fe-core/compare/v57.2.0...v57.3.0) (2026-04-21)
+
+### Features
+
+* added docs and sync bulk selection function ([6f5db46](https://github.com/Gisat/ptr-fe-core/commit/6f5db463958c27716448e40f653892968d5787a0))
+* added functions for bulk selection ([15465ca](https://github.com/Gisat/ptr-fe-core/commit/15465ca9fb946883e4e98f0d121a02673440c0ab))
+* separate selection functions to package ([d177ab4](https://github.com/Gisat/ptr-fe-core/commit/d177ab425f81634c2e6ba065f5e83af1df10b688))
+* updated docs and helper dispatch remove from package ([e258b97](https://github.com/Gisat/ptr-fe-core/commit/e258b97f950309ffafc59a64f1bf1bb4d92ff646))
+
+### Bug Fixes
+
+* refactoring variables & conditions ([4d5479f](https://github.com/Gisat/ptr-fe-core/commit/4d5479f57e8d83b1b8d891503d41a54c479e6cde))
+
 ## [57.2.0](https://github.com/Gisat/ptr-fe-core/compare/v57.1.0...v57.2.0) (2026-04-20)
 
 ### Features
