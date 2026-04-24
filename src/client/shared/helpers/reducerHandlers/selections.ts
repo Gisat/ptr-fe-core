@@ -67,8 +67,12 @@ export function updateSelections(
 		if (updatedSelections[i] && updatedSelections[i].key === selectionKey) {
 			found = true;
 			let nextColorIndex = 0;
+			// Default to true so MAP_LAYER_ADD_FEATURE_KEY (ctrl+click) always assigns
+			// distinct colour indexes — even when an existing selection was created by a
+			// geometry dispatch that set distinctItems:false.
+			const effectiveDistinctItems = customSelectionStyle?.distinctItems ?? true;
 			// Only calculate nextColorIndex if not overwriting and using distinct items
-			if (!overwrite && updatedSelections[i].distinctItems) {
+			if (!overwrite && effectiveDistinctItems) {
 				// Find the lowest unused color index for the new featureKey
 				const usedColorIndexes = Object.values(updatedSelections[i].featureKeyColourIndexPairs ?? {});
 				while (usedColorIndexes.includes(nextColorIndex)) {
@@ -79,7 +83,7 @@ export function updateSelections(
 				...updatedSelections[i],
 				// Update selection style if provided, otherwise keep existing
 				distinctColours: customSelectionStyle?.distinctColours ?? updatedSelections[i].distinctColours,
-				distinctItems: customSelectionStyle?.distinctItems ?? updatedSelections[i].distinctItems,
+				distinctItems: effectiveDistinctItems,
 				// Overwrite featureKeys if requested, otherwise add new featureKey
 				featureKeys: overwrite ? [featureKey] : [...updatedSelections[i].featureKeys, featureKey],
 				// Assign color index: 0 if overwrite, otherwise lowest unused index
@@ -87,7 +91,7 @@ export function updateSelections(
 					? { [featureKey]: 0 }
 					: {
 							...updatedSelections[i].featureKeyColourIndexPairs,
-							[featureKey]: updatedSelections[i].distinctItems ? nextColorIndex : 0,
+							[featureKey]: effectiveDistinctItems ? nextColorIndex : 0,
 						},
 			};
 			break;

@@ -36,10 +36,13 @@ export const reduceHandlerSetFeatureKeysInSelections = <T extends AppSharedState
 	);
 
 	const colours = customSelectionStyle?.distinctColours ?? SELECTION_DEFAULT_DISTINCT_COLOURS;
+	const distinctItems = customSelectionStyle?.distinctItems ?? true;
 
-	// Assign colour index for each feature key (round-robin across available colours)
+	// Assign colour index for each feature key.
+	// - If distinctItems === false then all keys map to index 0 (single colour).
+	// - If distinctItems === true then assign round-robin indices across available colours.
 	const featureKeyColourIndexPairs: Record<string | number, number> = Object.fromEntries(
-		featureKeys.map((key, index) => [key, index % colours.length])
+		featureKeys.map((key, index) => [key, distinctItems ? index % colours.length : 0])
 	);
 
 	const existingSelections = Array.isArray(state.selections) ? state.selections : [];
