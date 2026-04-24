@@ -1,3 +1,9 @@
+## [57.4.0](https://github.com/Gisat/ptr-fe-core/compare/v57.3.0...v57.4.0) (2026-04-24)
+
+### Features
+
+* distinctItem - select click/drawing ([1408d05](https://github.com/Gisat/ptr-fe-core/commit/1408d05ef6558c2fbb8f4aaa90ab882511c84387))
+
 ## [57.3.0](https://github.com/Gisat/ptr-fe-core/compare/v57.2.0...v57.3.0) (2026-04-21)
 
 ### Features
