@@ -88,4 +88,11 @@ export enum StateActionType {
 
 	/** Action to update polygon/circle drawing state on a RenderingLayer. */
 	GEOMETRY_DRAWING_UPDATE = 'geometryDrawingUpdate',
+
+	/**
+	 * Atomically set a named selection with explicit featureKeys and colour palette.
+	 * When distinctItems is true each feature gets a cycling colour index;
+	 * when false (default) all features share index 0.
+	 */
+	MAP_LAYER_SET_BULK_SELECTION = 'setGeometrySelection',
 }
