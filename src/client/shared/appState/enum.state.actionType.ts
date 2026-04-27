@@ -94,5 +94,5 @@ export enum StateActionType {
 	 * When distinctItems is true each feature gets a cycling colour index;
 	 * when false (default) all features share index 0.
 	 */
-	MAP_LAYER_SET_BULK_SELECTION = 'setGeometrySelection',
+	MAP_LAYER_SET_BULK_SELECTION = 'mapLayerSetBulkSelection',
 }

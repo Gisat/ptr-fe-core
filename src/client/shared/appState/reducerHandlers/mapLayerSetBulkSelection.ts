@@ -19,6 +19,12 @@ export const reduceHandlerSetBulkSelection = <T extends AppSharedState = AppShar
 ): T => {
 	const { selectionKey, featureKeys, distinctColours, distinctItems = false } = action.payload;
 
+	if (distinctItems && distinctColours.length === 0) {
+		throw new Error(
+			'[reduceHandlerSetBulkSelection] distinctColours must not be empty when distinctItems is true.',
+		);
+	}
+
 	const featureKeyColourIndexPairs = distinctItems
 		? Object.fromEntries(featureKeys.map((key, index) => [String(key), index % distinctColours.length]))
 		: Object.fromEntries(featureKeys.map((key) => [String(key), 0]));
@@ -38,4 +44,3 @@ export const reduceHandlerSetBulkSelection = <T extends AppSharedState = AppShar
 
 	return { ...state, selections: updatedSelections };
 };
-

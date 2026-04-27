@@ -289,6 +289,7 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionMapSetRemove
 		| ActionMapAdd
 		| ActionGeometryDrawingUpdate
+		| ActionMapLayerSetBulkSelection
 	);
 
 /**
