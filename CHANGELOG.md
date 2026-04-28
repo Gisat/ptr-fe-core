@@ -1,3 +1,9 @@
+## [57.5.0](https://github.com/Gisat/ptr-fe-core/compare/v57.4.0...v57.5.0) (2026-04-28)
+
+### Features
+
+* separate general actions to package ([d41fb70](https://github.com/Gisat/ptr-fe-core/commit/d41fb70c025872d5021be5ec9c0abbf109234b50))
+
 ## [57.4.0](https://github.com/Gisat/ptr-fe-core/compare/v57.3.0...v57.4.0) (2026-04-24)
 
 ### Features
