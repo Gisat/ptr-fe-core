@@ -289,6 +289,7 @@ export type OneOfStateActions = AppSpecificAction &
 		| ActionMapSetRemove
 		| ActionMapAdd
 		| ActionGeometryDrawingUpdate
+		| ActionMapLayerSetBulkSelection
 	);
 
 /**
@@ -300,5 +301,24 @@ export interface ActionGeometryDrawingUpdate extends AppSpecificAction {
 	payload: {
 		layerKey: string;
 		patch: Partial<GeometryDrawingModel>;
+	};
+}
+
+/**
+ * Atomically set a named selection with explicit featureKeys and colour palette.
+ * Unlike MAP_LAYER_SET_FEATURE_KEYS this action works by selectionKey (not mapKey/layerKey)
+ * and gives the caller direct control over distinctItems.
+ */
+export interface ActionMapLayerSetBulkSelection extends AppSpecificAction {
+	type: StateActionType.MAP_LAYER_SET_BULK_SELECTION;
+	payload: {
+		selectionKey: string;
+		featureKeys: Array<string | number>;
+		distinctColours: string[];
+		/**
+		 * When true each feature gets a cycling colour index (index % palette.length).
+		 * When false (default) all features share index 0.
+		 */
+		distinctItems?: boolean;
 	};
 }

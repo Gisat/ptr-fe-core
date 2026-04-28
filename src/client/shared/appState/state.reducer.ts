@@ -22,6 +22,8 @@ import {
 	ActionMapSetRemoveMapsByKeys,
 	ActionMapSetSyncChange,
 	ActionMapViewChange,
+	ActionGeometryDrawingUpdate,
+	ActionMapLayerSetBulkSelection,
 } from './state.models.actions';
 import { AppSharedState } from './state.models';
 import { reduceHandlerMapSetMapViewChange } from './reducerHandlers/mapSetMapViewChange';
@@ -48,7 +50,7 @@ import { reduceHandlerClearLayerSelection } from './reducerHandlers/mapLayerClea
 import { reduceHandlerMapLayerInteractivityChange } from './reducerHandlers/mapLayerInteractivityChange';
 import { reduceHandlerMapAdd } from './reducerHandlers/mapAdd';
 import { reduceHandlerGeometryDrawingUpdate } from './reducerHandlers/geometryDrawingUpdate';
-import { ActionGeometryDrawingUpdate } from './state.models.actions';
+import { reduceHandlerSetBulkSelection } from './reducerHandlers/mapLayerSetBulkSelection';
 
 /**
  * Creates a reducer function for a specific application state that combines core and application-specific reducers.
@@ -188,6 +190,9 @@ export const reducerForSpecificApp = <ApplicationSpecificState extends AppShared
 		);
 		reducerSwitch.set(StateActionType.GEOMETRY_DRAWING_UPDATE, () =>
 			reduceHandlerGeometryDrawingUpdate(currentState, action as ActionGeometryDrawingUpdate)
+		);
+		reducerSwitch.set(StateActionType.MAP_LAYER_SET_BULK_SELECTION, () =>
+			reduceHandlerSetBulkSelection(currentState, action as ActionMapLayerSetBulkSelection)
 		);
 
 		// 2. now we need to add the application specific actions and reducers to the switch map

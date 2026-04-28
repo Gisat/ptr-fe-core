@@ -69,7 +69,7 @@ export function updateSelections(
 			let nextColorIndex = 0;
 			// Default to true so MAP_LAYER_ADD_FEATURE_KEY (ctrl+click) always assigns
 			// distinct colour indexes — even when an existing selection was created by a
-			// geometry dispatch that set distinctItems:false.
+			// geometry dispatch that set distinctItems:true.
 			const effectiveDistinctItems = customSelectionStyle?.distinctItems ?? true;
 			// Only calculate nextColorIndex if not overwriting and using distinct items
 			if (!overwrite && effectiveDistinctItems) {
