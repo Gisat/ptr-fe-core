@@ -1,6 +1,7 @@
 import { Nullable } from '@gisatcz/ptr-be-core/browser';
 import { LayerTreeInteraction } from '../layers/models.layers';
 import { DatasourceWithNeighbours } from './models.metadata';
+import { LineCapStyle } from '../../map/GeometryDrawing/_logic/lineBufferHelpers';
 
 /**
  * Drawing state for a geometry (polygon or circle) stored on a dedicated RenderingLayer entry.
@@ -16,6 +17,8 @@ export interface GeometryDrawingModel {
 	hoveredPointIndex?: number | null;
 	/** Buffer distance in metres – used only in 'line' mode to build a corridor polygon */
 	bufferMeters?: number;
+	/** End-cap style for line corridor – 'round' (default) or 'flat' */
+	capStyle?: LineCapStyle;
 }
 
 /**

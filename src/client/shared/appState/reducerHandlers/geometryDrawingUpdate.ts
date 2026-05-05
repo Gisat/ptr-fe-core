@@ -3,7 +3,7 @@ import { RenderingLayer, GeometryDrawingModel } from '../../models/models.layers
 import { ActionGeometryDrawingUpdate } from '../state.models.actions';
 
 /**
- * Full default drawing state used when a layer has no existing `polygonDrawing`
+ * Full default drawing state used when a layer has no existing `geometryDrawing`
  * value and a patch is dispatched for it.
  *
  * Ensures that after every update the resulting `GeometryDrawingModel` shape is
@@ -39,7 +39,7 @@ export const reduceHandlerGeometryDrawingUpdate = <T extends AppSharedState>(
 		if (layer.key !== layerKey) return layer;
 
 		/**
-		 * Fall back to the full default state when `polygonDrawing` is absent.
+		 * Fall back to the full default state when `geometryDrawing` is absent.
 		 * Using `{}` here would leave required fields (mode, geometryCoordinates,
 		 * isActive, isClosed) missing after the spread, causing runtime crashes
 		 * in drawing handlers that assume those fields always exist.

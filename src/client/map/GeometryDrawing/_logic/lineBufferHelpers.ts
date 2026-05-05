@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Geodetic helpers for building a corridor (buffer) polygon around a polyline.
  *
  * ## Overview
  * Given a polyline (sequence of [lon, lat] vertices) and a half-width distance,
  * this module computes a closed GeoJSON-compatible polygon that represents the
- * corridor around the line – i.e. all points within `bufferMeters` of the line.
+ * corridor around the line — i.e. all points within `bufferMeters` of the line.
  *
  * ## Coordinate system
  * All coordinates are **[longitude, latitude]** in decimal degrees (WGS-84),
@@ -12,9 +12,7 @@
  *
  * ## Geodetic model
  * All distance and direction calculations use the **spherical-earth (Haversine)**
- * model with R = 6 371 000 m.  This is accurate to ~0.3 % for buffers up to a
- * few kilometres and avoids the distortion that flat-earth Mercator arithmetic
- * would introduce, especially at higher latitudes.
+ * model with R = 6 371 000 m. Accurate to ~0.3% for buffers up to a few kilometres.
  */
 
 /** Mean Earth radius in metres used for all spherical calculations. */
@@ -27,24 +25,29 @@ const toRad = (deg: number) => (deg * Math.PI) / 180;
 const toDeg = (rad: number) => (rad * 180) / Math.PI;
 
 /**
+ * Cap style for the corridor ends.
+ * - `'round'` — semicircular arc centred on the endpoint.
+ * - `'flat'`  — straight perpendicular edge exactly at the endpoint.
+ */
+export type LineCapStyle = 'round' | 'flat';
+
+/**
  * Computes the destination point reached by travelling `distanceM` metres
- * from `origin` in the direction `bearingRad`.
+ * from `origin` in direction `bearingRad`.
  *
- * Uses the spherical "direct problem" formula:
+ * Spherical direct problem:
  * ```
- * φ₂ = asin( sin(φ₁)·cos(d) + cos(φ₁)·sin(d)·cos(θ) )
- * λ₂ = λ₁ + atan2( sin(θ)·sin(d)·cos(φ₁), cos(d) − sin(φ₁)·sin(φ₂) )
+ * lat2 = asin( sin(lat1)*cos(d) + cos(lat1)*sin(d)*cos(b) )
+ * lon2 = lon1 + atan2( sin(b)*sin(d)*cos(lat1), cos(d) - sin(lat1)*sin(lat2) )
  * ```
- * where φ = latitude, λ = longitude, d = angular distance (distanceM / R),
- * θ = bearing in radians.
+ * where `d = distanceM / R` (angular distance) and `b` = bearing.
  *
  * @param origin     Starting point as [lon, lat] in decimal degrees.
  * @param distanceM  Travel distance in metres.
- * @param bearingRad Bearing in radians, measured clockwise from north
- *                   (0 = north, π/2 = east, π = south, 3π/2 = west).
+ * @param bearingRad Bearing in radians, clockwise from north (0=N, pi/2=E, pi=S).
  * @returns          Destination point as [lon, lat] in decimal degrees.
  */
-function destinationPoint(
+export function destinationPoint(
 	origin: [number, number],
 	distanceM: number,
 	bearingRad: number
@@ -67,17 +70,16 @@ function destinationPoint(
 /**
  * Computes the initial geodetic bearing (in radians) from `pointA` to `pointB`.
  *
- * Uses the spherical "inverse problem" formula:
+ * Spherical inverse problem:
  * ```
- * θ = atan2( sin(Δλ)·cos(φ₂),
- *            cos(φ₁)·sin(φ₂) − sin(φ₁)·cos(φ₂)·cos(Δλ) )
+ * b = atan2( sin(dLon)*cos(lat2),
+ *            cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(dLon) )
  * ```
- * The result is in the range (−π, π].  Positive values are east of north,
- * negative values are west of north.
+ * Result is in (-pi, pi]. Positive = east of north, negative = west of north.
  *
  * @param pointA  Origin as [lon, lat] in decimal degrees.
  * @param pointB  Destination as [lon, lat] in decimal degrees.
- * @returns       Initial bearing in radians (clockwise from north).
+ * @returns       Initial bearing in radians, clockwise from north.
  */
 function bearing(pointA: [number, number], pointB: [number, number]): number {
 	const lat1 = toRad(pointA[1]);
@@ -90,57 +92,88 @@ function bearing(pointA: [number, number], pointB: [number, number]): number {
 }
 
 /**
- * Builds a closed corridor polygon around a polyline with **flat caps**.
+ * Generates the interior points of a semicircular arc for a round corridor cap.
+ *
+ * Sweeps **counterclockwise** (decreasing bearing) by exactly pi radians (180°)
+ * from `startBearingRad` to `startBearingRad - pi`. Start and end points are
+ * excluded — they already exist in `rightSide` / `leftSide`.
+ *
+ * ### Why counterclockwise?
+ * The ring travels forward along the right side, so the end cap must curve around
+ * the forward tip of the last vertex:
+ * - End cap: `lastBearing + pi/2` (right) → `lastBearing` (tip) → `lastBearing - pi/2` (left).
+ * - Start cap: `firstBearing - pi/2` (left) → `firstBearing + pi` (back tip) → `firstBearing + pi/2` (right).
+ *
+ * A clockwise sweep would go around the backward side, creating a self-intersection.
+ *
+ * @param centre          Centre of the arc (the polyline endpoint).
+ * @param distanceM       Arc radius in metres (= `bufferMeters`).
+ * @param startBearingRad Bearing of the first arc point (radians, clockwise from north).
+ * @param numPts          Number of arc segments (default 16 → 15 interior points).
+ * @returns               Interior arc points as [lon, lat] pairs.
+ */
+function buildSemicircle(
+	centre: [number, number],
+	distanceM: number,
+	startBearingRad: number,
+	numPts = 16,
+): [number, number][] {
+	const points: [number, number][] = [];
+	// ptIndex 1…numPts-1: exclude endpoints (already in rightSide / leftSide)
+	for (let ptIndex = 1; ptIndex < numPts; ptIndex++) {
+		const fraction = ptIndex / numPts;
+		// Counterclockwise sweep: subtract fraction of pi from startBearing
+		const ptBearing = startBearingRad - Math.PI * fraction;
+		points.push(destinationPoint(centre, distanceM, ptBearing));
+	}
+	return points;
+}
+
+/**
+ * Builds a closed corridor polygon around a polyline.
  *
  * ## Algorithm
  *
- * ### Step 1 – Per-vertex bearing
- * For each vertex a representative forward bearing is determined:
- * - **First vertex**: bearing of the first segment (→ second point).
- * - **Last vertex**: bearing of the last segment (← from second-to-last point).
- * - **Interior vertices**: *circular mean* of the incoming and outgoing bearings.
- *   A circular mean (via `atan2(mean(sin), mean(cos))`) is used instead of a
- *   plain average to handle wrap-around correctly (e.g. 350° and 10° → 0°,
- *   not the erroneous 180° that arithmetic average would give).
+ * ### Step 1 — Per-vertex bearing
+ * - **First vertex**: bearing toward the second point.
+ * - **Last vertex**: bearing from the second-to-last point.
+ * - **Interior vertices**: circular mean of incoming and outgoing bearings
+ *   via `atan2(mean(sin), mean(cos))` to handle wrap-around correctly
+ *   (e.g. 350° and 10° → 0°, not the erroneous 180° from plain average).
  *
- * ### Step 2 – Perpendicular offsets
- * From the representative bearing of each vertex, two offset points are computed
- * using {@link destinationPoint}:
- * - **Right side**: `bearing + π/2` (90° clockwise = right of travel direction).
- * - **Left side**: `bearing − π/2` (90° counter-clockwise = left of travel direction).
+ * ### Step 2 — Perpendicular offsets
+ * Two offset points are computed per vertex at distance `bufferMeters`:
+ * - **Right side**: `bearing + pi/2` (90° clockwise).
+ * - **Left side**: `bearing - pi/2` (90° counter-clockwise).
  *
- * For endpoint vertices the bearing equals the adjacent segment's bearing, so the
- * offset edge is exactly perpendicular to the line at that point – this is what
- * produces the **flat cap** geometry (no semicircular rounding).
+ * ### Step 3 — Ring assembly
  *
- * ### Step 3 – Ring assembly
+ * **Flat caps** (`capStyle = 'flat'`): straight perpendicular edge at both ends.
  * ```
- * leftSide[0] ←──────────────── leftSide[n]
- *     │   (start flat cap)   (end flat cap)   │
- * rightSide[0] ──────────────── rightSide[n]
+ * leftSide[0]  <──────────────────  leftSide[n]
+ *     |  (flat cap)        (flat cap)  |
+ * rightSide[0]  ──────────────────>  rightSide[n]
  * ```
- * The ring is assembled as:
- * ```
- * [ rightSide[0..n], leftSide[n..0] (reversed), rightSide[0] (close) ]
- * ```
- * The direct connection `rightSide[n] → leftSide[n]` is the **flat end cap** –
- * a straight edge perpendicular to the line at the last point.
- * The direct connection `leftSide[0] → rightSide[0]` (after reversal + close)
- * is the **flat start cap** – a straight edge perpendicular at the first point.
  *
- * The resulting ring has no self-intersections and correct winding order for a
- * GeoJSON Polygon exterior ring (counter-clockwise when viewed on a standard map).
+ * **Round caps** (`capStyle = 'round'`, default): semicircular arcs at both ends.
+ * ```
+ * leftSide[0]  <──────────────────  leftSide[n]
+ *    ╰──(start arc)          (end arc)──╯
+ * rightSide[0]  ──────────────────>  rightSide[n]
+ * ```
+ * The arc radius equals `bufferMeters`, so all points within `bufferMeters`
+ * of each endpoint are enclosed — matching circle-mode behaviour.
  *
- * @param coords       Ordered [lon, lat] vertices of the polyline (≥ 2 required).
+ * @param coords       Ordered [lon, lat] vertices of the polyline (>= 2 required).
  *                     Fewer than 2 points returns an empty array.
- * @param bufferMeters Corridor **half-width** in metres.  The total corridor width
- *                     is `2 × bufferMeters`.
- * @returns            Closed ring of [lon, lat] pairs suitable for use as the
- *                     exterior ring of a GeoJSON `Polygon` geometry.
+ * @param bufferMeters Corridor **half-width** in metres. Total width = 2 x bufferMeters.
+ * @param capStyle     End-cap style: `'round'` (default) or `'flat'`.
+ * @returns            Closed ring of [lon, lat] pairs for a GeoJSON `Polygon` exterior ring.
  */
 export function buildLineBufferPolygon(
 	coords: [number, number][],
-	bufferMeters: number
+	bufferMeters: number,
+	capStyle: LineCapStyle = 'round',
 ): [number, number][] {
 	if (coords.length < 2) return [];
 
@@ -158,7 +191,7 @@ export function buildLineBufferPolygon(
 			segBearing = bearing(coords[vertexIndex - 1], coords[vertexIndex]);
 		} else {
 			// Interior point: circular mean of incoming and outgoing bearings.
-			// atan2(mean(sin), mean(cos)) handles the 0/2π wrap-around correctly.
+			// atan2(mean(sin), mean(cos)) handles the 0/2*pi wrap-around correctly.
 			const bearing1 = bearing(coords[vertexIndex - 1], coords[vertexIndex]);
 			const bearing2 = bearing(coords[vertexIndex], coords[vertexIndex + 1]);
 			const sinAvg = (Math.sin(bearing1) + Math.sin(bearing2)) / 2;
@@ -168,19 +201,88 @@ export function buildLineBufferPolygon(
 
 		// Right offset: 90° clockwise from forward bearing
 		rightSide.push(destinationPoint(coords[vertexIndex], bufferMeters, segBearing + Math.PI / 2));
-		// Left offset:  90° counter-clockwise from forward bearing
+		// Left offset: 90° counter-clockwise from forward bearing
 		leftSide.push(destinationPoint(coords[vertexIndex], bufferMeters, segBearing - Math.PI / 2));
 	}
 
-	// Ring: right side (start→end), then left side reversed (end→start), then close.
-	// The direct connections at both ends ARE the flat perpendicular caps.
-	const ring: [number, number][] = [
-		...rightSide,
-		...[...leftSide].reverse(),
-	];
+	const firstBearing = bearing(coords[0], coords[1]);
+	const lastBearing  = bearing(coords[coords.length - 2], coords[coords.length - 1]);
+
+	const ring: [number, number][] = [];
+
+	if (capStyle === 'round') {
+		ring.push(
+			...rightSide,
+			// End cap: counterclockwise sweep from right offset -> forward tip -> left offset
+			...buildSemicircle(coords[coords.length - 1], bufferMeters, lastBearing + Math.PI / 2),
+			...[...leftSide].reverse(),
+			// Start cap: counterclockwise sweep from left offset -> backward tip -> right offset
+			...buildSemicircle(coords[0], bufferMeters, firstBearing - Math.PI / 2),
+		);
+	} else {
+		// Flat caps: direct straight connection at both ends (no arc points needed)
+		ring.push(
+			...rightSide,
+			...[...leftSide].reverse(),
+		);
+	}
 
 	// Close the ring by repeating the first vertex
 	ring.push(ring[0]);
 
 	return ring;
 }
+
+/**
+ * Computes the geodetic (Haversine) great-circle distance in metres between two points.
+ *
+ * ```
+ * a = sin²(dLat/2) + cos(lat1)*cos(lat2)*sin²(dLon/2)
+ * d = R * 2 * atan2(sqrt(a), sqrt(1-a))
+ * ```
+ *
+ * @param pointA  First point as [lon, lat] in decimal degrees.
+ * @param pointB  Second point as [lon, lat] in decimal degrees.
+ * @returns       Distance in metres.
+ */
+export function haversineDistance(pointA: [number, number], pointB: [number, number]): number {
+	const dLat = toRad(pointB[1] - pointA[1]);
+	const dLon = toRad(pointB[0] - pointA[0]);
+	const lat1 = toRad(pointA[1]);
+	const lat2 = toRad(pointB[1]);
+	const a =
+		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+		Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Generates a geodesic circle polygon around `center` with a given radius.
+ *
+ * Each vertex is placed using the spherical {@link destinationPoint} formula,
+ * so the polygon accurately represents a circle of `radiusMeters` on the globe
+ * — unlike a flat-earth approximation that distorts at high latitudes or large radii.
+ *
+ * Returns a **closed** ring (last point === first point) compatible with both
+ * GeoJSON `Polygon` coordinates and deck.gl `PolygonLayer`.
+ *
+ * @param center       Circle centre as [lon, lat] in decimal degrees.
+ * @param radiusMeters Radius in metres.
+ * @param numPoints    Number of ring vertices before closing (default 64).
+ * @returns            Closed ring of [lon, lat] pairs.
+ */
+export function buildCirclePolygon(
+	center: [number, number],
+	radiusMeters: number,
+	numPoints = 64,
+): [number, number][] {
+	const ring: [number, number][] = Array.from({ length: numPoints }, (_, pointIndex) => {
+		const bearingAngle = (2 * Math.PI * pointIndex) / numPoints;
+		return destinationPoint(center, radiusMeters, bearingAngle);
+	});
+	// Close the ring
+	ring.push(ring[0]);
+	return ring;
+}
+
+
