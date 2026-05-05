@@ -1,5 +1,6 @@
 import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
 import { DrawingMode } from '../_types/geometryDrawingTypes';
+import { buildLineBufferPolygon } from '../_logic/lineBufferHelpers';
 
 interface GeometryLayerProps {
 	geometryCoordinates: [number, number][];
@@ -7,20 +8,22 @@ interface GeometryLayerProps {
 	isActive: boolean;
 	hoveredPointIndex: number | null;
 	mode: DrawingMode;
+	/** Buffer half-width in metres – used only in 'line' mode */
+	bufferMeters?: number;
 }
 
 /** Haversine great-circle distance in metres – used only for the radius value. */
 function getDistance(coord1: [number, number], coord2: [number, number]): number {
-	const toRad = (d: number) => (d * Math.PI) / 180;
+	const toRad = (deg: number) => (deg * Math.PI) / 180;
 	const R = 6371000;
 	const dLat = toRad(coord2[1] - coord1[1]);
 	const dLon = toRad(coord2[0] - coord1[0]);
 	const lat1 = toRad(coord1[1]);
 	const lat2 = toRad(coord2[1]);
-	const a =
+	const haversinSum =
 		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
 		Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	return R * 2 * Math.atan2(Math.sqrt(haversinSum), Math.sqrt(1 - haversinSum));
 }
 
 /**
@@ -34,18 +37,18 @@ function destinationPoint(
 	bearing: number
 ): [number, number] {
 	const R = 6371000;
-	const d = distance / R;
+	const distRad = distance / R;
 	const lat1 = (origin[1] * Math.PI) / 180;
 	const lon1 = (origin[0] * Math.PI) / 180;
 
 	const lat2 = Math.asin(
-		Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(bearing)
+		Math.sin(lat1) * Math.cos(distRad) + Math.cos(lat1) * Math.sin(distRad) * Math.cos(bearing)
 	);
 	const lon2 =
 		lon1 +
 		Math.atan2(
-			Math.sin(bearing) * Math.sin(d) * Math.cos(lat1),
-			Math.cos(d) - Math.sin(lat1) * Math.sin(lat2)
+			Math.sin(bearing) * Math.sin(distRad) * Math.cos(lat1),
+			Math.cos(distRad) - Math.sin(lat1) * Math.sin(lat2)
 		);
 
 	return [(lon2 * 180) / Math.PI, (lat2 * 180) / Math.PI];
@@ -62,9 +65,9 @@ function generateCircle(
 	radius: number,
 	numPoints = 64
 ): [number, number][] {
-	return Array.from({ length: numPoints }, (_, i) => {
-		const bearing = (2 * Math.PI * i) / numPoints;
-		return destinationPoint(center, radius, bearing);
+	return Array.from({ length: numPoints }, (_, pointIndex) => {
+		const bearingAngle = (2 * Math.PI * pointIndex) / numPoints;
+		return destinationPoint(center, radius, bearingAngle);
 	});
 }
 
@@ -77,12 +80,48 @@ export const geometryLayer = ({
 	isActive,
 	hoveredPointIndex,
 	mode,
+	bufferMeters = 0,
 }: GeometryLayerProps) => {
 	if (!geometryCoordinates) return [];
 
 	const layers: any[] = [];
 
-	if (mode === 'circle') {
+	if (mode === 'line') {
+		// ── Corridor buffer polygon ─────────────────────────────────────────────
+		if (bufferMeters > 0 && geometryCoordinates.length >= 2) {
+			const corridorPolygon = buildLineBufferPolygon(geometryCoordinates, bufferMeters);
+			layers.push(
+				new PolygonLayer({
+					id: 'line-buffer-layer',
+					data: [{ polygon: corridorPolygon }],
+					getPolygon: (_data: any) => _data.polygon,
+					getFillColor: [0, 150, 255, 100],
+					getLineColor: [0, 100, 255],
+					pickable: false,
+					stroked: true,
+					filled: true,
+					lineWidthMinPixels: 1,
+					updateTriggers: {
+						getPolygon: [geometryCoordinates, bufferMeters],
+					},
+				})
+			);
+		}
+
+		// ── Polyline path ───────────────────────────────────────────────────────
+		if (geometryCoordinates.length >= 2) {
+			layers.push(
+				new PathLayer({
+					id: 'line-path-layer',
+					data: [{ path: geometryCoordinates }],
+					getPath: (_data: any) => _data.path,
+					getColor: [0, 180, 60],
+					widthMinPixels: 2,
+					pickable: false,
+				})
+			);
+		}
+	} else if (mode === 'circle') {
 		// ── Circle fill ────────────────────────────────────────────────────────
 		// Use PolygonLayer with a geodesic polygon instead of ScatterplotLayer.
 		// ScatterplotLayer renders circles using a flat-earth Mercator approximation;

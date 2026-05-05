@@ -57,6 +57,9 @@ export const onGeometryClick = ({
 			if (newCoords.length === 2) {
 				setIsClosed(true);
 			}
+		} else if (mode === 'line') {
+			// Line mode: just keep appending vertices; never close
+			setGeometryCoordinates([...geometryCoordinates, coordinate as [number, number]]);
 		} else {
 			setGeometryCoordinates([...geometryCoordinates, coordinate as [number, number]]);
 		}

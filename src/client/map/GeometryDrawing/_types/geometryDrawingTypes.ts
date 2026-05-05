@@ -7,7 +7,7 @@ export type GeometryCoordinate = [number, number];
 export type GeometryCoordinates = GeometryCoordinate[];
 
 /** Supported drawing modes. */
-export type DrawingMode = 'polygon' | 'circle';
+export type DrawingMode = 'polygon' | 'circle' | 'line';
 
 /**
  * Picking info for geometry click and hover events.

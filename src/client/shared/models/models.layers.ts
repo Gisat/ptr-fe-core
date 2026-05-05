@@ -8,12 +8,14 @@ import { DatasourceWithNeighbours } from './models.metadata';
  * the existing AppSharedState.renderingLayers array.
  */
 export interface GeometryDrawingModel {
-	mode: 'polygon' | 'circle';
+	mode: 'polygon' | 'circle' | 'line';
 	isActive: boolean;
 	isClosed: boolean;
 	geometryCoordinates: [number, number][];
 	/** Index of the vertex currently being hovered, or null if none */
 	hoveredPointIndex?: number | null;
+	/** Buffer distance in metres – used only in 'line' mode to build a corridor polygon */
+	bufferMeters?: number;
 }
 
 /**
