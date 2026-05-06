@@ -16,7 +16,7 @@
  */
 
 /** Mean Earth radius in metres used for all spherical calculations. */
-const R = 6371000;
+const EARTH_RADIUS_METERS = 6371000;
 
 /** Converts decimal degrees to radians. */
 const toRad = (deg: number) => (deg * Math.PI) / 180;
@@ -52,7 +52,7 @@ export function destinationPoint(
 	distanceM: number,
 	bearingRad: number
 ): [number, number] {
-	const distRad = distanceM / R;
+	const distRad = distanceM / EARTH_RADIUS_METERS;
 	const lat1 = toRad(origin[1]);
 	const lon1 = toRad(origin[0]);
 	const lat2 = Math.asin(
@@ -92,77 +92,106 @@ function bearing(pointA: [number, number], pointB: [number, number]): number {
 }
 
 /**
- * Generates the interior points of a semicircular arc for a round corridor cap.
- *
- * Sweeps **counterclockwise** (decreasing bearing) by exactly pi radians (180°)
- * from `startBearingRad` to `startBearingRad - pi`. Start and end points are
- * excluded — they already exist in `rightSide` / `leftSide`.
- *
- * ### Why counterclockwise?
- * The ring travels forward along the right side, so the end cap must curve around
- * the forward tip of the last vertex:
- * - End cap: `lastBearing + pi/2` (right) → `lastBearing` (tip) → `lastBearing - pi/2` (left).
- * - Start cap: `firstBearing - pi/2` (left) → `firstBearing + pi` (back tip) → `firstBearing + pi/2` (right).
- *
- * A clockwise sweep would go around the backward side, creating a self-intersection.
- *
- * @param centre          Centre of the arc (the polyline endpoint).
- * @param distanceM       Arc radius in metres (= `bufferMeters`).
- * @param startBearingRad Bearing of the first arc point (radians, clockwise from north).
- * @param numPts          Number of arc segments (default 16 → 15 interior points).
- * @returns               Interior arc points as [lon, lat] pairs.
+ * Normalises a bearing difference to the half-open interval (-π, π].
+ * Required before using `delta` as a sweep angle so that clockwise and
+ * counterclockwise turns are always unambiguous.
  */
-function buildSemicircle(
+function normaliseDelta(delta: number): number {
+	let normalizedAngle = delta % (2 * Math.PI);
+	if (normalizedAngle > Math.PI) normalizedAngle -= 2 * Math.PI;
+	if (normalizedAngle <= -Math.PI) normalizedAngle += 2 * Math.PI;
+	return normalizedAngle;
+}
+
+/**
+ * Generates points along a circular arc centred on `centre`.
+ *
+ * The sweep direction and magnitude are encoded in `sweepRad`:
+ * - positive → clockwise (increasing bearing)
+ * - negative → counterclockwise (decreasing bearing)
+ *
+ * **Both endpoints are included** (`frac = 0` and `frac = 1`), giving
+ * `numSegs + 1` points total. Callers that need only interior points
+ * should use `.slice(1, -1)`.
+ *
+ * @param centre          Arc centre as [lon, lat] in decimal degrees.
+ * @param distanceM       Arc radius in metres.
+ * @param startBearingRad Bearing of the first arc point (radians, clockwise from north).
+ * @param sweepRad        Signed total sweep angle in radians.
+ * @param numSegs         Number of arc segments (numSegs+1 points returned).
+ * @returns               Arc points as [lon, lat] pairs.
+ */
+function buildArc(
 	centre: [number, number],
 	distanceM: number,
 	startBearingRad: number,
-	numPts = 16,
+	sweepRad: number,
+	numSegs: number,
 ): [number, number][] {
 	const points: [number, number][] = [];
-	// ptIndex 1…numPts-1: exclude endpoints (already in rightSide / leftSide)
-	for (let ptIndex = 1; ptIndex < numPts; ptIndex++) {
-		const fraction = ptIndex / numPts;
-		// Counterclockwise sweep: subtract fraction of pi from startBearing
-		const ptBearing = startBearingRad - Math.PI * fraction;
-		points.push(destinationPoint(centre, distanceM, ptBearing));
+	for (let i = 0; i <= numSegs; i++) {
+		const frac = i / numSegs;
+		points.push(destinationPoint(centre, distanceM, startBearingRad + sweepRad * frac));
 	}
 	return points;
 }
+
+/** Arc segments per π radians at interior join arcs (8 → quarter-turn = 4 segs). */
+const JOIN_SEGS_PER_PI = 8;
+
+/** Arc segments for each end-cap semicircle. */
+const CAP_SEGS = 16;
 
 /**
  * Builds a closed corridor polygon around a polyline.
  *
  * ## Algorithm
  *
- * ### Step 1 — Per-vertex bearing
- * - **First vertex**: bearing toward the second point.
- * - **Last vertex**: bearing from the second-to-last point.
- * - **Interior vertices**: circular mean of incoming and outgoing bearings
- *   via `atan2(mean(sin), mean(cos))` to handle wrap-around correctly
- *   (e.g. 350° and 10° → 0°, not the erroneous 180° from plain average).
+ * ### Step 1 — Per-segment bearings
+ * Segment bearings are computed independently for each segment
+ * (`bearing(Pi, Pi+1)`). Interior vertices do **not** average bearings —
+ * averaging was the source of two bugs:
+ * - **Miter spike**: the averaged bisector point is `bufferMeters / sin(α/2)`
+ *   from the line, which grows to infinity at sharp turns.
+ * - **180° reversal**: when incoming and outgoing bearings are exactly opposite,
+ *   `sinAvg = cosAvg = 0`, so `atan2(0, 0)` returns an arbitrary bearing
+ *   and the offset point is placed in the wrong direction entirely.
  *
- * ### Step 2 — Perpendicular offsets
- * Two offset points are computed per vertex at distance `bufferMeters`:
- * - **Right side**: `bearing + pi/2` (90° clockwise).
- * - **Left side**: `bearing - pi/2` (90° counter-clockwise).
+ * ### Step 2 — Round joins at every interior vertex (both sides)
+ * At each interior vertex `Pi`, **both** sides receive a circular arc of radius
+ * `bufferMeters`, sweeping from the incoming offset bearing to the outgoing
+ * offset bearing by `delta`:
+ *
+ * ```
+ * delta = normalise(b_out - b_in)   // signed turn angle, in (-π, π]
+ *
+ * right arc: from (b_in + π/2)  sweeping delta  to (b_out + π/2)
+ * left  arc: from (b_in - π/2)  sweeping delta  to (b_out - π/2)
+ * ```
+ *
+ * This matches the `PathLayer` visual layer (`jointRounded: true`) exactly,
+ * so the query polygon sent to the backend encloses the same area that the
+ * user sees highlighted on screen — including all points near bent vertices
+ * on the concave (interior) side.
+ *
+ * Arc density scales with the turn angle:
+ * `numSegs = max(1, ceil(JOIN_SEGS_PER_PI × |delta| / π))`.
  *
  * ### Step 3 — Ring assembly
  *
  * **Flat caps** (`capStyle = 'flat'`): straight perpendicular edge at both ends.
  * ```
- * leftSide[0]  <──────────────────  leftSide[n]
- *     |  (flat cap)        (flat cap)  |
- * rightSide[0]  ──────────────────>  rightSide[n]
+ * leftPoints[0]  <──────────────────  leftPoints[n]
+ *      |  (flat cap)       (flat cap)  |
+ * rightPoints[0]  ──────────────────>  rightPoints[n]
  * ```
  *
  * **Round caps** (`capStyle = 'round'`, default): semicircular arcs at both ends.
  * ```
- * leftSide[0]  <──────────────────  leftSide[n]
+ * leftPoints[0]  <──────────────────  leftPoints[n]
  *    ╰──(start arc)          (end arc)──╯
- * rightSide[0]  ──────────────────>  rightSide[n]
+ * rightPoints[0]  ──────────────────>  rightPoints[n]
  * ```
- * The arc radius equals `bufferMeters`, so all points within `bufferMeters`
- * of each endpoint are enclosed — matching circle-mode behaviour.
  *
  * @param coords       Ordered [lon, lat] vertices of the polyline (>= 2 required).
  *                     Fewer than 2 points returns an empty array.
@@ -177,57 +206,78 @@ export function buildLineBufferPolygon(
 ): [number, number][] {
 	if (coords.length < 2) return [];
 
-	const rightSide: [number, number][] = [];
-	const leftSide: [number, number][] = [];
-
-	for (let vertexIndex = 0; vertexIndex < coords.length; vertexIndex++) {
-		let segBearing: number;
-
-		if (vertexIndex === 0) {
-			// First point: use bearing of first segment only
-			segBearing = bearing(coords[0], coords[1]);
-		} else if (vertexIndex === coords.length - 1) {
-			// Last point: use bearing of last segment only
-			segBearing = bearing(coords[vertexIndex - 1], coords[vertexIndex]);
-		} else {
-			// Interior point: circular mean of incoming and outgoing bearings.
-			// atan2(mean(sin), mean(cos)) handles the 0/2*pi wrap-around correctly.
-			const bearing1 = bearing(coords[vertexIndex - 1], coords[vertexIndex]);
-			const bearing2 = bearing(coords[vertexIndex], coords[vertexIndex + 1]);
-			const sinAvg = (Math.sin(bearing1) + Math.sin(bearing2)) / 2;
-			const cosAvg = (Math.cos(bearing1) + Math.cos(bearing2)) / 2;
-			segBearing = Math.atan2(sinAvg, cosAvg);
-		}
-
-		// Right offset: 90° clockwise from forward bearing
-		rightSide.push(destinationPoint(coords[vertexIndex], bufferMeters, segBearing + Math.PI / 2));
-		// Left offset: 90° counter-clockwise from forward bearing
-		leftSide.push(destinationPoint(coords[vertexIndex], bufferMeters, segBearing - Math.PI / 2));
+	// ── Step 1: pre-compute all segment bearings ────────────────────────────────
+	const segBearings: number[] = [];
+	for (let i = 0; i < coords.length - 1; i++) {
+		segBearings.push(bearing(coords[i], coords[i + 1]));
 	}
 
-	const firstBearing = bearing(coords[0], coords[1]);
-	const lastBearing  = bearing(coords[coords.length - 2], coords[coords.length - 1]);
+	const firstBearing = segBearings[0];
+	const lastBearing  = segBearings[segBearings.length - 1];
 
+	// ── Step 2: build right and left offset point sequences ────────────────────
+	const rightPoints: [number, number][] = [];
+	const leftPoints:  [number, number][] = [];
+
+	// First vertex — single offset point perpendicular to the first segment
+	rightPoints.push(destinationPoint(coords[0], bufferMeters, firstBearing + Math.PI / 2));
+	leftPoints.push( destinationPoint(coords[0], bufferMeters, firstBearing - Math.PI / 2));
+
+	// Interior vertices — full arc on both sides, matching PathLayer's jointRounded:true visual.
+	// This ensures the query polygon includes all points visible inside the corridor,
+	// including those near the concave (interior) side of bent vertices.
+	for (let i = 1; i < coords.length - 1; i++) {
+		const bIn      = segBearings[i - 1];
+		const bOut     = segBearings[i];
+		const delta    = normaliseDelta(bOut - bIn);
+		const absDelta = Math.abs(delta);
+
+		if (absDelta < 1e-10) {
+			// Essentially straight — single perpendicular offset point per side.
+			rightPoints.push(destinationPoint(coords[i], bufferMeters, bIn + Math.PI / 2));
+			leftPoints.push( destinationPoint(coords[i], bufferMeters, bIn - Math.PI / 2));
+		} else {
+			const numArcSegs = Math.max(1, Math.ceil(JOIN_SEGS_PER_PI * absDelta / Math.PI));
+			rightPoints.push(...buildArc(coords[i], bufferMeters, bIn + Math.PI / 2, delta, numArcSegs));
+			leftPoints.push( ...buildArc(coords[i], bufferMeters, bIn - Math.PI / 2, delta, numArcSegs));
+		}
+	}
+
+	// Last vertex — single offset point perpendicular to the last segment
+	rightPoints.push(destinationPoint(coords[coords.length - 1], bufferMeters, lastBearing + Math.PI / 2));
+	leftPoints.push( destinationPoint(coords[coords.length - 1], bufferMeters, lastBearing - Math.PI / 2));
+
+	// ── Step 3: assemble the ring ───────────────────────────────────────────────
 	const ring: [number, number][] = [];
 
 	if (capStyle === 'round') {
+		// End cap: counterclockwise sweep (-π) from last right offset to last left offset.
+		// slice(1, -1) excludes both endpoints — they are already the last element of
+		// rightPoints and the first element of reversed leftPoints respectively.
+		const endCapInterior = buildArc(
+			coords[coords.length - 1], bufferMeters, lastBearing + Math.PI / 2, -Math.PI, CAP_SEGS,
+		).slice(1, -1);
+
+		// Start cap: counterclockwise sweep (-π) from first left offset to first right offset.
+		const startCapInterior = buildArc(
+			coords[0], bufferMeters, firstBearing - Math.PI / 2, -Math.PI, CAP_SEGS,
+		).slice(1, -1);
+
 		ring.push(
-			...rightSide,
-			// End cap: counterclockwise sweep from right offset -> forward tip -> left offset
-			...buildSemicircle(coords[coords.length - 1], bufferMeters, lastBearing + Math.PI / 2),
-			...[...leftSide].reverse(),
-			// Start cap: counterclockwise sweep from left offset -> backward tip -> right offset
-			...buildSemicircle(coords[0], bufferMeters, firstBearing - Math.PI / 2),
+			...rightPoints,
+			...endCapInterior,
+			...[...leftPoints].reverse(),
+			...startCapInterior,
 		);
 	} else {
-		// Flat caps: direct straight connection at both ends (no arc points needed)
+		// Flat caps: straight edge at both ends, no arc points needed.
 		ring.push(
-			...rightSide,
-			...[...leftSide].reverse(),
+			...rightPoints,
+			...[...leftPoints].reverse(),
 		);
 	}
 
-	// Close the ring by repeating the first vertex
+	// Close the ring
 	ring.push(ring[0]);
 
 	return ring;
@@ -250,10 +300,10 @@ export function haversineDistance(pointA: [number, number], pointB: [number, num
 	const dLon = toRad(pointB[0] - pointA[0]);
 	const lat1 = toRad(pointA[1]);
 	const lat2 = toRad(pointB[1]);
-	const a =
+	const haversineCentralAngle =
 		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
 		Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	return EARTH_RADIUS_METERS * 2 * Math.atan2(Math.sqrt(haversineCentralAngle), Math.sqrt(1 - haversineCentralAngle));
 }
 
 /**
@@ -284,5 +334,4 @@ export function buildCirclePolygon(
 	ring.push(ring[0]);
 	return ring;
 }
-
 

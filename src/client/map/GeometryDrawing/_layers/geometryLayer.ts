@@ -1,7 +1,6 @@
 import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
 import { DrawingMode } from '../_types/geometryDrawingTypes';
 import {
-	buildLineBufferPolygon,
 	buildCirclePolygon,
 	haversineDistance,
 	LineCapStyle,
@@ -29,7 +28,7 @@ export const geometryLayer = ({
 	hoveredPointIndex,
 	mode,
 	bufferMeters = 0,
-	capStyle = 'round',
+	capStyle = 'round' as LineCapStyle,
 }: GeometryLayerProps) => {
 	if (!geometryCoordinates) return [];
 
@@ -38,20 +37,24 @@ export const geometryLayer = ({
 	if (mode === 'line') {
 		// ── Corridor buffer polygon ─────────────────────────────────────────────
 		if (bufferMeters > 0 && geometryCoordinates.length >= 2) {
-			const corridorPolygon = buildLineBufferPolygon(geometryCoordinates, bufferMeters, capStyle);
+			const capRounded = capStyle === 'round';
+
+			// Fill layer — semi-transparent blue on top of the outline.
 			layers.push(
-				new PolygonLayer({
+				new PathLayer({
 					id: 'line-buffer-layer',
-					data: [{ polygon: corridorPolygon }],
-					getPolygon: (_data: any) => _data.polygon,
-					getFillColor: [0, 150, 255, 100],
-					getLineColor: [0, 100, 255],
+					data: [{ path: geometryCoordinates }],
+					getPath: (_data: any) => _data.path,
+					getColor: [0, 150, 255, 100],
+					getWidth: bufferMeters * 2,
+					widthUnits: 'meters',
+					widthMinPixels: 2,
+					capRounded,
+					jointRounded: true,  // joints are always round regardless of capStyle
 					pickable: false,
-					stroked: true,
-					filled: true,
-					lineWidthMinPixels: 1,
 					updateTriggers: {
-						getPolygon: [geometryCoordinates, bufferMeters],
+						getWidth: [bufferMeters],
+						capRounded: [capStyle],
 					},
 				})
 			);
