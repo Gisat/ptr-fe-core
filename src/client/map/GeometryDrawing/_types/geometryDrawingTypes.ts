@@ -21,6 +21,13 @@ export interface PointEditConfig {
 }
 
 /**
+ * Cap style for the corridor ends.
+ * - `'round'` — semicircular arc centred on the endpoint.
+ * - `'flat'`  — straight perpendicular edge exactly at the endpoint.
+ */
+export type LineCapStyle = 'round' | 'flat';
+
+/**
  * Picking info for geometry click and hover events.
  *
  * Uses indexed access types from Deck.gl {@link PickingInfo} to stay

@@ -15,6 +15,8 @@
  * model with R = 6 371 000 m. Accurate to ~0.3% for buffers up to a few kilometres.
  */
 
+import type { LineCapStyle } from '../_types/geometryDrawingTypes';
+
 /** Mean Earth radius in metres used for all spherical calculations. */
 const EARTH_RADIUS_METERS = 6371000;
 
@@ -24,12 +26,6 @@ const toRad = (deg: number) => (deg * Math.PI) / 180;
 /** Converts radians to decimal degrees. */
 const toDeg = (rad: number) => (rad * 180) / Math.PI;
 
-/**
- * Cap style for the corridor ends.
- * - `'round'` — semicircular arc centred on the endpoint.
- * - `'flat'`  — straight perpendicular edge exactly at the endpoint.
- */
-export type LineCapStyle = 'round' | 'flat';
 
 /**
  * Computes the destination point reached by travelling `distanceM` metres

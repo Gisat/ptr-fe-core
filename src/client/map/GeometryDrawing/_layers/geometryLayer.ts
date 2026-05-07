@@ -1,9 +1,8 @@
-﻿import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
-import { DrawingMode } from '../_types/geometryDrawingTypes';
+import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
+import { DrawingMode, LineCapStyle } from '../_types/geometryDrawingTypes';
 import {
 	buildCirclePolygon,
 	haversineDistance,
-	LineCapStyle,
 } from '../_logic/lineBufferHelpers';
 
 /**
@@ -39,7 +38,9 @@ interface GeometryLayerProps {
 	isActive: boolean;
 	hoveredPointIndex: number | null;
 	mode: DrawingMode;
+	/** Buffer half-width in metres – used only in 'line' mode */
 	bufferMeters?: number;
+	/** End-cap style for line corridor – 'round' (default) or 'flat' */
 	capStyle?: LineCapStyle;
 	style?: GeometryStyle;
 	selectedPointIndex?: number | null;
@@ -81,6 +82,7 @@ export const geometryLayer = ({
 		lineStrokeWidth = 2,
 	} = style;
 	const layers: any[] = [];
+
 	if (mode === 'line') {
 		if (bufferMeters > 0 && geometryCoordinates.length >= 2) {
 			const capRounded = capStyle === 'round';
@@ -98,6 +100,8 @@ export const geometryLayer = ({
 				updateTriggers: { getWidth: [bufferMeters], capRounded: [capStyle] }
 			}));
 		}
+
+		// ── Polyline path ───────────────────────────────────────────────────────
 		if (geometryCoordinates.length >= 2) {
 			layers.push(new PathLayer({
 				id: 'line-path-layer',
@@ -109,6 +113,12 @@ export const geometryLayer = ({
 			}));
 		}
 	} else if (mode === 'circle') {
+		// ── Circle fill ────────────────────────────────────────────────────────
+		// Use PolygonLayer with a geodesic polygon instead of ScatterplotLayer.
+		// ScatterplotLayer renders circles using a flat-earth Mercator approximation;
+		// for large circles this causes the edge point to appear off the circle at
+		// extreme zoom levels. The geodesic polygon uses the same spherical maths as
+		// getDistance, so the edge vertex is guaranteed to sit on the boundary.
 		if (isClosed && geometryCoordinates.length === 2) {
 			const radius = haversineDistance(geometryCoordinates[0], geometryCoordinates[1]);
 			const circlePolygon = buildCirclePolygon(geometryCoordinates[0], radius);
@@ -126,6 +136,10 @@ export const geometryLayer = ({
 				highlightColor: [0, 0, 255, 100]
 			}));
 		}
+
+		// ── Radius line ────────────────────────────────────────────────────────
+		// Only shown while the user is actively drawing / editing (isActive).
+		// Hidden when the circle is complete and editing mode is off.
 		if (isActive && geometryCoordinates.length === 2) {
 			layers.push(new PathLayer({
 				id: 'circle-radius-line',
@@ -137,6 +151,8 @@ export const geometryLayer = ({
 			}));
 		}
 	} else {
+		// ── Polygon mode ────────────────────────────────────────────────────────
+		// Filled polygon – rendered when the loop is closed.
 		if (isClosed && geometryCoordinates.length >= 3) {
 			layers.push(new PolygonLayer({
 				id: 'polygon-fill-layer',
@@ -208,3 +224,4 @@ export const geometryLayer = ({
 	}
 	return layers;
 };
+

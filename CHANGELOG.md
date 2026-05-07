@@ -1,3 +1,9 @@
+## [57.6.0](https://github.com/Gisat/ptr-fe-core/compare/v57.5.0...v57.6.0) (2026-05-07)
+
+### Features
+
+* drawing and selection by line buffer (sharp ends) ([9874f4d](https://github.com/Gisat/ptr-fe-core/commit/9874f4d16f71bf2035f6dbb33a3800cc400f30cb))
+
 ## [57.5.0](https://github.com/Gisat/ptr-fe-core/compare/v57.4.0...v57.5.0) (2026-04-28)
 
 ### Features
