@@ -1,9 +1,8 @@
 import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
-import { DrawingMode } from '../_types/geometryDrawingTypes';
+import { DrawingMode, LineCapStyle } from '../_types/geometryDrawingTypes';
 import {
 	buildCirclePolygon,
 	haversineDistance,
-	LineCapStyle,
 } from '../_logic/lineBufferHelpers';
 
 interface GeometryLayerProps {
