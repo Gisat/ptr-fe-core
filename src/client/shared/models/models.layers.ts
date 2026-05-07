@@ -23,12 +23,17 @@ export interface GeometryDrawingModel {
 	/** Optional visual style overrides for the geometry layer */
 	style?: GeometryStyle;
 	/**
-	 * When true, the user is in "Edit Points" mode.
-	 * Mutually exclusive with isActive – the reducer enforces this automatically.
-	 * Only relevant for 'polygon' and 'line' modes.
+	 * Index of the vertex currently selected for deletion (clicked while drawing),
+	 * or null if none. Only relevant for 'polygon' and 'line' modes.
+	 * Press the configured deleteKey (default 'Delete') to remove it,
+	 * or deselectKey (default 'Escape') to deselect.
 	 */
-	isEditingPoints?: boolean;
-	/** Index of the edge (= index of its first vertex) currently hovered in edit mode, or null. */
+	selectedPointIndex?: number | null;
+	/**
+	 * Non-null sentinel (0) when the cursor is hovering the transparent edge-pick-layer
+	 * on a closed polygon; null otherwise. Used exclusively to drive the 'cell' cursor
+	 * in SingleMap via `isHoveringEdge` – the exact value is not meaningful.
+	 */
 	hoveredEdgeIndex?: number | null;
 }
 

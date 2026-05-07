@@ -22,7 +22,7 @@ const DEFAULT_GEOMETRY_DRAWING_STATE: GeometryDrawingModel = {
  * Core reducer handler for GEOMETRY_DRAWING_UPDATE.
  *
  * Finds the RenderingLayer identified by `payload.layerKey` and merges
- * `payload.patch` into its `polygonDrawing` field.  All other layers and
+ * `payload.patch` into its `geometryDrawing` field.  All other layers and
  * all other state properties are left untouched.
  *
  * Registered as a core reducer in `state.reducer.ts` so any application
@@ -66,10 +66,9 @@ export const reduceHandlerGeometryDrawingUpdate = <T extends AppSharedState>(
 		);
 		if (isNoOp) return layer;
 
-		// Mutual exclusivity: turning on isActive must turn off isEditingPoints and vice-versa.
+		// When drawing is turned off, clear any vertex selection so the UI is clean.
 		const resolvedPatch = { ...patch };
-		if (patch.isActive === true)        resolvedPatch.isEditingPoints = false;
-		if (patch.isEditingPoints === true) resolvedPatch.isActive = false;
+		if (patch.isActive === false) resolvedPatch.selectedPointIndex = null;
 
 		return {
 			...layer,

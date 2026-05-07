@@ -10,6 +10,17 @@ export type GeometryCoordinates = GeometryCoordinate[];
 export type DrawingMode = 'polygon' | 'circle' | 'line';
 
 /**
+ * Configures the keyboard keys used for vertex editing actions.
+ * Passed as an optional prop so consuming applications can override defaults.
+ */
+export interface PointEditConfig {
+	/** Key that deletes the selected vertex. Default: 'Delete' */
+	deleteKey?: string;
+	/** Key that deselects the selected vertex. Default: 'Escape' */
+	deselectKey?: string;
+}
+
+/**
  * Picking info for geometry click and hover events.
  *
  * Uses indexed access types from Deck.gl {@link PickingInfo} to stay
@@ -33,4 +44,3 @@ export interface GeometryDragInfo {
 	coordinate: GeometryCoordinate;
 	index: number;
 }
-

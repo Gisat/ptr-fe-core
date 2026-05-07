@@ -15,8 +15,10 @@ import { getMapTooltip } from './MapTooltip/getMapTooltip';
 import { LayerInstance, LayerManager } from '../components/layers/LayerManager';
 import { RenderingLayer, GeometryDrawingModel } from '../../shared/models/models.layers';
 import { onGeometryClick } from '../GeometryDrawing/_logic/onGeometryClick';
+import { onGeometryDblClick } from '../GeometryDrawing/_logic/onGeometryDblClick';
 import { onGeometryDrag } from '../GeometryDrawing/_logic/onGeometryDrag';
 import { onGeometryHover } from '../GeometryDrawing/_logic/onGeometryHover';
+import type { PointEditConfig } from '../GeometryDrawing/_types/geometryDrawingTypes';
 
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_POINTER = -10;
 const TOOLTIP_VERTICAL_OFFSET_CURSOR_GRABBER = -20;
@@ -28,6 +30,11 @@ export interface BasicMapProps {
 	syncedView: Partial<MapView>;
 	/** Custom tooltip component */
 	CustomTooltip?: React.ElementType | boolean;
+	/**
+	 * Optional keyboard key configuration for vertex editing.
+	 * Defaults: deleteKey = 'Delete', deselectKey = 'Escape'.
+	 */
+	pointEditConfig?: PointEditConfig;
 }
 
 type LayerRegistry = Record<string, LayerInstance>;
@@ -43,10 +50,12 @@ type LayerRegistry = Record<string, LayerInstance>;
  * @returns {JSX.Element} DeckGL map component.
  */
 export const SingleMap = ({
-	mapKey,
-	syncedView,
-	CustomTooltip = false,
-}: BasicMapProps) => {
+	                          mapKey,
+	                          syncedView,
+	                          CustomTooltip = false,
+	                          pointEditConfig = {},
+                          }: BasicMapProps) => {
+	const { deleteKey = 'Delete', deselectKey = 'Escape' } = pointEditConfig;
 	const [sharedState, sharedStateDispatch] = useSharedState();
 	const [controlIsDown, setControlIsDown] = useState(false);
 	const [layerIsHovered, setLayerIsHovered] = useState(false);
@@ -99,11 +108,21 @@ export const SingleMap = ({
 	const drawingLayer: RenderingLayer | undefined = mapLayers.find((layer) => layer.geometryDrawing);
 	const drawingState: GeometryDrawingModel | undefined = drawingLayer?.geometryDrawing;
 	const isDrawingActive = drawingState?.isActive ?? false;
-	const isEditingPoints = drawingState?.isEditingPoints ?? false;
 	/** True when the cursor is currently over a vertex handle */
 	const isHoveringPoint = (drawingState?.hoveredPointIndex ?? null) !== null;
-	/** True when the cursor is currently over an edge midpoint ghost (edit mode only) */
+	/** True when the cursor is currently over an edge midpoint ghost */
 	const isHoveringEdge = (drawingState?.hoveredEdgeIndex ?? null) !== null;
+	/** True when a vertex is selected for deletion */
+	const hasSelectedPoint = (drawingState?.selectedPointIndex ?? null) !== null;
+
+	/**
+	 * Ref to the DeckGL instance.
+	 * Used in the onDoubleClick handler to call `pickObject({ x, y })` and
+	 * determine which layer (if any) was under the cursor at the time of the event.
+	 * DeckGL does not expose a native onDoubleClick prop, so we use the wrapper div's
+	 * onDoubleClick and pick manually through this ref.
+	 */
+	const deckRef = React.useRef<any>(null);
 
 	/**
 	 * Dispatches a partial patch to the drawing state of `drawingLayer`.
@@ -126,7 +145,7 @@ export const SingleMap = ({
 	const handleLayerUpdate = useCallback((id: string, instance: LayerInstance) => {
 		setLayerRegistry((prev: LayerRegistry) => {
 			if (prev[id] === instance) return prev; // Avoid unnecessary re-renders
-			return { ...prev, [id]: instance };
+			return { ... prev, [id]: instance };
 		});
 	}, []);
 
@@ -138,30 +157,84 @@ export const SingleMap = ({
 	}, [mapLayers, layerRegistry]);
 
 	/**
-	 * On mount: sync the map view and set up keyboard listeners for Ctrl key.
+	 * Ref that always mirrors the latest drawing-related state.
+	 * Keyboard handlers read from this ref so they never close over a stale value,
+	 * yet the event listeners don't need to be re-registered on every state change.
+	 */
+	const drawingRef = React.useRef({ drawingLayer, drawingState, isDrawingActive });
+	// Assigned directly during render (not in an effect) so the ref is always
+	// up-to-date before any event handler that fires in the same tick.
+	drawingRef.current = { drawingLayer, drawingState, isDrawingActive };
+
+	/**
+	 * On mount: sync the initial map view.
+	 * Kept strictly on mount (`[]`) so it does NOT re-run when drawing state changes,
+	 * which would dispatch MAP_VIEW_CHANGE on every hover/click and create an infinite loop.
 	 */
 	useEffect(() => {
 		sharedStateDispatch({
 			type: StateActionType.MAP_VIEW_CHANGE,
 			payload: { key: mapKey, viewChange: syncedView },
 		} as ActionMapViewChange);
-
-		if (typeof window !== 'undefined') {
-			const handleKeyDown = (event: KeyboardEvent) => {
-				if (event.key === 'Control') setControlIsDown(true);
-			};
-			const handleKeyUp = (event: KeyboardEvent) => {
-				if (event.key === 'Control') setControlIsDown(false);
-			};
-			window.addEventListener('keydown', handleKeyDown);
-			window.addEventListener('keyup', handleKeyUp);
-
-			return () => {
-				window.removeEventListener('keydown', handleKeyDown);
-				window.removeEventListener('keyup', handleKeyUp);
-			};
-		}
 	}, []);
+
+	/**
+	 * Register keyboard listeners once (or when configurable keys change).
+	 * Current drawing state is read via `drawingRef` so this effect never needs
+	 * `drawingLayer` / `drawingState` in its dependency array.
+	 */
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Control') setControlIsDown(true);
+
+			// ── Vertex deletion / deselect ──────────────────────────────────────────
+			const { drawingLayer: dl, drawingState: ds, isDrawingActive: active } = drawingRef.current;
+			if (!active || !dl || !ds || ds.mode === 'circle') return;
+
+			const selIdx = ds.selectedPointIndex ?? null;
+
+			if (event.key === deleteKey && selIdx !== null) {
+				const coords = ds.geometryCoordinates;
+				// Minimum number of vertices the result must keep:
+				//   polygon → 3 (triangle)  →  allow deletion when length > 3
+				//   line    → 2 (one segment) →  allow deletion when length > 2
+				const minResult = ds.mode === 'polygon' ? 3 : 2;
+				if (coords.length <= minResult) return; // silent ignore – too few points
+				const newCoords = coords.filter((_, i) => i !== selIdx);
+				sharedStateDispatch({
+					type: StateActionType.GEOMETRY_DRAWING_UPDATE,
+					payload: {
+						layerKey: dl.key,
+						patch: { geometryCoordinates: newCoords, selectedPointIndex: null },
+					},
+				} as ActionGeometryDrawingUpdate);
+			}
+
+			if (event.key === deselectKey && selIdx !== null) {
+				sharedStateDispatch({
+					type: StateActionType.GEOMETRY_DRAWING_UPDATE,
+					payload: {
+						layerKey: dl.key,
+						patch: { selectedPointIndex: null },
+					},
+				} as ActionGeometryDrawingUpdate);
+			}
+		};
+
+		const handleKeyUp = (event: KeyboardEvent) => {
+			if (event.key === 'Control') setControlIsDown(false);
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('keyup', handleKeyUp);
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('keyup', handleKeyUp);
+		};
+	}, [deleteKey, deselectKey]);
 
 	/**
 	 * Internal selection click handler (only runs when drawing is NOT active).
@@ -227,16 +300,35 @@ export const SingleMap = ({
 		() =>
 			mapSize
 				? new WebMercatorViewport({
-						...mapViewState,
-						width: mapSize.width,
-						height: mapSize.height,
-					})
+					... mapViewState,
+					width: mapSize.width,
+					height: mapSize.height,
+				})
 				: null,
 		[mapViewState, mapSize]
 	);
 
 	return (
-		<div className="ptr-SingleMap" ref={mapRef}>
+		<div
+			className="ptr-SingleMap"
+			ref={mapRef}
+			onDoubleClick={(dblEvent) => {
+				if (!isDrawingActive || !drawingState || drawingState.mode !== 'polygon') return;
+				if (!deckRef.current) return;
+				const rect = mapRef.current!.getBoundingClientRect();
+				const clickX = dblEvent.clientX - rect.left;
+				const clickY = dblEvent.clientY - rect.top;
+				const picked = deckRef.current.pickObject?.({ x: clickX, y: clickY, radius: 10 });
+				if (!picked) return;
+				onGeometryDblClick({
+					info: picked as any,
+					geometryCoordinates: drawingState.geometryCoordinates,
+					mode: drawingState.mode,
+					isClosed: drawingState.isClosed,
+					setGeometryCoordinates: (coords) => updateDrawing({ geometryCoordinates: coords }),
+				});
+			}}
+		>
 			<LayerManager
 				layers={mapLayers}
 				onLayerUpdate={handleLayerUpdate}
@@ -244,10 +336,11 @@ export const SingleMap = ({
 				CustomTooltip={CustomTooltip}
 			/>
 			<DeckGL
+				ref={deckRef}
 				viewState={mapViewState}
 				layers={activeLayers}
 				/**
-				 * Controller is disabled while drawing/editing so the user can click/drag
+				 * Controller is disabled while drawing so the user can click/drag
 				 * vertices without accidentally panning or zooming the map.
 				 */
 				controller={!isDrawingActive}
@@ -255,7 +348,7 @@ export const SingleMap = ({
 				height="100%"
 				onViewStateChange={onViewStateChange}
 				onClick={(event) => {
-					if ((isDrawingActive || isEditingPoints) && drawingState) {
+					if (isDrawingActive && drawingState) {
 						onGeometryClick({
 							info: event as any,
 							geometryCoordinates: drawingState.geometryCoordinates,
@@ -263,7 +356,8 @@ export const SingleMap = ({
 							setGeometryCoordinates: (coords) => updateDrawing({ geometryCoordinates: coords }),
 							setIsClosed: (closed) => updateDrawing({ isClosed: closed }),
 							mode: drawingState.mode,
-							isEditingPoints: drawingState.isEditingPoints,
+							selectedPointIndex: drawingState.selectedPointIndex ?? null,
+							setSelectedPointIndex: (selectedIndex) => updateDrawing({ selectedPointIndex: selectedIndex }),
 						});
 						return; // skip internal selection
 					}
@@ -272,17 +366,15 @@ export const SingleMap = ({
 				onHover={(event) => {
 					// Always run internal hover so cursor / tooltip state stays correct
 					onHover(event);
-					if ((isDrawingActive || isEditingPoints) && drawingState) {
+					if (isDrawingActive && drawingState) {
 						onGeometryHover({
 							info: event as any,
-							setIsHoveringPoint: () => {},
 							setHoveredPointIndex: (index) => {
 								if (isDraggingRef.current) return;
 								if (index !== (drawingState.hoveredPointIndex ?? null)) {
 									updateDrawing({ hoveredPointIndex: index });
 								}
 							},
-							isEditingPoints: drawingState.isEditingPoints,
 							setHoveredEdgeIndex: (index) => {
 								if (isDraggingRef.current) return;
 								if (index !== (drawingState.hoveredEdgeIndex ?? null)) {
@@ -315,17 +407,12 @@ export const SingleMap = ({
 					isDraggingRef.current = false;
 				}}
 				getCursor={({ isDragging: drag }) => {
-					// ── Edit-points mode cursors ──────────────────────────────────────
-					if (isEditingPoints) {
-						if (isHoveringEdge)  return 'cell';         // + add vertex
-						if (isHoveringPoint) return 'not-allowed';  // - delete vertex
-						return 'default';
-					}
-					// ── Drawing mode cursors ──────────────────────────────────────────
 					if (isDrawingActive) {
-						if (drag || isDragging) return 'grabbing';      // vertex being dragged
-						if (isHoveringPoint) return 'pointer';          // hovering over a vertex
-						if (!drawingState?.isClosed) return 'crosshair'; // drawing mode
+						if (drag || isDragging) return 'grabbing';                       // vertex being dragged
+						if (isHoveringEdge) return 'cell';                              // + add vertex on dblclick
+						if (hasSelectedPoint && isHoveringPoint) return 'not-allowed';  // selected vertex
+						if (isHoveringPoint) return 'pointer';                          // hoverable vertex
+						if (!drawingState?.isClosed) return 'crosshair';                // drawing new point
 						return 'default';
 					}
 					// Default map cursor behaviour
