@@ -1,5 +1,9 @@
 import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
-import { DrawingMode } from '../_types/geometryDrawingTypes';
+import { DrawingMode, LineCapStyle } from '../_types/geometryDrawingTypes';
+import {
+	buildCirclePolygon,
+	haversineDistance,
+} from '../_logic/lineBufferHelpers';
 
 interface GeometryLayerProps {
 	geometryCoordinates: [number, number][];
@@ -7,65 +11,10 @@ interface GeometryLayerProps {
 	isActive: boolean;
 	hoveredPointIndex: number | null;
 	mode: DrawingMode;
-}
-
-/** Haversine great-circle distance in metres – used only for the radius value. */
-function getDistance(coord1: [number, number], coord2: [number, number]): number {
-	const toRad = (d: number) => (d * Math.PI) / 180;
-	const R = 6371000;
-	const dLat = toRad(coord2[1] - coord1[1]);
-	const dLon = toRad(coord2[0] - coord1[0]);
-	const lat1 = toRad(coord1[1]);
-	const lat2 = toRad(coord2[1]);
-	const a =
-		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-		Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-/**
- * Computes a destination point given a start, distance (m) and bearing (rad).
- * Uses the same spherical formula as Haversine, so the result is always
- * exactly `distance` metres from `origin` by the Haversine metric.
- */
-function destinationPoint(
-	origin: [number, number],
-	distance: number,
-	bearing: number
-): [number, number] {
-	const R = 6371000;
-	const d = distance / R;
-	const lat1 = (origin[1] * Math.PI) / 180;
-	const lon1 = (origin[0] * Math.PI) / 180;
-
-	const lat2 = Math.asin(
-		Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(bearing)
-	);
-	const lon2 =
-		lon1 +
-		Math.atan2(
-			Math.sin(bearing) * Math.sin(d) * Math.cos(lat1),
-			Math.cos(d) - Math.sin(lat1) * Math.sin(lat2)
-		);
-
-	return [(lon2 * 180) / Math.PI, (lat2 * 180) / Math.PI];
-}
-
-/**
- * Generates a geodesic circle with `numPoints` vertices.
- * Because each vertex is placed using the same spherical formula as getDistance,
- * the edge point (coord[1]) will always sit exactly on the polygon boundary
- * regardless of zoom level or Mercator distortion.
- */
-function generateCircle(
-	center: [number, number],
-	radius: number,
-	numPoints = 64
-): [number, number][] {
-	return Array.from({ length: numPoints }, (_, i) => {
-		const bearing = (2 * Math.PI * i) / numPoints;
-		return destinationPoint(center, radius, bearing);
-	});
+	/** Buffer half-width in metres – used only in 'line' mode */
+	bufferMeters?: number;
+	/** End-cap style for line corridor – 'round' (default) or 'flat' */
+	capStyle?: LineCapStyle;
 }
 
 /**
@@ -77,12 +26,53 @@ export const geometryLayer = ({
 	isActive,
 	hoveredPointIndex,
 	mode,
+	bufferMeters = 0,
+	capStyle = 'round' as LineCapStyle,
 }: GeometryLayerProps) => {
 	if (!geometryCoordinates) return [];
 
 	const layers: any[] = [];
 
-	if (mode === 'circle') {
+	if (mode === 'line') {
+		// ── Corridor buffer polygon ─────────────────────────────────────────────
+		if (bufferMeters > 0 && geometryCoordinates.length >= 2) {
+			const capRounded = capStyle === 'round';
+
+			// Fill layer — semi-transparent blue on top of the outline.
+			layers.push(
+				new PathLayer({
+					id: 'line-buffer-layer',
+					data: [{ path: geometryCoordinates }],
+					getPath: (_data: any) => _data.path,
+					getColor: [0, 150, 255, 100],
+					getWidth: bufferMeters * 2,
+					widthUnits: 'meters',
+					widthMinPixels: 2,
+					capRounded,
+					jointRounded: true,  // joints are always round regardless of capStyle
+					pickable: false,
+					updateTriggers: {
+						getWidth: [bufferMeters],
+						capRounded: [capStyle],
+					},
+				})
+			);
+		}
+
+		// ── Polyline path ───────────────────────────────────────────────────────
+		if (geometryCoordinates.length >= 2) {
+			layers.push(
+				new PathLayer({
+					id: 'line-path-layer',
+					data: [{ path: geometryCoordinates }],
+					getPath: (_data: any) => _data.path,
+					getColor: [0, 180, 60],
+					widthMinPixels: 2,
+					pickable: false,
+				})
+			);
+		}
+	} else if (mode === 'circle') {
 		// ── Circle fill ────────────────────────────────────────────────────────
 		// Use PolygonLayer with a geodesic polygon instead of ScatterplotLayer.
 		// ScatterplotLayer renders circles using a flat-earth Mercator approximation;
@@ -90,8 +80,8 @@ export const geometryLayer = ({
 		// extreme zoom levels. The geodesic polygon uses the same spherical maths as
 		// getDistance, so the edge vertex is guaranteed to sit on the boundary.
 		if (isClosed && geometryCoordinates.length === 2) {
-			const radius = getDistance(geometryCoordinates[0], geometryCoordinates[1]);
-			const circlePolygon = generateCircle(geometryCoordinates[0], radius);
+			const radius = haversineDistance(geometryCoordinates[0], geometryCoordinates[1]);
+			const circlePolygon = buildCirclePolygon(geometryCoordinates[0], radius);
 			layers.push(
 				new PolygonLayer({
 					id: 'circle-fill-layer',

@@ -51,7 +51,7 @@ export const onGeometryDrag = ({
 			newCoords[1] = [coordinate[0], coordinate[1]];
 		}
 	} else {
-		// Polygon: move the specific vertex
+		// Polygon / Line mode: move the specific vertex
 		newCoords[index] = [coordinate[0], coordinate[1]];
 	}
 

@@ -7,7 +7,14 @@ export type GeometryCoordinate = [number, number];
 export type GeometryCoordinates = GeometryCoordinate[];
 
 /** Supported drawing modes. */
-export type DrawingMode = 'polygon' | 'circle';
+export type DrawingMode = 'polygon' | 'circle' | 'line';
+
+/**
+ * Cap style for the corridor ends.
+ * - `'round'` — semicircular arc centred on the endpoint.
+ * - `'flat'`  — straight perpendicular edge exactly at the endpoint.
+ */
+export type LineCapStyle = 'round' | 'flat';
 
 /**
  * Picking info for geometry click and hover events.

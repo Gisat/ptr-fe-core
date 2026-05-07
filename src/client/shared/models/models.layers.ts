@@ -1,6 +1,7 @@
 import { Nullable } from '@gisatcz/ptr-be-core/browser';
 import { LayerTreeInteraction } from '../layers/models.layers';
 import { DatasourceWithNeighbours } from './models.metadata';
+import { LineCapStyle } from '../../map/GeometryDrawing/_types/geometryDrawingTypes';
 
 /**
  * Drawing state for a geometry (polygon or circle) stored on a dedicated RenderingLayer entry.
@@ -8,12 +9,16 @@ import { DatasourceWithNeighbours } from './models.metadata';
  * the existing AppSharedState.renderingLayers array.
  */
 export interface GeometryDrawingModel {
-	mode: 'polygon' | 'circle';
+	mode: 'polygon' | 'circle' | 'line';
 	isActive: boolean;
 	isClosed: boolean;
 	geometryCoordinates: [number, number][];
 	/** Index of the vertex currently being hovered, or null if none */
 	hoveredPointIndex?: number | null;
+	/** Buffer distance in metres – used only in 'line' mode to build a corridor polygon */
+	bufferMeters?: number;
+	/** End-cap style for line corridor – 'round' (default) or 'flat' */
+	capStyle?: LineCapStyle;
 }
 
 /**
