@@ -99,8 +99,11 @@ export const SingleMap = ({
 	const drawingLayer: RenderingLayer | undefined = mapLayers.find((layer) => layer.geometryDrawing);
 	const drawingState: GeometryDrawingModel | undefined = drawingLayer?.geometryDrawing;
 	const isDrawingActive = drawingState?.isActive ?? false;
+	const isEditingPoints = drawingState?.isEditingPoints ?? false;
 	/** True when the cursor is currently over a vertex handle */
 	const isHoveringPoint = (drawingState?.hoveredPointIndex ?? null) !== null;
+	/** True when the cursor is currently over an edge midpoint ghost (edit mode only) */
+	const isHoveringEdge = (drawingState?.hoveredEdgeIndex ?? null) !== null;
 
 	/**
 	 * Dispatches a partial patch to the drawing state of `drawingLayer`.
@@ -252,9 +255,7 @@ export const SingleMap = ({
 				height="100%"
 				onViewStateChange={onViewStateChange}
 				onClick={(event) => {
-					if (isDrawingActive && drawingState) {
-						// Drawing mode: handle vertex placement / polygon closing.
-						// Return early to skip internal layer-selection logic.
+					if ((isDrawingActive || isEditingPoints) && drawingState) {
 						onGeometryClick({
 							info: event as any,
 							geometryCoordinates: drawingState.geometryCoordinates,
@@ -262,6 +263,7 @@ export const SingleMap = ({
 							setGeometryCoordinates: (coords) => updateDrawing({ geometryCoordinates: coords }),
 							setIsClosed: (closed) => updateDrawing({ isClosed: closed }),
 							mode: drawingState.mode,
+							isEditingPoints: drawingState.isEditingPoints,
 						});
 						return; // skip internal selection
 					}
@@ -270,24 +272,29 @@ export const SingleMap = ({
 				onHover={(event) => {
 					// Always run internal hover so cursor / tooltip state stays correct
 					onHover(event);
-					if (isDrawingActive && drawingState) {
+					if ((isDrawingActive || isEditingPoints) && drawingState) {
 						onGeometryHover({
 							info: event as any,
 							setIsHoveringPoint: () => {},
 							setHoveredPointIndex: (index) => {
-								// Skip hover dispatches while dragging – prevents the pick result
-								// oscillating (vertex ↔ null) from racing with drag dispatches.
 								if (isDraggingRef.current) return;
-								// Only dispatch when the value actually changes.
 								if (index !== (drawingState.hoveredPointIndex ?? null)) {
 									updateDrawing({ hoveredPointIndex: index });
+								}
+							},
+							isEditingPoints: drawingState.isEditingPoints,
+							setHoveredEdgeIndex: (index) => {
+								if (isDraggingRef.current) return;
+								if (index !== (drawingState.hoveredEdgeIndex ?? null)) {
+									updateDrawing({ hoveredEdgeIndex: index });
 								}
 							},
 						});
 					}
 				}}
 				onDrag={(event) => {
-					// Move the dragged vertex in real time
+					// In edit mode drag is intentionally left to the map controller (pan/zoom).
+					// Move the dragged vertex in real time only in drawing mode.
 					if (isDrawingActive && drawingState) {
 						onGeometryDrag({
 							info: event as any,
@@ -299,13 +306,7 @@ export const SingleMap = ({
 				}}
 				onDragStart={() => {
 					if (isDrawingActive) {
-						// Always suppress hover dispatches for the entire drag in drawing mode.
-						// isDraggingRef must not depend on isHoveringPoint (shared state) because
-						// hoveredPointIndex may still be null when dragstart fires (the preceding
-						// hover dispatch hasn't committed yet), leaving the ref unset and allowing
-						// the hover/drag dispatch race that causes "Maximum update depth exceeded".
 						isDraggingRef.current = true;
-						// isDragging state is only for cursor styling – conditional is fine here.
 						if (isHoveringPoint) setIsDragging(true);
 					}
 				}}
@@ -314,9 +315,16 @@ export const SingleMap = ({
 					isDraggingRef.current = false;
 				}}
 				getCursor={({ isDragging: drag }) => {
+					// ── Edit-points mode cursors ──────────────────────────────────────
+					if (isEditingPoints) {
+						if (isHoveringEdge)  return 'cell';         // + add vertex
+						if (isHoveringPoint) return 'not-allowed';  // - delete vertex
+						return 'default';
+					}
+					// ── Drawing mode cursors ──────────────────────────────────────────
 					if (isDrawingActive) {
 						if (drag || isDragging) return 'grabbing';      // vertex being dragged
-						if (isHoveringPoint) return 'pointer';       // hovering over a vertex
+						if (isHoveringPoint) return 'pointer';          // hovering over a vertex
 						if (!drawingState?.isClosed) return 'crosshair'; // drawing mode
 						return 'default';
 					}
@@ -342,3 +350,4 @@ export const SingleMap = ({
 		</div>
 	);
 };
+

@@ -66,11 +66,16 @@ export const reduceHandlerGeometryDrawingUpdate = <T extends AppSharedState>(
 		);
 		if (isNoOp) return layer;
 
+		// Mutual exclusivity: turning on isActive must turn off isEditingPoints and vice-versa.
+		const resolvedPatch = { ...patch };
+		if (patch.isActive === true)        resolvedPatch.isEditingPoints = false;
+		if (patch.isEditingPoints === true) resolvedPatch.isActive = false;
+
 		return {
 			...layer,
 			geometryDrawing: {
 				...current,
-				...patch,
+				...resolvedPatch,
 			},
 		};
 	});

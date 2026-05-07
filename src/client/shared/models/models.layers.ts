@@ -2,6 +2,7 @@ import { Nullable } from '@gisatcz/ptr-be-core/browser';
 import { LayerTreeInteraction } from '../layers/models.layers';
 import { DatasourceWithNeighbours } from './models.metadata';
 import { LineCapStyle } from '../../map/GeometryDrawing/_logic/lineBufferHelpers';
+import { GeometryStyle } from '../../map/GeometryDrawing/_layers/geometryLayer';
 
 /**
  * Drawing state for a geometry (polygon or circle) stored on a dedicated RenderingLayer entry.
@@ -19,6 +20,16 @@ export interface GeometryDrawingModel {
 	bufferMeters?: number;
 	/** End-cap style for line corridor – 'round' (default) or 'flat' */
 	capStyle?: LineCapStyle;
+	/** Optional visual style overrides for the geometry layer */
+	style?: GeometryStyle;
+	/**
+	 * When true, the user is in "Edit Points" mode.
+	 * Mutually exclusive with isActive – the reducer enforces this automatically.
+	 * Only relevant for 'polygon' and 'line' modes.
+	 */
+	isEditingPoints?: boolean;
+	/** Index of the edge (= index of its first vertex) currently hovered in edit mode, or null. */
+	hoveredEdgeIndex?: number | null;
 }
 
 /**

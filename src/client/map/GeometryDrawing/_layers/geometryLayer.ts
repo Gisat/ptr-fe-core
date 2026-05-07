@@ -6,6 +6,30 @@ import {
 	LineCapStyle,
 } from '../_logic/lineBufferHelpers';
 
+/** RGBA colour tuple – all four channels required (alpha: 0–255) */
+export type ColorRGBA = [number, number, number, number];
+
+export interface GeometryStyle {
+	/** a) Vertex point radius in pixels – all modes */
+	pointRadius?: number;
+	/** b) Vertex point fill colour – all modes */
+	pointColor?: ColorRGBA;
+	/** c) Fill colour (with alpha) – all modes */
+	fillColor?: ColorRGBA;
+	/** d) Stroke/border width in pixels – polygon & circle only */
+	strokeWidth?: number;
+	/** d) Stroke/border colour – polygon & circle only */
+	strokeColor?: ColorRGBA;
+	/** e) Radius line colour – circle only */
+	radiusLineColor?: ColorRGBA;
+	/** f) Radius line width in pixels – circle only */
+	radiusLineWidth?: number;
+	/** g) Line colour – line mode only */
+	lineColor?: ColorRGBA;
+	/** h) Line stroke width in pixels – line mode only */
+	lineStrokeWidth?: number;
+}
+
 interface GeometryLayerProps {
 	geometryCoordinates: [number, number][];
 	isClosed: boolean;
@@ -16,7 +40,15 @@ interface GeometryLayerProps {
 	bufferMeters?: number;
 	/** End-cap style for line corridor – 'round' (default) or 'flat' */
 	capStyle?: LineCapStyle;
+	/** Optional visual style overrides */
+	style?: GeometryStyle;
+	/** When true, edit-points mode is active – shows edge midpoint ghosts (polygon & line only). */
+	isEditingPoints?: boolean;
+	/** Index of the currently hovered edge ghost (edit mode only). */
+	hoveredEdgeIndex?: number | null;
 }
+
+
 
 /**
  * Generates deck.gl layers for displaying and editing a geometry (polygon or circle).
@@ -29,8 +61,23 @@ export const geometryLayer = ({
 	mode,
 	bufferMeters = 0,
 	capStyle = 'round' as LineCapStyle,
+	style = {},
+	isEditingPoints = false,
+	hoveredEdgeIndex = null,
 }: GeometryLayerProps) => {
 	if (!geometryCoordinates) return [];
+
+	const {
+		pointRadius = 8,
+		pointColor = [255, 255, 255, 255],
+		fillColor = [0, 150, 255, 100],
+		strokeWidth = 2,
+		strokeColor = [0, 100, 255, 255],
+		radiusLineColor = [0, 0, 0, 100],
+		radiusLineWidth = 1,
+		lineColor = [0, 180, 60, 255],
+		lineStrokeWidth = 2,
+	} = style;
 
 	const layers: any[] = [];
 
@@ -45,7 +92,7 @@ export const geometryLayer = ({
 					id: 'line-buffer-layer',
 					data: [{ path: geometryCoordinates }],
 					getPath: (_data: any) => _data.path,
-					getColor: [0, 150, 255, 100],
+					getColor: fillColor,
 					getWidth: bufferMeters * 2,
 					widthUnits: 'meters',
 					widthMinPixels: 2,
@@ -67,8 +114,8 @@ export const geometryLayer = ({
 					id: 'line-path-layer',
 					data: [{ path: geometryCoordinates }],
 					getPath: (_data: any) => _data.path,
-					getColor: [0, 180, 60],
-					widthMinPixels: 2,
+					getColor: lineColor,
+					widthMinPixels: lineStrokeWidth,
 					pickable: false,
 				})
 			);
@@ -88,12 +135,12 @@ export const geometryLayer = ({
 					id: 'circle-fill-layer',
 					data: [{ polygon: circlePolygon }],
 					getPolygon: (_data: any) => _data.polygon,
-					getFillColor: [0, 150, 255, 100],
-					getLineColor: [0, 100, 255],
+					getFillColor: fillColor,
+					getLineColor: strokeColor,
 					pickable: isActive,
 					stroked: true,
 					filled: true,
-					lineWidthMinPixels: 2,
+					lineWidthMinPixels: strokeWidth,
 					autoHighlight: isActive,
 					highlightColor: [0, 0, 255, 100],
 				})
@@ -109,8 +156,8 @@ export const geometryLayer = ({
 					id: 'circle-radius-line',
 					data: [{ path: geometryCoordinates }],
 					getPath: (_data: any) => _data.path,
-					getColor: [0, 0, 0, 100],
-					widthMinPixels: 1,
+					getColor: radiusLineColor,
+					widthMinPixels: radiusLineWidth,
 					pickable: false,
 				})
 			);
@@ -124,12 +171,12 @@ export const geometryLayer = ({
 					id: 'polygon-fill-layer',
 					data: [{ polygon: geometryCoordinates }],
 					getPolygon: (_data: any) => _data.polygon,
-					getFillColor: [0, 150, 255, 100],
-					getLineColor: [0, 100, 255],
+					getFillColor: fillColor,
+					getLineColor: strokeColor,
 					pickable: isActive,
 					stroked: true,
 					filled: true,
-					lineWidthMinPixels: 2,
+					lineWidthMinPixels: strokeWidth,
 					autoHighlight: true,
 					highlightColor: [0, 0, 255, 100],
 				})
@@ -151,33 +198,74 @@ export const geometryLayer = ({
 
 	// ── Vertex handles ─────────────────────────────────────────────────────────
 	// Draggable points; first vertex highlighted red when polygon is closeable.
-	if (isActive && geometryCoordinates.length > 0) {
+	// Also shown in edit mode (isEditingPoints) so the user can click to delete.
+	if ((isActive || isEditingPoints) && geometryCoordinates.length > 0) {
 		layers.push(
 			new ScatterplotLayer({
 				id: 'vertex-layer',
 				data: geometryCoordinates.map((_coord, _index) => ({ position: _coord, index: _index })),
 				getPosition: (_data: any) => _data.position,
-				getRadius: 8,
+				getRadius: pointRadius,
 				radiusUnits: 'pixels',
 				getFillColor: (_data: any) => {
-					if (_data.index === hoveredPointIndex) return [255, 255, 0];
-					if (mode === 'polygon') {
+					if (_data.index === hoveredPointIndex) return [255, 255, 0, 255];
+					if (mode === 'polygon' && isActive) {
 						// Highlight first vertex red when loop is closeable (unclosed & > 2 points)
 						return (_data.index === 0 && !isClosed && geometryCoordinates.length > 2)
-							? [255, 0, 0]
-							: [255, 255, 255];
+							? [255, 0, 0, 255]
+							: pointColor;
 					}
-					return [255, 255, 255];
+					return pointColor;
 				},
 				stroked: true,
-				getLineColor: [0, 0, 0],
+				getLineColor: [0, 0, 0, 255],
 				lineWidthMinPixels: 1,
 				radiusMinPixels: 5,
 				pickable: true,
-				autoHighlight: true,
-				highlightColor: [255, 0, 0, 255],
+				autoHighlight: false,
 				updateTriggers: {
-					getFillColor: [isClosed, geometryCoordinates.length, hoveredPointIndex, mode],
+					getFillColor: [isClosed, geometryCoordinates.length, hoveredPointIndex, mode, pointColor, isActive],
+				},
+			})
+		);
+	}
+
+	// ── Edge midpoint ghosts (edit mode only, polygon & line) ──────────────────
+	// Shown as semi-transparent dots at the midpoint of each edge.
+	// Clicking one inserts a new vertex; hovering highlights it.
+	if (isEditingPoints && mode !== 'circle' && geometryCoordinates.length >= 2) {
+		const n = geometryCoordinates.length;
+		// For a closed polygon include the closing edge (last → first); for line omit it.
+		const edgeCount = (mode === 'polygon' && isClosed) ? n : n - 1;
+		const edgeMidpoints = Array.from({ length: edgeCount }, (_, i) => {
+			const a = geometryCoordinates[i];
+			const b = geometryCoordinates[(i + 1) % n];
+			return {
+				position: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] as [number, number],
+				edgeIndex: i,
+			};
+		});
+
+		layers.push(
+			new ScatterplotLayer({
+				id: 'edge-midpoint-layer',
+				data: edgeMidpoints,
+				getPosition: (_data: any) => _data.position,
+				getRadius: 6,
+				radiusUnits: 'pixels',
+				getFillColor: (_data: any) =>
+					_data.edgeIndex === hoveredEdgeIndex
+						? [0, 200, 100, 255]   // highlighted: solid green
+						: [0, 200, 100, 130],  // default: semi-transparent green
+				stroked: true,
+				getLineColor: [0, 0, 0, 180],
+				lineWidthMinPixels: 1,
+				radiusMinPixels: 4,
+				pickable: true,
+				autoHighlight: false,
+				updateTriggers: {
+					getFillColor: [hoveredEdgeIndex],
+					data: [geometryCoordinates, isClosed],
 				},
 			})
 		);

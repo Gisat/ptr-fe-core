@@ -1,4 +1,5 @@
 import { GeometryCoordinates, GeometryClickInfo, DrawingMode } from '../_types/geometryDrawingTypes';
+import { onEditPointsClick } from './onEditPointsClick';
 
 interface OnClickParams {
 	info: GeometryClickInfo;
@@ -7,6 +8,8 @@ interface OnClickParams {
 	setGeometryCoordinates: (coords: GeometryCoordinates) => void;
 	setIsClosed: (closed: boolean) => void;
 	mode: DrawingMode;
+	/** When true, click events are routed to edit-points logic instead of drawing logic. */
+	isEditingPoints?: boolean;
 }
 
 /**
@@ -19,7 +22,14 @@ export const onGeometryClick = ({
 	setGeometryCoordinates,
 	setIsClosed,
 	mode,
+	isEditingPoints = false,
 }: OnClickParams) => {
+	// Edit-points mode: delegate entirely to the edit handler (polygon & line only).
+	if (isEditingPoints && mode !== 'circle') {
+		onEditPointsClick({ info, geometryCoordinates, mode, setGeometryCoordinates });
+		return;
+	}
+
 	// If geometry is already closed, prevent adding more points.
 	// Edit mode (dragging existing points) is handled separately.
 	if (isClosed) return;
