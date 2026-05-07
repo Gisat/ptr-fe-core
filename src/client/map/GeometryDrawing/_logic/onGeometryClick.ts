@@ -30,11 +30,6 @@ export const onGeometryClick = ({
 	selectedPointIndex = null,
 	setSelectedPointIndex,
 }: OnClickParams) => {
-	// If geometry is already closed, prevent adding more points.
-	// Edit mode (dragging existing points) is handled separately.
-	if (isClosed) return;
-
-	// Safety check for info
 	if (!info) return;
 
 	const coordinate = info.coordinate;
@@ -70,9 +65,10 @@ export const onGeometryClick = ({
 		return;
 	}
 
-	// ── Click on empty space – deselect selected vertex (don't add point if closed) ──
+	// ── Click on empty space – deselect selected vertex ───────────────────────────
 	setSelectedPointIndex(null);
 
+	// Prevent adding new points once the geometry is closed.
 	if (isClosed) return;
 
 	// ── Add new drawing point ──────────────────────────────────────────────────
