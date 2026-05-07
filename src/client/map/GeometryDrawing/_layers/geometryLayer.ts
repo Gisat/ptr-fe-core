@@ -11,7 +11,6 @@ import {
  * Format: [red, green, blue, alpha].
  * Alpha is expressed on the same 0..255 scale (255 == opaque).
  */
-
 export type ColorRGBA = [number, number, number, number];
 
 /**
