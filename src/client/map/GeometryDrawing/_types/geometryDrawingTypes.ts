@@ -28,6 +28,30 @@ export interface PointEditConfig {
 export type LineCapStyle = 'round' | 'flat';
 
 /**
+ * RGBA colour tuple where each channel is an integer in 0..255.
+ * Format: [red, green, blue, alpha].
+ * Alpha is expressed on the same 0..255 scale (255 == opaque).
+ */
+export type ColorRGBA = [number, number, number, number];
+
+/**
+ * Optional visual style overrides for geometry rendering. All fields are
+ * optional; consuming applications may pass a partial object to override
+ * defaults used by the rendering layer.
+ */
+export interface GeometryStyle {
+	pointRadius?: number;
+	pointColor?: ColorRGBA;
+	fillColor?: ColorRGBA;
+	strokeWidth?: number;
+	strokeColor?: ColorRGBA;
+	radiusLineColor?: ColorRGBA;
+	radiusLineWidth?: number;
+	lineColor?: ColorRGBA;
+	lineStrokeWidth?: number;
+}
+
+/**
  * Picking info for geometry click and hover events.
  *
  * Uses indexed access types from Deck.gl {@link PickingInfo} to stay

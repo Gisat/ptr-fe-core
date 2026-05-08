@@ -1,32 +1,9 @@
 import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
-import { DrawingMode, LineCapStyle } from '../_types/geometryDrawingTypes';
-import {
-	buildCirclePolygon,
-	haversineDistance,
-} from '../_logic/lineBufferHelpers';
+import { buildCirclePolygon, haversineDistance } from '../_logic/lineBufferHelpers';
+import type { DrawingMode, LineCapStyle, GeometryStyle, ColorRGBA } from '../_types/geometryDrawingTypes';
 
-/**
- * RGBA colour tuple where each channel is an integer in 0..255.
- * Format: [red, green, blue, alpha].
- * Alpha is expressed on the same 0..255 scale (255 == opaque).
- */
-export type ColorRGBA = [number, number, number, number];
-
-/**
- * Optional visual style overrides for geometry rendering.
- * All fields are optional; when omitted sensible defaults are used.
- */
-export interface GeometryStyle {
-	pointRadius?: number;
-	pointColor?: ColorRGBA;
-	fillColor?: ColorRGBA;
-	strokeWidth?: number;
-	strokeColor?: ColorRGBA;
-	radiusLineColor?: ColorRGBA;
-	radiusLineWidth?: number;
-	lineColor?: ColorRGBA;
-	lineStrokeWidth?: number;
-}
+// GeometryStyle and ColorRGBA are defined in the types module to keep
+// shared models free of runtime imports (deck.gl). See ../_types/geometryDrawingTypes.ts
 
 /**
  * Properties passed into the geometry composite layer generator.
@@ -185,7 +162,7 @@ export const geometryLayer = ({
 		geometryCoordinates.length >= 3;
 	if (hasEdges) {
 		// hasEdges guarantees mode === 'polygon' && isClosed, so always close the path.
-		const edgePath = [...geometryCoordinates, geometryCoordinates[0]];
+		const edgePath = [... geometryCoordinates, geometryCoordinates[0]];
 		layers.push(new PathLayer({
 			id: 'edge-pick-layer',
 			data: [{ path: edgePath }],

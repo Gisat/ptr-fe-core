@@ -1,8 +1,7 @@
 import { Nullable } from '@gisatcz/ptr-be-core/browser';
 import { LayerTreeInteraction } from '../layers/models.layers';
 import { DatasourceWithNeighbours } from './models.metadata';
-import { LineCapStyle } from '../../map/GeometryDrawing/_types/geometryDrawingTypes';
-import { GeometryStyle } from '../../map/GeometryDrawing/_layers/geometryLayer';
+import type { LineCapStyle, GeometryStyle } from '../../map/GeometryDrawing/_types/geometryDrawingTypes';
 
 /**
  * Drawing state for a geometry (polygon or circle) stored on a dedicated RenderingLayer entry.

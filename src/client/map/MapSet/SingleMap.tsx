@@ -110,7 +110,7 @@ export const SingleMap = ({
 	const isDrawingActive = drawingState?.isActive ?? false;
 	/** True when the cursor is currently over a vertex handle */
 	const isHoveringPoint = (drawingState?.hoveredPointIndex ?? null) !== null;
-	/** True when the cursor is currently over an edge midpoint ghost */
+	/** True when the cursor is currently over a polygon edge via the edge-pick layer */
 	const isHoveringEdge = (drawingState?.hoveredEdgeIndex ?? null) !== null;
 	/** True when a vertex is selected for deletion */
 	const hasSelectedPoint = (drawingState?.selectedPointIndex ?? null) !== null;
