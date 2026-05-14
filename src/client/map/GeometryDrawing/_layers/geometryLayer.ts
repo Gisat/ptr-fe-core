@@ -1,10 +1,14 @@
 import { PolygonLayer, ScatterplotLayer, PathLayer } from '@deck.gl/layers';
-import { DrawingMode, LineCapStyle } from '../_types/geometryDrawingTypes';
-import {
-	buildCirclePolygon,
-	haversineDistance,
-} from '../_logic/lineBufferHelpers';
+import { buildCirclePolygon, haversineDistance } from '../_logic/lineBufferHelpers';
+import type { DrawingMode, LineCapStyle, GeometryStyle, ColorRGBA } from '../_types/geometryDrawingTypes';
 
+// GeometryStyle and ColorRGBA are defined in the types module to keep
+// shared models free of runtime imports (deck.gl). See ../_types/geometryDrawingTypes.ts
+
+/**
+ * Properties passed into the geometry composite layer generator.
+ * These describe the current drawing state and optional style overrides.
+ */
 interface GeometryLayerProps {
 	geometryCoordinates: [number, number][];
 	isClosed: boolean;
@@ -15,62 +19,75 @@ interface GeometryLayerProps {
 	bufferMeters?: number;
 	/** End-cap style for line corridor – 'round' (default) or 'flat' */
 	capStyle?: LineCapStyle;
+	style?: GeometryStyle;
+	selectedPointIndex?: number | null;
 }
 
 /**
- * Generates deck.gl layers for displaying and editing a geometry (polygon or circle).
+ * Create deck.gl sub-layers for rendering and interacting with a geometry.
+ *
+ * Returned layers typically include:
+ * - polygon/circle fill (PolygonLayer)
+ * - drawing path (PathLayer)
+ * - an invisible, pickable edge path (PathLayer) used to detect clicks on edges
+ * - vertex handles (ScatterplotLayer)
+ *
+ * This function is pure and returns a new array of deck.gl Layer instances
+ * for the current drawing state. It does not mutate inputs.
  */
 export const geometryLayer = ({
-	geometryCoordinates,
-	isClosed,
-	isActive,
-	hoveredPointIndex,
-	mode,
-	bufferMeters = 0,
-	capStyle = 'round' as LineCapStyle,
-}: GeometryLayerProps) => {
+	                              geometryCoordinates,
+	                              isClosed,
+	                              isActive,
+	                              hoveredPointIndex,
+	                              mode,
+	                              bufferMeters = 0,
+	                              capStyle = 'round' as LineCapStyle,
+	                              style = {},
+	                              selectedPointIndex = null,
+                              }: GeometryLayerProps) => {
 	if (!geometryCoordinates) return [];
-
+	const {
+		pointRadius = 8,
+		pointColor = [255, 255, 255, 255] as ColorRGBA,
+		fillColor = [0, 150, 255, 100] as ColorRGBA,
+		strokeWidth = 2,
+		strokeColor = [0, 100, 255, 255] as ColorRGBA,
+		radiusLineColor = [0, 0, 0, 100] as ColorRGBA,
+		radiusLineWidth = 1,
+		lineColor = [0, 180, 60, 255] as ColorRGBA,
+		lineStrokeWidth = 2,
+	} = style;
 	const layers: any[] = [];
 
 	if (mode === 'line') {
-		// ── Corridor buffer polygon ─────────────────────────────────────────────
 		if (bufferMeters > 0 && geometryCoordinates.length >= 2) {
 			const capRounded = capStyle === 'round';
-
-			// Fill layer — semi-transparent blue on top of the outline.
-			layers.push(
-				new PathLayer({
-					id: 'line-buffer-layer',
-					data: [{ path: geometryCoordinates }],
-					getPath: (_data: any) => _data.path,
-					getColor: [0, 150, 255, 100],
-					getWidth: bufferMeters * 2,
-					widthUnits: 'meters',
-					widthMinPixels: 2,
-					capRounded,
-					jointRounded: true,  // joints are always round regardless of capStyle
-					pickable: false,
-					updateTriggers: {
-						getWidth: [bufferMeters],
-						capRounded: [capStyle],
-					},
-				})
-			);
+			layers.push(new PathLayer({
+				id: 'line-buffer-layer',
+				data: [{ path: geometryCoordinates }],
+				getPath: (data: any) => data.path,
+				getColor: fillColor,
+				getWidth: bufferMeters * 2,
+				widthUnits: 'meters',
+				widthMinPixels: 2,
+				capRounded,
+				jointRounded: true,
+				pickable: false,
+				updateTriggers: { getWidth: [bufferMeters], capRounded: [capStyle] }
+			}));
 		}
 
 		// ── Polyline path ───────────────────────────────────────────────────────
 		if (geometryCoordinates.length >= 2) {
-			layers.push(
-				new PathLayer({
-					id: 'line-path-layer',
-					data: [{ path: geometryCoordinates }],
-					getPath: (_data: any) => _data.path,
-					getColor: [0, 180, 60],
-					widthMinPixels: 2,
-					pickable: false,
-				})
-			);
+			layers.push(new PathLayer({
+				id: 'line-path-layer',
+				data: [{ path: geometryCoordinates }],
+				getPath: (data: any) => data.path,
+				getColor: lineColor,
+				widthMinPixels: lineStrokeWidth,
+				pickable: false
+			}));
 		}
 	} else if (mode === 'circle') {
 		// ── Circle fill ────────────────────────────────────────────────────────
@@ -82,106 +99,106 @@ export const geometryLayer = ({
 		if (isClosed && geometryCoordinates.length === 2) {
 			const radius = haversineDistance(geometryCoordinates[0], geometryCoordinates[1]);
 			const circlePolygon = buildCirclePolygon(geometryCoordinates[0], radius);
-			layers.push(
-				new PolygonLayer({
-					id: 'circle-fill-layer',
-					data: [{ polygon: circlePolygon }],
-					getPolygon: (_data: any) => _data.polygon,
-					getFillColor: [0, 150, 255, 100],
-					getLineColor: [0, 100, 255],
-					pickable: isActive,
-					stroked: true,
-					filled: true,
-					lineWidthMinPixels: 2,
-					autoHighlight: isActive,
-					highlightColor: [0, 0, 255, 100],
-				})
-			);
+			layers.push(new PolygonLayer({
+				id: 'circle-fill-layer',
+				data: [{ polygon: circlePolygon }],
+				getPolygon: (data: any) => data.polygon,
+				getFillColor: fillColor,
+				getLineColor: strokeColor,
+				pickable: isActive,
+				stroked: true,
+				filled: true,
+				lineWidthMinPixels: strokeWidth,
+				autoHighlight: isActive,
+				highlightColor: [0, 0, 255, 100]
+			}));
 		}
 
 		// ── Radius line ────────────────────────────────────────────────────────
 		// Only shown while the user is actively drawing / editing (isActive).
 		// Hidden when the circle is complete and editing mode is off.
 		if (isActive && geometryCoordinates.length === 2) {
-			layers.push(
-				new PathLayer({
-					id: 'circle-radius-line',
-					data: [{ path: geometryCoordinates }],
-					getPath: (_data: any) => _data.path,
-					getColor: [0, 0, 0, 100],
-					widthMinPixels: 1,
-					pickable: false,
-				})
-			);
+			layers.push(new PathLayer({
+				id: 'circle-radius-line',
+				data: [{ path: geometryCoordinates }],
+				getPath: (data: any) => data.path,
+				getColor: radiusLineColor,
+				widthMinPixels: radiusLineWidth,
+				pickable: false
+			}));
 		}
 	} else {
 		// ── Polygon mode ────────────────────────────────────────────────────────
 		// Filled polygon – rendered when the loop is closed.
 		if (isClosed && geometryCoordinates.length >= 3) {
-			layers.push(
-				new PolygonLayer({
-					id: 'polygon-fill-layer',
-					data: [{ polygon: geometryCoordinates }],
-					getPolygon: (_data: any) => _data.polygon,
-					getFillColor: [0, 150, 255, 100],
-					getLineColor: [0, 100, 255],
-					pickable: isActive,
-					stroked: true,
-					filled: true,
-					lineWidthMinPixels: 2,
-					autoHighlight: true,
-					highlightColor: [0, 0, 255, 100],
-				})
-			);
+			layers.push(new PolygonLayer({
+				id: 'polygon-fill-layer',
+				data: [{ polygon: geometryCoordinates }],
+				getPolygon: (data: any) => data.polygon,
+				getFillColor: fillColor,
+				getLineColor: strokeColor,
+				pickable: isActive,
+				stroked: true,
+				filled: true,
+				lineWidthMinPixels: strokeWidth,
+				autoHighlight: true,
+				highlightColor: [0, 0, 255, 100]
+			}));
 		} else if (geometryCoordinates.length > 0) {
-			// Open path – connects the vertices placed so far while drawing.
-			layers.push(
-				new PathLayer({
-					id: 'polygon-path-layer',
-					data: [{ path: geometryCoordinates }],
-					getPath: (_data: any) => _data.path,
-					getColor: [0, 0, 255],
-					widthMinPixels: 2,
-					pickable: false,
-				})
-			);
+			layers.push(new PathLayer({
+				id: 'polygon-path-layer',
+				data: [{ path: geometryCoordinates }],
+				getPath: (data: any) => data.path,
+				getColor: [0, 0, 255],
+				widthMinPixels: 2,
+				pickable: false
+			}));
 		}
 	}
-
-	// ── Vertex handles ─────────────────────────────────────────────────────────
-	// Draggable points; first vertex highlighted red when polygon is closeable.
-	if (isActive && geometryCoordinates.length > 0) {
-		layers.push(
-			new ScatterplotLayer({
-				id: 'vertex-layer',
-				data: geometryCoordinates.map((_coord, _index) => ({ position: _coord, index: _index })),
-				getPosition: (_data: any) => _data.position,
-				getRadius: 8,
-				radiusUnits: 'pixels',
-				getFillColor: (_data: any) => {
-					if (_data.index === hoveredPointIndex) return [255, 255, 0];
-					if (mode === 'polygon') {
-						// Highlight first vertex red when loop is closeable (unclosed & > 2 points)
-						return (_data.index === 0 && !isClosed && geometryCoordinates.length > 2)
-							? [255, 0, 0]
-							: [255, 255, 255];
-					}
-					return [255, 255, 255];
-				},
-				stroked: true,
-				getLineColor: [0, 0, 0],
-				lineWidthMinPixels: 1,
-				radiusMinPixels: 5,
-				pickable: true,
-				autoHighlight: true,
-				highlightColor: [255, 0, 0, 255],
-				updateTriggers: {
-					getFillColor: [isClosed, geometryCoordinates.length, hoveredPointIndex, mode],
-				},
-			})
-		);
+	const hasEdges =
+		isActive &&
+		mode === 'polygon' &&
+		isClosed &&
+		geometryCoordinates.length >= 3;
+	if (hasEdges) {
+		// hasEdges guarantees mode === 'polygon' && isClosed, so always close the path.
+		const edgePath = [... geometryCoordinates, geometryCoordinates[0]];
+		layers.push(new PathLayer({
+			id: 'edge-pick-layer',
+			data: [{ path: edgePath }],
+			getPath: (data: any) => data.path,
+			getColor: [0, 0, 0, 1],
+			getWidth: 16,
+			widthUnits: 'pixels',
+			widthMinPixels: 16,
+			pickable: true,
+			updateTriggers: { data: [geometryCoordinates, isClosed] }
+		}));
 	}
-
+	if (isActive && geometryCoordinates.length > 0) {
+		layers.push(new ScatterplotLayer({
+			id: 'vertex-layer',
+			data: geometryCoordinates.map((coord, vertexIndex) => ({ position: coord, index: vertexIndex })),
+			getPosition: (data: any) => data.position,
+			getRadius: pointRadius,
+			radiusUnits: 'pixels',
+			getFillColor: (data: any) => {
+				if (data.index === selectedPointIndex) return [255, 0, 0, 255];
+				if (data.index === hoveredPointIndex) return [255, 255, 0, 255];
+				if (mode === 'polygon' && isActive) {
+					return (data.index === 0 && !isClosed && geometryCoordinates.length > 2) ? [255, 0, 0, 255] : pointColor;
+				}
+				return pointColor;
+			},
+			stroked: true,
+			getLineColor: [0, 0, 0, 255],
+			lineWidthMinPixels: 1,
+			radiusMinPixels: 5,
+			pickable: true,
+			autoHighlight: false,
+			updateTriggers: { getFillColor: [isClosed, geometryCoordinates.length, hoveredPointIndex, selectedPointIndex, mode, pointColor, isActive] },
+		}));
+	}
 	return layers;
 };
 

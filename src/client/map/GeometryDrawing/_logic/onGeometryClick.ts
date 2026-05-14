@@ -7,10 +7,18 @@ interface OnClickParams {
 	setGeometryCoordinates: (coords: GeometryCoordinates) => void;
 	setIsClosed: (closed: boolean) => void;
 	mode: DrawingMode;
+	selectedPointIndex?: number | null;
+	setSelectedPointIndex: (index: number | null) => void;
 }
 
 /**
- * Validates click events and either adds a new vertex or closes the geometry loop.
+ * Handles click events during drawing mode.
+ *
+ * - Click on a vertex (polygon/line) → select it for potential deletion (highlights red).
+ *   Clicking the already-selected vertex deselects it.
+ * - Click on edge-pick-layer → ignored on single click (double-click handles insertion).
+ * - Click on first vertex when polygon is closeable → close the polygon.
+ * - Click on empty map space → deselect any selected vertex, add new drawing point.
  */
 export const onGeometryClick = ({
 	info,
@@ -19,12 +27,9 @@ export const onGeometryClick = ({
 	setGeometryCoordinates,
 	setIsClosed,
 	mode,
+	selectedPointIndex = null,
+	setSelectedPointIndex,
 }: OnClickParams) => {
-	// If geometry is already closed, prevent adding more points.
-	// Edit mode (dragging existing points) is handled separately.
-	if (isClosed) return;
-
-	// Safety check for info
 	if (!info) return;
 
 	const coordinate = info.coordinate;
@@ -36,30 +41,44 @@ export const onGeometryClick = ({
 				? info.object.index
 				: undefined;
 
-	// Check if the user clicked on an existing vertex
-	if (clickedLayerId.includes('vertex-layer')) {
-		// If clicking on the first point (index 0) and we have enough points (>=3), close the polygon
-		if (mode === 'polygon' && clickedIndex === 0 && geometryCoordinates.length >= 3) {
+	// ── Edge pick layer – ignore on single click (double-click handles insertion) ──
+	if (clickedLayerId.includes('edge-pick-layer')) return;
+
+	// ── Vertex click ──────────────────────────────────────────────────────────────
+	if (clickedLayerId.includes('vertex-layer') && typeof clickedIndex === 'number') {
+		// Polygon: clicking first vertex when closeable → close the loop.
+		if (mode === 'polygon' && !isClosed && clickedIndex === 0 && geometryCoordinates.length >= 3) {
+			setSelectedPointIndex(null);
 			setIsClosed(true);
 			return;
 		}
-		// If clicked on any vertex, do not add a new point
-		// This prevents adding points on top of existing ones
+
+		// Polygon/line: toggle vertex selection for deletion.
+		// Circle has no vertex editing.
+		if (mode !== 'circle') {
+			if (selectedPointIndex === clickedIndex) {
+				setSelectedPointIndex(null); // deselect if clicking same vertex
+			} else {
+				setSelectedPointIndex(clickedIndex);
+			}
+		}
 		return;
 	}
 
-	// Add new point at clicked coordinate
+	// ── Click on empty space – deselect selected vertex ───────────────────────────
+	setSelectedPointIndex(null);
+
+	// Prevent adding new points once the geometry is closed.
+	if (isClosed) return;
+
+	// ── Add new drawing point ──────────────────────────────────────────────────
 	if (coordinate) {
 		if (mode === 'circle') {
 			const newCoords = [...geometryCoordinates, coordinate as [number, number]];
 			setGeometryCoordinates(newCoords);
-			// Circle is defined by center and one edge point (radius)
-			if (newCoords.length === 2) {
-				setIsClosed(true);
-			}
+			if (newCoords.length === 2) setIsClosed(true);
 		} else {
 			setGeometryCoordinates([...geometryCoordinates, coordinate as [number, number]]);
 		}
 	}
 };
-

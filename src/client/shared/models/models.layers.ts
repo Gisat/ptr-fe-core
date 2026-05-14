@@ -1,7 +1,7 @@
 import { Nullable } from '@gisatcz/ptr-be-core/browser';
 import { LayerTreeInteraction } from '../layers/models.layers';
 import { DatasourceWithNeighbours } from './models.metadata';
-import { LineCapStyle } from '../../map/GeometryDrawing/_types/geometryDrawingTypes';
+import type { LineCapStyle, GeometryStyle } from '../../map/GeometryDrawing/_types/geometryDrawingTypes';
 
 /**
  * Drawing state for a geometry (polygon or circle) stored on a dedicated RenderingLayer entry.
@@ -19,6 +19,21 @@ export interface GeometryDrawingModel {
 	bufferMeters?: number;
 	/** End-cap style for line corridor – 'round' (default) or 'flat' */
 	capStyle?: LineCapStyle;
+	/** Optional visual style overrides for the geometry layer */
+	style?: GeometryStyle;
+	/**
+	 * Index of the vertex currently selected for deletion (clicked while drawing),
+	 * or null if none. Only relevant for 'polygon' and 'line' modes.
+	 * Press the configured deleteKey (default 'Delete') to remove it,
+	 * or deselectKey (default 'Escape') to deselect.
+	 */
+	selectedPointIndex?: number | null;
+	/**
+	 * Non-null sentinel (0) when the cursor is hovering the transparent edge-pick-layer
+	 * on a closed polygon; null otherwise. Used exclusively to drive the 'cell' cursor
+	 * in SingleMap via `isHoveringEdge` – the exact value is not meaningful.
+	 */
+	hoveredEdgeIndex?: number | null;
 }
 
 /**
