@@ -1,3 +1,9 @@
+## [57.7.0](https://github.com/Gisat/ptr-fe-core/compare/v57.6.0...v57.7.0) (2026-05-14)
+
+### Features
+
+* editing points final and merge main ([1d9098d](https://github.com/Gisat/ptr-fe-core/commit/1d9098daae6ea90fd2be76362c31daaa5d51e2a8))
+
 ## [57.6.0](https://github.com/Gisat/ptr-fe-core/compare/v57.5.0...v57.6.0) (2026-05-07)
 
 ### Features
