@@ -1,4 +1,6 @@
 # NPM Folder for ptr-fe-core
+This package is deprecated. The content of this folder is still available for reference, but it is not recommended to use it for new development.
+
 As this app is focused on NPM development with NextJS rendering demos, `/ptr-fe-core` is the NPM content that will be exported as final product of this repository.
 
 Here is good place for:
