@@ -1,3 +1,19 @@
+## [58.0.0](https://github.com/Gisat/ptr-fe-core/compare/v57.7.0...v58.0.0) (2026-06-02)
+
+### ⚠ BREAKING CHANGES
+
+* update Readme.md to indicate deprecation of ptr-fe-core package
+
+### Features
+
+* update Readme.md to indicate deprecation of ptr-fe-core package ([447630f](https://github.com/Gisat/ptr-fe-core/commit/447630fc02fe4b8fb114daf6bce372ba0d49a8f5))
+
+### Bug Fixes
+
+* add rimraf dependency and update type definition for nodesFromResponse parser ([012024f](https://github.com/Gisat/ptr-fe-core/commit/012024ff49f93bfd7262c1c4b5f6ad5d7980d6e7))
+* update @gisatcz/ptr-be-core to version 58.0.0 and adjust peer dependencies ([93864be](https://github.com/Gisat/ptr-fe-core/commit/93864becf6b08204c9784f1758ba363ed0c52894))
+* update vitest, postcss, and coverage-v8 dependencies to latest versions ([53402d9](https://github.com/Gisat/ptr-fe-core/commit/53402d965d6300d01f0757288e5680de67b927de))
+
 ## [57.7.0](https://github.com/Gisat/ptr-fe-core/compare/v57.6.0...v57.7.0) (2026-05-14)
 
 ### Features
