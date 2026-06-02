@@ -29,7 +29,7 @@ export const parseNodesFromPanther = (data: unknown) => {
 	// TODO: Add more node types here
 	// TODO: what if one of the main nodes is in neighbours as well?
 	const { applicationsNode, datasourceNodes, layerNodes, placeNodes, styleNodes, periodNodes } = (
-		data as FullPantherEntity[] | NodeWithNeighbours<FullPantherEntity>[]
+		data as FullPantherEntity[] | NodeWithNeighbours<FullPantherEntity, FullPantherEntity>[]
 	).reduce(
 		(acc, node) => {
 			let nodes: FullPantherEntity[] = [];
