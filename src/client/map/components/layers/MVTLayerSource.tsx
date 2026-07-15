@@ -109,6 +109,14 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 		return url;
 	}, [route, documentId, validIntervalIso, url]);
 
+	function getFeatureIdSafely(feature: MapFeature): string | number | null {
+		try {
+			return getFeatureId(feature, geojsonOptions?.featureIdProperty);
+		} catch {
+			return null;
+		}
+	}
+
 	/**
 	 * Returns the line color for a feature.
 	 * If the feature is selected, returns its assigned selection color; otherwise,
@@ -118,7 +126,11 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	 * @returns {number[]} The RGBA color array for the feature line.
 	 */
 	function getLineColor(feature: MapFeature): number[] {
-		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
+		if (!selectedFeatureKeys.length) {
+			return layerStyle.getLineColor;
+		}
+
+		const featureId = getFeatureIdSafely(feature);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			const colourIndex = featureKeyColourIndexPairs[featureId];
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
@@ -136,7 +148,11 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	 * @returns {number} The width of the feature line.
 	 */
 	function getLineWidth(feature: MapFeature): number {
-		const featureId = getFeatureId(feature, geojsonOptions?.featureIdProperty);
+		if (!selectedFeatureKeys.length) {
+			return layerStyle.getLineWidth;
+		}
+
+		const featureId = getFeatureIdSafely(feature);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			return 5;
 		}
@@ -151,6 +167,7 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	const tooltip =
 		tooltipEnabled &&
 		tooltipSettings &&
+		tooltipType !== TooltipType.Selection &&
 		getLayerTooltip({
 			tooltipSettings,
 			featureInfo,
@@ -206,10 +223,8 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 					return;
 				}
 
-				const currentId = featureInfo
-					? getFeatureId(featureInfo.feature, geojsonOptions?.featureIdProperty)
-					: null;
-				const clickedId = getFeatureId(clickedFeature, geojsonOptions?.featureIdProperty);
+				const currentId = featureInfo ? getFeatureIdSafely(featureInfo.feature) : null;
+				const clickedId = getFeatureIdSafely(clickedFeature);
 
 				if (currentId && clickedId && currentId === clickedId) {
 					setFeatureInfo(null);
