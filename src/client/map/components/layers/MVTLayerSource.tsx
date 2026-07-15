@@ -69,6 +69,13 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	const [featureInfo, setFeatureInfo] = useState<FeatureInfo>(null);
 	const featureInfoRef = useRef<FeatureInfo>(null);
 
+	/**
+	 * Sync featureInfo state with featureInfoRef to enable same-click dismiss logic.
+	 */
+	useEffect(() => {
+		featureInfoRef.current = featureInfo;
+	}, [featureInfo]);
+
 	if (!url && !route) {
 		throw new Error(`MVTLayerSource: Missing both route and url in datasource: ${key}`);
 	}
