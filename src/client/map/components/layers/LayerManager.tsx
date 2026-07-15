@@ -9,6 +9,7 @@ import { GeojsonLayerSource } from './GeojsonLayerSource';
 import { WMSLayerSource } from './WMSLayerSource';
 import { IconLayerSource } from './IconLayerSource';
 import { GeometryDrawingLayerSource } from './GeometryDrawingLayerSource';
+import { MVTLayerSource } from './MVTLayerSource';
 
 /**
  * Represents the possible types of layer instances that can be managed.
@@ -69,6 +70,16 @@ export const LayerManager = ({ layers, onLayerUpdate, viewport, CustomTooltip }:
 				// Render the appropriate layer source component based on the datasource labels
 				if (labels?.includes(UsedDatasourceLabels.XYZ)) {
 					return <XYZLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate}/>;
+				} else if (labels?.includes(UsedDatasourceLabels.MVT)) {
+					return (
+						<MVTLayerSource
+							key={layer.key}
+							layer={layer}
+							onLayerUpdate={onLayerUpdate}
+							viewport={viewport}
+							CustomTooltip={CustomTooltip}
+						/>
+					);
 				} else if (labels?.includes(UsedDatasourceLabels.COG)) {
 					return (<COGLayerSource key={layer.key} layer={layer} onLayerUpdate={onLayerUpdate} viewport={viewport}
 							CustomTooltip={CustomTooltip}
