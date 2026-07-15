@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { MVTLayer } from '@deck.gl/geo-layers';
-import type { MVTLayerProps } from '@deck.gl/geo-layers';
 import { SELECTION_DEFAULT_COLOUR } from '../../../shared/constants/colors';
 import { getFeatureId } from '../../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../../shared/helpers/hexToRgbArray';
@@ -9,33 +8,16 @@ import { useSharedState } from '../../../shared/hooks/state.useSharedState';
 import { parseDatasourceConfiguration } from '../../../shared/models/parsers.datasources';
 import { MapFeature } from '../../../shared/models/models.mapFeature';
 import { TooltipType } from '../../../shared/models/models.tooltip';
-import { getLayerTooltip, LayerTooltipParams } from '../../MapSet/MapTooltip/getLayerTooltip';
+import { getLayerTooltip } from '../../MapSet/MapTooltip/getLayerTooltip';
 import { resolveTooltipType } from '../../MapSet/MapTooltip/resolveTooltipType';
 import { LayerSourceProps } from './LayerManager';
 
-type DeckMVTData = MVTLayerProps['data'];
-type LayerStyle = Record<string, any>;
-
-/**
- * Vector styling and interaction options reused from geojsonOptions.
- * MVT renders picked features as GeoJSON-like objects, so it can share the
- * same layerStyle, feature id, and tooltip configuration shape.
- */
-interface VectorDatasourceOptions {
-	layerStyle?: LayerStyle;
-	featureIdProperty?: string;
-	tooltipSettings?: LayerTooltipParams['tooltipSettings'];
-	disableTooltip?: boolean;
-}
-
-interface ParsedMVTConfiguration {
-	geojsonOptions?: VectorDatasourceOptions;
-}
+type DeckMVTData = string | string[];
 
 /**
  * Default layer style for MVTLayer rendering.
  */
-const defaultLayerStyle: LayerStyle = {
+const defaultLayerStyle = {
 	filled: true,
 	stroked: true,
 	pickable: false,
@@ -44,7 +26,7 @@ const defaultLayerStyle: LayerStyle = {
 	getLineColor: [0, 0, 200, 255],
 	getFillColor: [0, 0, 255, 255],
 	getLineWidth: 1,
-	lineWidthUnits: 'pixels',
+	lineWidthUnits: 'pixels' as const,
 	pointRadiusScale: 10,
 	pointRadiusMinPixels: 2,
 	pointRadiusMaxPixels: 5,
@@ -93,19 +75,8 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 		console.warn(`MVTLayerSource: Missing documentId in datasource: ${key}`);
 	}
 
-	const config = useMemo(
-		() => parseDatasourceConfiguration(configuration) as ParsedMVTConfiguration | undefined,
-		[configuration]
-	);
-	const geojsonOptions = useMemo(
-		() =>
-			config?.geojsonOptions
-				? {
-						...config?.geojsonOptions,
-					}
-				: undefined,
-		[config]
-	);
+	const config = parseDatasourceConfiguration(configuration);
+	const geojsonOptions = config?.geojsonOptions;
 	if (!geojsonOptions) {
 		console.warn(`MVTLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
 	}
@@ -235,7 +206,9 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 					return;
 				}
 
-				const currentId = featureInfo ? getFeatureId(featureInfo.feature, geojsonOptions?.featureIdProperty) : null;
+				const currentId = featureInfo
+					? getFeatureId(featureInfo.feature, geojsonOptions?.featureIdProperty)
+					: null;
 				const clickedId = getFeatureId(clickedFeature, geojsonOptions?.featureIdProperty);
 
 				if (currentId && clickedId && currentId === clickedId) {
@@ -258,7 +231,7 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 			getLineColor,
 			getLineWidth,
 			pickable: isInteractive ?? layerStyle.pickable,
-		} as any);
+		});
 	}, [
 		isActive,
 		key,
