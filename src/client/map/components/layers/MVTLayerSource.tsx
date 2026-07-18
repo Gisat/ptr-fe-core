@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MVTLayer } from '@deck.gl/geo-layers';
 import { SELECTION_DEFAULT_COLOUR } from '../../../shared/constants/colors';
 import { getFeatureId } from '../../../shared/helpers/getFeatureId';
@@ -13,6 +13,7 @@ import { resolveTooltipType } from '../../MapSet/MapTooltip/resolveTooltipType';
 import { LayerSourceProps } from './LayerManager';
 
 type DeckMVTData = string | string[];
+type FeatureInfo = { feature: MapFeature; x: number; y: number } | null;
 
 /**
  * Default layer style for MVTLayer rendering.
@@ -65,7 +66,15 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	const { url, documentId, validIntervalIso, configuration } = datasource;
 	const route = fetchOptions?.route;
 
-	const [featureInfo, setFeatureInfo] = useState<{ feature: MapFeature; x: number; y: number } | null>(null);
+	const [featureInfo, setFeatureInfo] = useState<FeatureInfo>(null);
+	const featureInfoRef = useRef<FeatureInfo>(null);
+
+	/**
+	 * Sync featureInfo state with featureInfoRef to enable same-click dismiss logic.
+	 */
+	useEffect(() => {
+		featureInfoRef.current = featureInfo;
+	}, [featureInfo]);
 
 	if (!url && !route) {
 		throw new Error(`MVTLayerSource: Missing both route and url in datasource: ${key}`);
@@ -75,7 +84,8 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 		console.warn(`MVTLayerSource: Missing documentId in datasource: ${key}`);
 	}
 
-	const config = parseDatasourceConfiguration(configuration);
+	const configurationKey = typeof configuration === 'string' ? configuration : JSON.stringify(configuration);
+	const config = useMemo(() => parseDatasourceConfiguration(configuration), [configurationKey]);
 	const geojsonOptions = config?.geojsonOptions;
 	if (!geojsonOptions) {
 		console.warn(`MVTLayerSource: Missing geojsonOptions in datasource configuration: ${key}`);
@@ -87,6 +97,9 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	const selectedFeatureKeys = selection?.featureKeys ?? [];
 	const distinctColours = selection?.distinctColours ?? [SELECTION_DEFAULT_COLOUR];
 	const featureKeyColourIndexPairs = selection?.featureKeyColourIndexPairs ?? {};
+	const selectedFeatureKeysKey = selectedFeatureKeys.join('|');
+	const distinctColoursKey = distinctColours.join('|');
+	const featureKeyColourIndexPairsKey = JSON.stringify(featureKeyColourIndexPairs);
 
 	const tooltipSettings = geojsonOptions?.tooltipSettings;
 	const hasCustomTooltipComponent = !!CustomTooltip;
@@ -127,7 +140,7 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	 */
 	function getLineColor(feature: MapFeature): number[] {
 		if (!selectedFeatureKeys.length) {
-			return layerStyle.getLineColor;
+			return typeof layerStyle.getLineColor === 'function' ? layerStyle.getLineColor(feature) : layerStyle.getLineColor;
 		}
 
 		const featureId = getFeatureIdSafely(feature);
@@ -136,7 +149,7 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 			const hex = distinctColours[colourIndex] ?? distinctColours[0];
 			return [...hexToRgbArray(hex), 255];
 		}
-		return layerStyle.getLineColor;
+		return typeof layerStyle.getLineColor === 'function' ? layerStyle.getLineColor(feature) : layerStyle.getLineColor;
 	}
 
 	/**
@@ -149,14 +162,14 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	 */
 	function getLineWidth(feature: MapFeature): number {
 		if (!selectedFeatureKeys.length) {
-			return layerStyle.getLineWidth;
+			return typeof layerStyle.getLineWidth === 'function' ? layerStyle.getLineWidth(feature) : layerStyle.getLineWidth;
 		}
 
 		const featureId = getFeatureIdSafely(feature);
 		if (featureId && selectedFeatureKeys.includes(featureId)) {
 			return 5;
 		}
-		return layerStyle.getLineWidth;
+		return typeof layerStyle.getLineWidth === 'function' ? layerStyle.getLineWidth(feature) : layerStyle.getLineWidth;
 	}
 
 	/**
@@ -189,9 +202,9 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 			visible: isActive,
 			data: data as DeckMVTData,
 			updateTriggers: {
-				getLineColor: [layerStyle, selection],
-				getFillColor: [layerStyle, selection],
-				getLineWidth: [layerStyle, selection],
+				getLineColor: [layerStyle, selectedFeatureKeysKey, distinctColoursKey, featureKeyColourIndexPairsKey],
+				getFillColor: [layerStyle],
+				getLineWidth: [layerStyle, selectedFeatureKeysKey],
 				pickable: [layerStyle, isInteractive],
 				onHover: [CustomTooltip],
 			},
@@ -223,7 +236,7 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 					return;
 				}
 
-				const currentId = featureInfo ? getFeatureIdSafely(featureInfo.feature) : null;
+				const currentId = featureInfoRef.current ? getFeatureIdSafely(featureInfoRef.current.feature) : null;
 				const clickedId = getFeatureIdSafely(clickedFeature);
 
 				if (currentId && clickedId && currentId === clickedId) {
@@ -253,7 +266,9 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 		opacity,
 		isInteractive,
 		layerStyle,
-		selection,
+		selectedFeatureKeysKey,
+		distinctColoursKey,
+		featureKeyColourIndexPairsKey,
 		data,
 		geojsonOptions,
 		tooltipEnabled,
