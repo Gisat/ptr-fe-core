@@ -1,6 +1,4 @@
 import { UsedDatasourceLabels } from '@gisatcz/ptr-be-core/browser';
-import { MVTLayer, TileLayer, _WMSLayer as WMSLayer } from '@deck.gl/geo-layers';
-import { GeoJsonLayer } from '@deck.gl/layers';
 import { Layer, Viewport } from '@deck.gl/core';
 import { RenderingLayer } from '../../../shared/models/models.layers';
 import { XYZLayerSource } from './XYZLayerSource';
@@ -15,7 +13,7 @@ import { MVTLayerSource } from './MVTLayerSource';
  * Represents the possible types of layer instances that can be managed.
  * This includes specific layer types from the `deck.gl` library.
  */
-export type LayerInstance = TileLayer<ImageBitmap> | GeoJsonLayer | WMSLayer | MVTLayer | Layer | null;
+export type LayerInstance = Layer | null;
 
 /**
  * Props for the `LayerManager` component.
