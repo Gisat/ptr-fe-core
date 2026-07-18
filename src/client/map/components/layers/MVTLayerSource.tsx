@@ -180,12 +180,11 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	/**
 	 * MVT tiles simplify geometries per tile, so selected feature borders may appear
 	 * fragmented when styled directly inside the MVTLayer. When the route convention
-	 * can be derived, we fetch full selected-feature geometries and draw their border
-	 * in a GeoJsonLayer overlay. When it cannot be derived, the MVTLayer itself keeps
-	 * the default selection coloring behavior.
+	 * can be derived and fetched, we draw full selected-feature borders in a GeoJsonLayer
+	 * overlay. When it cannot be derived, or the derived endpoint fails, the MVTLayer
+	 * itself keeps the default selection coloring behavior.
 	 */
-	const selectionGeometryRoute = getSelectedFeaturesRouteFromMVTTemplate(route);
-	const selectionBorderHandledByOverlay = !!selectionGeometryRoute;
+	const selectedFeaturesRoute = getSelectedFeaturesRouteFromMVTTemplate(route);
 
 	/**
 	 * MVTLayer expects a tile URL template and fetches individual tiles itself.
@@ -204,11 +203,11 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	}, [route, documentId, validIntervalIso, url]);
 
 	const missingSelectionGeometryFeatureKeys = useMemo(() => {
-		if (!selectionGeometryRoute || !selectedFeatureKeys.length) return [];
+		if (!selectedFeaturesRoute || !selectedFeatureKeys.length) return [];
 
 		// Only fetch selected features that are not already cached locally.
 		return selectedFeatureKeys.filter((featureKey) => !selectionGeometryFeaturesByKey[String(featureKey)]);
-	}, [selectedFeatureKeysKey, selectionGeometryFeaturesByKey, selectionGeometryRoute]);
+	}, [selectedFeatureKeysKey, selectionGeometryFeaturesByKey, selectedFeaturesRoute]);
 	const missingSelectionGeometryFeatureKeysKey = missingSelectionGeometryFeatureKeys.join('|');
 
 	/**
@@ -228,14 +227,24 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	}, [documentId, validIntervalIso, url, missingSelectionGeometryFeatureKeysKey, geojsonOptions?.featureIdProperty]);
 
 	const { data: selectionGeometryData, error: selectionGeometryError } = useAxios<SelectionGeometryData>(
-		{ fetchUrl: selectionGeometryRoute },
+		{ fetchUrl: selectedFeaturesRoute },
 		undefined,
 		selectionGeometryPayload,
 		{
 			method: 'POST',
-			skip: !selectionGeometryRoute || !selectionsEnabled || !missingSelectionGeometryFeatureKeys.length,
+			skip: !selectedFeaturesRoute || !selectionsEnabled || !missingSelectionGeometryFeatureKeys.length,
 		}
 	);
+
+	/**
+	 * Effective overlay route.
+	 *
+	 * The URL can be derived locally, but only the POST response tells us whether the
+	 * endpoint actually exists. A failed request disables the overlay path so selected
+	 * features fall back to the original MVTLayer selection styling.
+	 */
+	const selectionGeometryRoute = selectionGeometryError ? undefined : selectedFeaturesRoute;
+	const selectionBorderHandledByOverlay = !!selectionGeometryRoute;
 
 	/**
 	 * Reads a feature id without letting malformed tile features break rendering.
