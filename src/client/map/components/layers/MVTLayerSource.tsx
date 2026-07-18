@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MVTLayer } from '@deck.gl/geo-layers';
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { CompositeLayer, Layer } from '@deck.gl/core';
+import type { GeoJsonProperties } from 'geojson';
 import { SELECTION_DEFAULT_COLOUR } from '../../../shared/constants/colors';
 import { getFeatureId } from '../../../shared/helpers/getFeatureId';
 import { hexToRgbArray } from '../../../shared/helpers/hexToRgbArray';
@@ -18,6 +19,10 @@ import { LayerInstance, LayerSourceProps } from './LayerManager';
 type DeckMVTData = string | string[];
 type FeatureInfo = { feature: MapFeature; x: number; y: number } | null;
 type DeckColor = [number, number, number, number];
+type SelectionGeometryCache = {
+	contextKey: string;
+	featuresByKey: Record<string, MapFeature>;
+};
 
 /** Minimal GeoJSON collection shape used by the selected-feature overlay layer. */
 type GeojsonFeatureCollection = { type: 'FeatureCollection'; features: MapFeature[] };
@@ -133,7 +138,10 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 
 	const [featureInfo, setFeatureInfo] = useState<FeatureInfo>(null);
 	const featureInfoRef = useRef<FeatureInfo>(null);
-	const [selectionGeometryFeaturesByKey, setSelectionGeometryFeaturesByKey] = useState<Record<string, MapFeature>>({});
+	const [selectionGeometryCache, setSelectionGeometryCache] = useState<SelectionGeometryCache>({
+		contextKey: '',
+		featuresByKey: {},
+	});
 
 	/**
 	 * Sync featureInfo state with featureInfoRef to enable same-click dismiss logic.
@@ -185,6 +193,36 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	 * itself keeps the default selection coloring behavior.
 	 */
 	const selectedFeaturesRoute = getSelectedFeaturesRouteFromMVTTemplate(route);
+	const selectionGeometryCacheKey = useMemo(
+		() =>
+			JSON.stringify({
+				documentId,
+				validIntervalIso,
+				url,
+				route,
+				featureIdProperty: geojsonOptions?.featureIdProperty,
+			}),
+		[documentId, validIntervalIso, url, route, geojsonOptions?.featureIdProperty]
+	);
+	const selectionGeometryFeaturesByKey =
+		selectionGeometryCache.contextKey === selectionGeometryCacheKey ? selectionGeometryCache.featuresByKey : {};
+
+	/**
+	 * Clear cached selected geometries as soon as the datasource identity changes.
+	 *
+	 * The render-time `selectionGeometryFeaturesByKey` guard above prevents stale
+	 * geometry from being reused before this effect runs; the effect releases old
+	 * cache data and prepares the next successful response for the new context.
+	 */
+	useEffect(() => {
+		setSelectionGeometryCache((previousCache) => {
+			if (previousCache.contextKey === selectionGeometryCacheKey) return previousCache;
+			return {
+				contextKey: selectionGeometryCacheKey,
+				featuresByKey: {},
+			};
+		});
+	}, [selectionGeometryCacheKey]);
 
 	/**
 	 * MVTLayer expects a tile URL template and fetches individual tiles itself.
@@ -257,7 +295,7 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 	 */
 	function getFeatureIdSafely(feature: MapFeature): string | number | null {
 		try {
-			return getFeatureId(feature, geojsonOptions?.featureIdProperty);
+			return getFeatureId(feature, geojsonOptions?.featureIdProperty) ?? null;
 		} catch {
 			return null;
 		}
@@ -332,7 +370,9 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 		const features = normalizeFeatures(selectionGeometryData);
 		if (!features.length) return;
 
-		setSelectionGeometryFeaturesByKey((previousFeatures) => {
+		setSelectionGeometryCache((previousCache) => {
+			const previousFeatures =
+				previousCache.contextKey === selectionGeometryCacheKey ? previousCache.featuresByKey : {};
 			let hasChanges = false;
 			const nextFeatures = { ...previousFeatures };
 
@@ -347,9 +387,14 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 				}
 			}
 
-			return hasChanges ? nextFeatures : previousFeatures;
+			if (!hasChanges && previousCache.contextKey === selectionGeometryCacheKey) return previousCache;
+
+			return {
+				contextKey: selectionGeometryCacheKey,
+				featuresByKey: hasChanges ? nextFeatures : previousFeatures,
+			};
 		});
-	}, [selectionGeometryData, geojsonOptions]);
+	}, [selectionGeometryData, geojsonOptions, selectionGeometryCacheKey]);
 
 	useEffect(() => {
 		if (selectionGeometryError) {
@@ -453,7 +498,7 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 			const currentId = featureInfoRef.current ? getFeatureIdSafely(featureInfoRef.current.feature) : null;
 			const clickedId = getFeatureIdSafely(clickedFeature);
 
-			if (currentId && clickedId && currentId === clickedId) {
+			if (currentId !== null && clickedId !== null && currentId === clickedId) {
 				setFeatureInfo(null);
 			} else {
 				setFeatureInfo({ feature: clickedFeature, x: info.x, y: info.y });
@@ -495,7 +540,7 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 			 * GeoJSON geometry on top gives selected features one continuous border while the
 			 * MVTLayer continues to render the base fill/stroke.
 			 */
-			const selectionOverlayLayer = new GeoJsonLayer({
+			const selectionOverlayLayer = new GeoJsonLayer<GeoJsonProperties>({
 				id: `${key}-selection-overlay`,
 				opacity: opacity ?? 1,
 				visible: isActive,
@@ -504,14 +549,14 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 				stroked: true,
 				pickable: false,
 				getFillColor: [0, 0, 0, 0],
-				getLineColor: (feature: MapFeature) => getSelectionColor(feature, 255),
+				getLineColor: (feature) => getSelectionColor(feature as MapFeature, 255),
 				getLineWidth: 5,
 				lineWidthUnits: 'pixels',
 				updateTriggers: {
 					getFillColor: [selectedFeatureKeysKey, distinctColoursKey, featureKeyColourIndexPairsKey],
 					getLineColor: [selectedFeatureKeysKey, distinctColoursKey, featureKeyColourIndexPairsKey],
 				},
-			} as any);
+			});
 
 			layers.push(selectionOverlayLayer);
 		}
