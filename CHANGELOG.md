@@ -1,3 +1,5 @@
+## [58.2.0](https://github.com/Gisat/ptr-fe-core/compare/v58.1.1...v58.2.0) (2026-07-20)
+
 ## [58.1.1](https://github.com/Gisat/ptr-fe-core/compare/v58.1.0...v58.1.1) (2026-07-18)
 
 ## [58.1.0](https://github.com/Gisat/ptr-fe-core/compare/v58.0.0...v58.1.0) (2026-07-15)
