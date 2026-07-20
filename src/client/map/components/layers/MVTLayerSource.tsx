@@ -517,9 +517,15 @@ export const MVTLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip 
 			visible: isActive,
 			data: data as DeckMVTData,
 			updateTriggers: {
-				getLineColor: [layerStyle, selection],
-				getFillColor: [layerStyle, selection],
-				getLineWidth: [layerStyle, selection],
+				getLineColor: [
+					layerStyle,
+					selectedFeatureKeysKey,
+					distinctColoursKey,
+					featureKeyColourIndexPairsKey,
+					selectionBorderHandledByOverlay,
+				],
+				getFillColor: [layerStyle],
+				getLineWidth: [layerStyle, selectedFeatureKeysKey, selectionBorderHandledByOverlay],
 				pickable: [layerStyle, isInteractive],
 				onHover: [CustomTooltip],
 			},
