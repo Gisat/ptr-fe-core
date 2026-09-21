@@ -1,5 +1,6 @@
 import { readCogPixelValues } from '../../../shared/helpers/readCogPixelValues';
 import { buildNativeTooltipResult, NativeTooltipResult } from './buildNativeTooltipResult';
+import { buildTooltipSwatchHtml } from './buildTooltipSwatch';
 import { CogTooltipSettings } from '../../../shared/models/models.tooltip';
 
 /**
@@ -9,9 +10,21 @@ import { CogTooltipSettings } from '../../../shared/models/models.tooltip';
  * formats it according to `cogBitmapOptions.tooltipSettings`, and returns a
  * {@link NativeTooltipResult} object.
  *
+ * A consuming app can label the raw value by supplying
+ * `tooltipSettings.resolveValueLabel`; when it returns a string, that label
+ * replaces the value row. `tooltipSettings.resolveValueColor` adds a colour swatch
+ * in front of it, and `tooltipSettings.isNoDataValue` suppresses the tooltip for
+ * cells that carry nothing. ptr-fe-core does not interpret raster values itself,
+ * because what a value means is dataset-specific.
+ *
+ * `tooltipSettings.hoverDelay` keeps this tooltip out of sight until the pointer
+ * settles (see `settleReveal`), which is applied by the caller when the tooltips of
+ * the hovered layers are merged.
+ *
  * Returns `null` when:
  * - `cogBitmapOptions` is absent or `disableTooltip` is `true`.
  * - No pixel values are available at the cursor position.
+ * - `tooltipSettings.isNoDataValue` reports the cell as having no data.
  *
  * @param params
  * @param params.info           - DeckGL picking info (typed loosely to access `info.bitmap`).
@@ -50,6 +63,11 @@ export function getCogNativeTooltip({
 	if (typeof baseValue !== 'number') return null;
 
 	const tooltipSettings: CogTooltipSettings | undefined = cogBitmapOptions.tooltipSettings;
+
+	// Cells the app reports as no data show nothing, rather than a sentinel value
+	// that would read as a real measurement.
+	if (tooltipSettings?.isNoDataValue?.(baseValue)) return null;
+
 	const title = tooltipSettings?.title ?? '';
 	const unit = tooltipSettings?.unit ?? '';
 	const decimalPlaces = tooltipSettings?.decimalPlaces;
@@ -60,11 +78,25 @@ export function getCogNativeTooltip({
 	}
 	const valueWithUnit = `${displayValue}${unit ? ` ${unit}` : ''}`;
 
+	// Let the app name the value (e.g. the class a raster code stands for). A label
+	// replaces the raw value, which would otherwise only repeat it.
+	const valueLabel = tooltipSettings?.resolveValueLabel?.(baseValue);
+
+	// Let the app colour the value to match the legend swatch it is drawn with. The
+	// colour goes into a style attribute, so it is validated before being written out -
+	// anything else renders no swatch rather than risking a malformed attribute.
+	const valueColor = tooltipSettings?.resolveValueColor?.(baseValue);
+	const swatchHtml = buildTooltipSwatchHtml(valueColor);
+
+	const valueContent = valueLabel
+		? `${swatchHtml}<span class="ptr-NativeMapTooltip-valueLabel">${valueLabel}</span>`
+		: `<div class="ptr-NativeMapTooltip-row">
+			${swatchHtml}<span class="ptr-NativeMapTooltip-value">${valueWithUnit}</span>
+		</div>`;
+
 	const html = `<div>
 		${title ? `<div class="ptr-NativeMapTooltip-title">${title}</div>` : ''}
-		<div class="ptr-NativeMapTooltip-row">
-			<span class="ptr-NativeMapTooltip-value">${valueWithUnit}</span>
-		</div>
+		${valueContent}
 		<div class="ptr-NativeMapTooltip-indicator"></div>
 	</div>`;
 

@@ -1,15 +1,21 @@
 /* ─── Base styles shared by both tooltip flavors ─────────────────── */
+/*
+ * The single place the tooltip font is declared. Everything inside inherits it, so
+ * raster and vector content cannot end up in different type - see the text treatments
+ * further down.
+ */
 .ptr-NativeMapTooltip,
 .ptr-MapTooltip {
   z-index: 100;
   background-color: var(--base25);
   font-size: var(--font-size-sm);
   font-family: var(--defaultFontFamily);
+  line-height: 1.4;
   pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  border-radius: 4px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   max-width: 300px;
   width: max-content;
@@ -21,20 +27,38 @@
   padding: 6px 10px;
 }
 /* ─── Title (native only) ─────────────────────────────────────────── */
+/*
+ * The layer's name. It is the same treatment in both flavours, which is what lets a
+ * merged tooltip read as one box with several layers in it.
+ */
 .ptr-NativeMapTooltip-title {
-  font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--base950);
   margin-bottom: 6px;
 }
+
+.ptr-NativeMapTooltip-sectionSpaced div {
+  display: flex;
+  align-items: center;
+}
+/* ─── Text treatments shared by raster and vector tooltips ────────── */
+/*
+ * Both tooltip flavours build their content from the same three roles, so the type is
+ * declared once here and inherited:
+ *   - title  : the layer's name (`.ptr-NativeMapTooltip-title`)
+ *   - label  : what a value describes, e.g. "District:" (`.ptr-NativeMapTooltip-label`)
+ *   - value  : the content itself - a feature attribute, a raster number, or the class
+ *              a raster code stands for (`.ptr-NativeMapTooltip-value`, `.ptr-NativeMapTooltip-valueLabel`)
+ *
+ * Font family and size come from the base rule alone, so a role cannot drift between
+ * the two flavours: an earlier revision styled the raster class label as a *label*
+ * (600) rather than as a value (500), which made raster tooltips look bolder than
+ * vector ones for the same kind of content.
+ */
 /* ─── Row ─────────────────────────────────────────────────────────── */
 .ptr-NativeMapTooltip-row,
 .ptr-MapTooltip-row {
   margin-bottom: 2px;
-}
-/* Native row also carries an explicit font-size reset */
-.ptr-NativeMapTooltip-row {
-  font-size: var(--font-size-sm);
 }
 /* ─── Label ───────────────────────────────────────────────────────── */
 .ptr-NativeMapTooltip-label,
@@ -51,6 +75,33 @@
 .ptr-NativeMapTooltip-value {
   color: var(--base950);
   white-space: nowrap;
+}
+/*
+ * Raster value shown as readable text, produced by `tooltipSettings.resolveValueLabel`
+ * (e.g. the class name a code stands for). It is the raster's value, so it takes the
+ * value treatment - and, unlike a numeric value, it may wrap, because class names are
+ * long and the tooltip is narrow.
+ */
+.ptr-NativeMapTooltip-valueLabel {
+  color: var(--base950);
+  font-weight: 500;
+}
+/* ─── Legend colour swatch (COG tooltips) ─────────────────────────── */
+/*
+ * Optional dot in front of the raster value, produced by
+ * `tooltipSettings.resolveValueColor`, so the value can be matched to the same colour
+ * in the map legend.
+ *
+ * Sized in `em` and kept to `0.75em` with `vertical-align: middle`, so it adds no
+ * height to the line box and a raster tooltip stays the same height as a vector one.
+ * The inset hairline keeps pale colours visible against the tooltip background.
+ */
+.ptr-NativeMapTooltip-swatch {
+  display: inline-block;
+  width: 0.75em;
+  height: 0.75em;
+  margin-right: 0.4em;
+  border-radius: 2px;
 }
 /* ─── Unit ────────────────────────────────────────────────────────── */
 .ptr-NativeMapTooltip-unit,
@@ -76,4 +127,99 @@
 }
 .ptr-MapTooltip-indicator {
   border-top: 8px solid var(--base25);
+}
+/* --- Settle reveal (layers opting into tooltipSettings.hoverDelay) -- */
+/*
+ * A raster value changes on nearly every hover, so a raster tooltip shown right away
+ * flickers, resizes and shifts under a moving pointer. A layer can therefore ask for
+ * its tooltip to stay hidden until the pointer has been still for `hoverDelay`.
+ *
+ * The reveal has to be driven by CSS: DeckGL only asks for tooltip content while the
+ * pointer moves, so there is no later moment at which code could decide that the
+ * pointer has settled. DeckGL reassigns the tooltip's `innerHTML` on every hover,
+ * which recreates these elements and restarts the animations below, so they stay
+ * hidden for as long as hovers keep arriving. A 0s duration with a `both` fill means
+ * the keyframe values are applied either side of the delay, never interpolated.
+ *
+ * The animations must sit on these elements rather than on the tooltip element: that
+ * element persists across hovers, so an animation on it would never restart.
+ *
+ * Nothing is reserved for the hidden content - while it is out of sight its box is
+ * empty, so it cannot influence the tooltip's size and a moving pointer sees a stable
+ * box. The tooltip grows once, when the content appears.
+ */
+/* --- Whole tooltip waits (every hovered layer asked for a delay) --- */
+/*
+ * Copies the tooltip's own chrome from `buildNativeTooltipResult` and
+ * `.ptr-NativeMapTooltip`, because the element is stripped of it while its content is
+ * hidden - otherwise an empty padded box would follow the cursor. Keep the values here
+ * in sync with those two places.
+ */
+.ptr-NativeMapTooltip-settle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: var(--base0);
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  animation: ptr-NativeMapTooltipSettle 0s linear var(--ptr-native-map-tooltip-hover-delay, 300ms) both;
+}
+/*
+ * `clip-path` hides the wrapper - its own chrome included - and is interpolatable,
+ * unlike the discrete overflow properties a height collapse would need. The end state
+ * reaches past the box so the indicator, which hangs 7px below it, is not clipped once
+ * shown.
+ */
+@keyframes ptr-NativeMapTooltipSettle {
+  from {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+  }
+  to {
+    clip-path: inset(-20px);
+    opacity: 1;
+  }
+}
+/* --- One section waits (the other hovered layers are shown at once) --- */
+/*
+ * Only the waiting layer's section disappears, so a vector overlay still shows its
+ * values while a raster beneath it waits.
+ *
+ * The box collapses in both axes and is clipped, so the hidden section takes up no
+ * room at all and cannot stretch the tooltip. `min-*` is zeroed as well because a flex
+ * item's automatic minimum size would otherwise keep it as large as its content.
+ * `overflow: hidden` is permanent: it does nothing once the section has its natural
+ * size, and it is what clips the collapsed content meanwhile.
+ */
+.ptr-NativeMapTooltip-pendingSection {
+  overflow: hidden;
+  animation: ptr-NativeMapTooltipSectionReveal 0s linear var(--ptr-native-map-tooltip-hover-delay, 300ms) both;
+}
+@keyframes ptr-NativeMapTooltipSectionReveal {
+  from {
+    width: 0;
+    height: 0;
+    min-width: 0;
+    min-height: 0;
+  }
+  to {
+    width: auto;
+    height: auto;
+    min-width: auto;
+    min-height: auto;
+  }
+}
+/* Users who asked for less motion get the tooltip without the wait. */
+@media (prefers-reduced-motion: reduce) {
+  .ptr-NativeMapTooltip-settle,
+  .ptr-NativeMapTooltip-pendingSection {
+    animation: none;
+  }
+  .ptr-NativeMapTooltip-pendingSection {
+    width: auto;
+    height: auto;
+    min-width: auto;
+    min-height: auto;
+  }
 }

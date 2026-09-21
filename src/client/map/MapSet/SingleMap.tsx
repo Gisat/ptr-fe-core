@@ -427,8 +427,18 @@ export const SingleMap = ({
 				 */
 				getTooltip={(info) => {
 					if (CustomTooltip) return null;
+					const pickedInfos =
+						deckRef.current?.pickMultipleObjects && info.x != null && info.y != null
+							? deckRef.current.pickMultipleObjects({
+								x: info.x,
+								y: info.y,
+								radius: 0,
+								depth: Math.max(activeLayers.length * 4, 1),
+							})
+							: undefined;
 					return getMapTooltip({
 						info,
+						infos: pickedInfos,
 						mapLayers,
 						verticalOffset,
 					}) as any;
