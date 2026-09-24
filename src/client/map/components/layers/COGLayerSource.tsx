@@ -48,7 +48,20 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 	}
 
 	const tooltipSettings = cogBitmapOptions?.tooltipSettings;
-	const tooltipEnabled = !cogBitmapOptions?.disableTooltip && isInteractive;
+	/**
+	 * Raster layers have no `layerStyle.pickable` to fall back on, unlike GeoJSON/MVT
+	 * layers, so `pickable` is derived from `isInteractive` alone. Consumers that never
+	 * set that flag would otherwise leave the raster unpickable, which also makes the
+	 * shared tooltip unreachable because deck.gl only reports picking info for pickable
+	 * layers. Default to pickable unless the layer opts out of tooltips, and keep
+	 * honouring an explicit `isInteractive: false`.
+	 *
+	 * `tooltipEnabled` only gates the optional custom-tooltip path (pixel info + React
+	 * component); the shared native tooltip reads the picked pixel directly.
+	 */
+	const tooltipsDisabled = cogBitmapOptions?.disableTooltip === true;
+	const pickable = isInteractive ?? !tooltipsDisabled;
+	const tooltipEnabled = !tooltipsDisabled && isInteractive;
 	const tooltipType = TooltipType.Hover; // Currently, only hover tooltips are supported for COG layers. This can be extended in the future if needed.
 
 	const tooltip =
@@ -75,7 +88,7 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 			opacity: opacity ?? 1,
 			visible: isActive,
 			cogBitmapOptions,
-			pickable: isInteractive,
+			pickable,
 			onHover: (info) => {
 				if (!tooltipEnabled || tooltipType !== TooltipType.Hover) return;
 				const channelIndex = cogBitmapOptions.useChannel - 1;
@@ -83,7 +96,6 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 				if (!values) {
 					setPixelInfo(null);
 				} else {
-
 					setPixelInfo({
 						x: info.x,
 						y: info.y,
@@ -97,8 +109,17 @@ export const COGLayerSource = React.memo(({ layer, onLayerUpdate, CustomTooltip,
 		/* TODO: Since cogBitmapOptions is derived from configuration, which originally is a string
 				   (from ptr-be-core model HasConfiguration) and later parsed to an object,
 				   we need to stringify it here to avoid infinite render loops due to object reference changes. */
-	}, [url, isActive, isInteractive, key, opacity, JSON.stringify(cogBitmapOptions), CustomTooltip]);
-
+	}, [
+		url,
+		isActive,
+		isInteractive,
+		key,
+		opacity,
+		pickable,
+		tooltipEnabled,
+		JSON.stringify(cogBitmapOptions),
+		CustomTooltip,
+	]);
 	/**
 	 * Effect hook to handle layer updates.
 	 * The `onLayerUpdate` callback is called with the layer instance when the component mounts

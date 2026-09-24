@@ -23,6 +23,9 @@ export function getTooltipAttributes(
 			label: attribute.label ?? '',
 			value,
 			unit: attribute.unit ?? '',
+			// Carried through so the row can be coloured while it is rendered: the swatch
+			// colour depends on the feature, which is only known at that point.
+			resolveValueColor: attribute.resolveValueColor,
 		};
 	});
 }
