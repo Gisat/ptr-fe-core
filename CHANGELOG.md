@@ -1,3 +1,11 @@
+## [58.2.1](https://github.com/Gisat/ptr-fe-core/compare/v58.2.0...v58.2.1) (2026-09-25)
+
+### Bug Fixes
+
+* pin conventional-changelog-conventionalcommits to v9 in release workflow ([e0ff99d](https://github.com/Gisat/ptr-fe-core/commit/e0ff99d36e5ad5845b660cddbb9a280b048ef2c8))
+* Raster tooltips enhancments ([e7537e0](https://github.com/Gisat/ptr-fe-core/commit/e7537e052a43e09d0e26357c46c63855c9b992aa))
+* Unify tooltips border radius ([bfa6f06](https://github.com/Gisat/ptr-fe-core/commit/bfa6f0665233d9bae12fd1f881c4acd90dbede80))
+
 ## [58.2.0](https://github.com/Gisat/ptr-fe-core/compare/v58.1.1...v58.2.0) (2026-07-20)
 
 ## [58.1.1](https://github.com/Gisat/ptr-fe-core/compare/v58.1.0...v58.1.1) (2026-07-18)
